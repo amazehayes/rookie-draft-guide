@@ -25,9 +25,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 
 .hero-bg-text{position:absolute;right:-10px;top:-30px;font-family:'Bebas Neue',cursive;font-weight:800;font-size:200px;color:rgba(0,194,255,.03);line-height:1;pointer-events:none;user-select:none;letter-spacing:2px;}
 .hero h1{font-family:'Bebas Neue',cursive;font-size:clamp(42px,6vw,80px);letter-spacing:4px;line-height:.95;margin-bottom:16px;}
-.hero h1 span{color:var(--accent);}
-.hero h1 em{display:none;}
-.hero-desc{font-size:12px;color:var(--muted);max-width:500px;line-height:1.8;margin-bottom:28px;letter-spacing:.5px;}
+.hero h1 span{color:var(--accent2);}
+
+.hero-desc{font-size:12px;color:var(--muted);max-width:900px;line-height:1.8;margin-bottom:28px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stat-row{display:flex;gap:28px;flex-wrap:wrap;}
 .stat-pill .val{font-family:'Bebas Neue',cursive;font-size:32px;letter-spacing:2px;line-height:1;}
 .stat-pill .lbl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:3px;}
@@ -115,7 +115,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-grade-row{display:flex;gap:0;border-bottom:1px solid var(--border);}
 .modal-grade-item{flex:1;padding:14px 18px;border-right:1px solid var(--border);text-align:center;}
 .modal-grade-item:last-child{border-right:none;}
-.modal-grade-item .val{font-family:'Bebas Neue',cursive;font-size:32px;line-height:1;letter-spacing:1px;}
+.modal-grade-item .val{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;line-height:1;}
 .modal-grade-item .lbl{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:3px;}
 .modal-body{padding:18px 26px 26px;}
 .modal-section{margin-bottom:22px;}
@@ -123,7 +123,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-section-title::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--accent);display:inline-block;}
 .modal-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
 .modal-stat-item{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 11px;}
-.modal-stat-val{font-family:'Bebas Neue',cursive;font-weight:700;font-size:14px;margin-bottom:3px;}
+.modal-stat-val{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;margin-bottom:3px;}
 .modal-stat-lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
 /* MARKER CHECKLIST */
 .marker-checklist{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
@@ -132,7 +132,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .marker-icon{font-size:11px;flex-shrink:0;width:16px;text-align:center;margin-top:1px;}
 .marker-text{font-size:9px;color:var(--muted);line-height:1.4;letter-spacing:.3px;}
 .marker-item.hit .marker-text{color:rgba(240,237,230,.6);}
-.marker-actual{font-family:'Bebas Neue',cursive;font-weight:700;font-size:11px;margin-top:2px;}
+.marker-actual{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;margin-top:2px;}
 /* UTILS */
 .player-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:8px;border:1px solid;}
 .player-tag .tag-icon{font-size:10px;}
@@ -157,8 +157,8 @@ td{padding:10px 14px;white-space:nowrap;}
 </header>
 <div class="hero">
   <div class="hero-bg-text">2026</div>
-  <h1>ROOKIE<br><em>DRAFT</em> <span>CLASS</span></h1>
-  <p class="hero-desc">Threshold-based marker scoring calibrated against historically successful NFL players at the collegiate level.</p>
+  <h1>2026 <span>ROOKIE DRAFT CLASS</span></h1>
+  <p class="hero-desc">Threshold-based marker scoring — calibrated against historically successful NFL players at the collegiate level.</p>
   <div class="stat-row" id="heroStats"></div>
 </div>
 <div class="controls">
@@ -169,7 +169,8 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="filter-btn" data-pos="WR">WR</button>
     <button class="filter-btn" data-pos="TE">TE</button>
   </div>
-  <input type="text" class="search-box" id="searchBox" placeholder="Search player or school...">
+  <input type="text" class="search-box" id="searchBox" placeholder="Search player...">
+  <select class="sort-select" id="schoolFilter"><option value="ALL">All Schools</option></select>
   <select class="sort-select" id="labelFilter">
     <option value="ALL">All Labels</option>
     <option value="Greatest Prospect Since...">🏆 Greatest Prospect Since...</option>
@@ -209,7 +210,7 @@ td{padding:10px 14px;white-space:nowrap;}
 </div>
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modal">
-    <button class="close-btn" id="closeModal">✕</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <div id="modalContent"></div>
   </div>
 </div>
@@ -342,12 +343,24 @@ function dynastySort(p){
   return grade;
 }
 
-let currentPos='ALL',currentSort='rank',searchQuery='',viewMode='cards',currentLabel='ALL';
+let currentPos='ALL',currentSort='rank',searchQuery='',viewMode='cards',currentLabel='ALL',currentSchool='ALL';
+
+// Populate school dropdown
+(function(){
+  const schools = [...new Set(PLAYERS.map(p=>p.school).filter(Boolean))].sort();
+  const sel = document.getElementById('schoolFilter');
+  schools.forEach(s=>{
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+})();
 
 function getFiltered(){
   return PLAYERS.filter(p=>{
     if(currentPos!=='ALL'&&p.pos!==currentPos)return false;
-    if(searchQuery){const q=searchQuery.toLowerCase();if(!p.name.toLowerCase().includes(q)&&!(p.school||'').toLowerCase().includes(q))return false;}
+    if(currentSchool!=='ALL'&&p.school!==currentSchool)return false;
+    if(searchQuery){const q=searchQuery.toLowerCase();if(!p.name.toLowerCase().includes(q))return false;}
     if(currentLabel!=='ALL'){
       const t=getTag(p);
       if(currentLabel==='_ANY'){if(!t)return false;}
@@ -391,7 +404,7 @@ function evalMarkers(p){
     r.push({label:'Career CMP% ≥ 65%',             hit:p.careerCMP!=null&&p.careerCMP>=0.65,     val:fmtPct(p.careerCMP)});
     r.push({label:'Career PA ≥ 900 & PAPG ≥ 28',   hit:p.careerPA!=null&&p.careerPAPG!=null&&yr!=null&&p.careerPA>=900&&p.careerPAPG>=28&&yr<6, val:(p.careerPA||'—')+' PA / '+fmt(p.careerPAPG,1)+' pg'});
     r.push({label:'Career PYds ≥ 8500 & YPG ≥ 225',hit:p.careerPYd!=null&&p.careerYPG!=null&&yr!=null&&p.careerPYd>=8500&&p.careerYPG>=225&&yr<6, val:(p.careerPYd||'—')+' Yds'});
-    r.push({label:'Career YPA ≥ 8.2',              hit:p.careerYPA!=null&&p.careerYPA>=8.2,      val:fmt(p.careerYPA,2)+' YPA'});
+    r.push({label:'Career YPA ≥ 8.2',              hit:p.careerYPA!=null&&p.careerYPA>=8.2,      val:fmt(p.careerYPA,1)+' YPA'});
     r.push({label:'Career PTD ≥ 75 & TDPG ≥ 2',   hit:p.careerPTD!=null&&p.careerTDPG!=null&&yr!=null&&p.careerPTD>=75&&p.careerTDPG>=2&&yr<6, val:(p.careerPTD||'—')+' TD / '+fmt(p.careerTDPG,2)+' pg'});
     r.push({label:'Career INT ≤ 25 & INTPG ≤ 0.5', hit:p.careerINT!=null&&p.careerINTPG!=null&&yr!=null&&p.careerINT<=25&&p.careerINTPG<=0.5&&yr<6, val:(p.careerINT||'—')+' INT / '+fmt(p.careerINTPG,2)+' pg'});
     r.push({label:'Career Ru YPG ≥ 20',            hit:p.careerRuYPG!=null&&p.careerRuYPG>=20,   val:fmt(p.careerRuYPG,1)+' YPG'});
@@ -407,7 +420,7 @@ function evalMarkers(p){
   } else if(p.pos==='RB'){
     r.push({label:'Age < 23',                      hit:p.age!=null&&p.age<23,                     val:fmtAge(p.age)});
     r.push({label:'Round ≤ 2',                     hit:p.round!=null&&p.round<=2,                 val:p.round!=null?'Rd '+p.round:'—'});
-    r.push({label:'Career YPTP ≥ 1.25',            hit:p.yptp!=null&&p.yptp>=1.25,                val:fmt(p.yptp,3)+' YPTP'});
+    r.push({label:'Career YPTP ≥ 1.25',            hit:p.yptp!=null&&p.yptp>=1.25,                val:fmt(p.yptp,1)+' YPTP'});
     r.push({label:'Best Receptions ≥ 25',          hit:p.bestRec!=null&&p.bestRec>=25,            val:p.bestRec!=null?p.bestRec+' Rec':'—'});
     r.push({label:'Best Total Yards ≥ 1000',       hit:p.bestTotalYds!=null&&p.bestTotalYds>=1000,val:p.bestTotalYds!=null?p.bestTotalYds+' Yds':'—'});
     r.push({label:'Last PPG ≥ 20',                 hit:p.lastPPG!=null&&p.lastPPG>=20,            val:fmt(p.lastPPG,1)+' PPG'});
@@ -422,8 +435,8 @@ function evalMarkers(p){
     r.push({label:'Round ≤ 2',                     hit:p.round!=null&&p.round<=2,                 val:p.round!=null?'Rd '+p.round:'—'});
     r.push({label:'Breakout Year (20%) ≤ Yr 2',    hit:p.boy20!=null&&p.boy20<=2,                 val:p.boy20!=null?'Yr '+p.boy20:'—'});
     r.push({label:'Breakout Year (30%) ≤ Yr 3',    hit:p.boy30!=null&&p.boy30<=3,                 val:p.boy30!=null?'Yr '+p.boy30:'—'});
-    r.push({label:'Last YPTPA ≥ 2.5',              hit:p.lastYPTPA!=null&&p.lastYPTPA>=2.5,       val:fmt(p.lastYPTPA,3)});
-    r.push({label:'Best YPTPA ≥ 2.85',             hit:p.bestYPTPA!=null&&p.bestYPTPA>=2.85,      val:fmt(p.bestYPTPA,3)});
+    r.push({label:'Last YPTPA ≥ 2.5',              hit:p.lastYPTPA!=null&&p.lastYPTPA>=2.5,       val:fmt(p.lastYPTPA,1)});
+    r.push({label:'Best YPTPA ≥ 2.85',             hit:p.bestYPTPA!=null&&p.bestYPTPA>=2.85,      val:fmt(p.bestYPTPA,1)});
     r.push({label:'Best MS Yards ≥ 35%',           hit:p.bestMSYards!=null&&p.bestMSYards>=0.35,  val:p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—'});
     r.push({label:'Last PPG ≥ 20',                 hit:p.lastPPG!=null&&p.lastPPG>=20,            val:fmt(p.lastPPG,1)+' PPG'});
     r.push({label:'Best PPG ≥ 20',                 hit:p.bestPPG!=null&&p.bestPPG>=20,            val:fmt(p.bestPPG,1)+' PPG'});
@@ -437,8 +450,8 @@ function evalMarkers(p){
     r.push({label:'Breakout Age (15%) ≤ Yr 2',     hit:p.boy15!=null&&p.boy15<=2,                 val:p.boy15!=null?'Yr '+p.boy15:'—'});
     r.push({label:'Breakout Age (20%) ≤ Yr 3',     hit:p.boy20!=null&&p.boy20<=3,                 val:p.boy20!=null?'Yr '+p.boy20:'—'});
     r.push({label:'Career YPG ≥ 13',               hit:p.careerYPG!=null&&p.careerYPG>=13,        val:fmt(p.careerYPG,1)+' YPG'});
-    r.push({label:'Last YPTPA ≥ 1.5',              hit:p.lastYPTPA!=null&&p.lastYPTPA>=1.5,       val:fmt(p.lastYPTPA,3)});
-    r.push({label:'Best YPTPA ≥ 1.75',             hit:p.bestYPTPA!=null&&p.bestYPTPA>=1.75,      val:fmt(p.bestYPTPA,3)});
+    r.push({label:'Last YPTPA ≥ 1.5',              hit:p.lastYPTPA!=null&&p.lastYPTPA>=1.5,       val:fmt(p.lastYPTPA,1)});
+    r.push({label:'Best YPTPA ≥ 1.75',             hit:p.bestYPTPA!=null&&p.bestYPTPA>=1.75,      val:fmt(p.bestYPTPA,1)});
     r.push({label:'Best MS Yards ≥ 20%',           hit:p.bestMSYards!=null&&p.bestMSYards>=0.20,  val:p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—'});
     r.push({label:'Last PPG ≥ 11',                 hit:p.lastPPG!=null&&p.lastPPG>=11,            val:fmt(p.lastPPG,1)+' PPG'});
     r.push({label:'Best PPG ≥ 13',                 hit:p.bestPPG!=null&&p.bestPPG>=13,            val:fmt(p.bestPPG,1)+' PPG'});
@@ -467,46 +480,46 @@ function pffStats(p,col){
     statSq(fmtPct(p.bestSackPct),'Best Sack%'),
   ].join('');
   if(p.pos==='RB') return[
-    statSq(fmt(p.careerBA,3),'Career Broken Tkls/Att',col),
-    statSq(fmt(p.careerMTF,3),'Career Miss Tkls Forced/Att',col),
-    statSq(fmt(p.career1D,3),'Career 1st Downs/Att'),
-    statSq(fmt(p.careerYACO,2),'Career YACO/Att'),
-    statSq(fmt(p.careerYPRR,3),'Career Yds/Route Run',col),
-    statSq(fmt(p.careerTPRR,3),'Career Tgts/Route Run'),
-    statSq(fmt(p.bestBA,3),'Best Broken Tkls/Att',col),
-    statSq(fmt(p.bestMTF,3),'Best Miss Tkls Forced/Att',col),
-    statSq(fmt(p.bestYACO,2),'Best YACO/Att'),
-    statSq(fmt(p.bestYPRR,3),'Best Yds/Route Run',col),
+    statSq(fmt(p.careerBA,1),'Career Broken Tkls/Att',col),
+    statSq(fmt(p.careerMTF,1),'Career Miss Tkls Forced/Att',col),
+    statSq(fmt(p.career1D,1),'Career 1st Downs/Att'),
+    statSq(fmt(p.careerYACO,1),'Career YACO/Att'),
+    statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
+    statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
+    statSq(fmt(p.bestBA,1),'Best Broken Tkls/Att',col),
+    statSq(fmt(p.bestMTF,1),'Best Miss Tkls Forced/Att',col),
+    statSq(fmt(p.bestYACO,1),'Best YACO/Att'),
+    statSq(fmt(p.bestYPRR,1),'Best Yds/Route Run',col),
   ].join('');
   if(p.pos==='WR') return[
-    statSq(fmt(p.careerYPRR,3),'Career Yds/Route Run',col),
-    statSq(fmt(p.careerTPRR,3),'Career Tgts/Route Run'),
-    statSq(fmt(p.career1DRR,3),'Career 1st Downs/Route'),
-    statSq(fmt(p.careerYACR,2),'Career YAC/Route'),
+    statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
+    statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
+    statSq(fmt(p.career1DRR,1),'Career 1st Downs/Route'),
+    statSq(fmt(p.careerYACR,1),'Career YAC/Route'),
     statSq(fmt(p.careerMTF,2),'Career Miss Tkls Forced',col),
     statSq(fmtPct(p.careerSlot),'Career Slot Rate'),
-    statSq(fmt(p.bestYPRR,3),'Best Yds/Route Run',col),
-    statSq(fmt(p.bestTPRR,3),'Best Tgts/Route Run'),
+    statSq(fmt(p.bestYPRR,1),'Best Yds/Route Run',col),
+    statSq(fmt(p.bestTPRR,1),'Best Tgts/Route Run'),
   ].join('');
   // TE
   return[
-    statSq(fmt(p.careerYPRR,3),'Career Yds/Route Run',col),
-    statSq(fmt(p.careerTPRR,3),'Career Tgts/Route Run'),
-    statSq(fmt(p.career1DRR,3),'Career 1st Downs/Route'),
-    statSq(fmt(p.careerYACR,2),'Career YAC/Route'),
+    statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
+    statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
+    statSq(fmt(p.career1DRR,1),'Career 1st Downs/Route'),
+    statSq(fmt(p.careerYACR,1),'Career YAC/Route'),
     statSq(fmt(p.careerMTF,2),'Career Miss Tkls Forced',col),
     statSq(fmtPct(p.careerSlot),'Career Slot Rate'),
     statSq(fmt(p.avgPassBlock,1),'Avg Pass Block Grade',col),
     statSq(fmt(p.avgRunBlock,1),'Avg Run Block Grade'),
-    statSq(fmt(p.bestYPRR,3),'Best Yds/Route Run',col),
+    statSq(fmt(p.bestYPRR,1),'Best Yds/Route Run',col),
   ].join('');
 }
 
 function cardMetrics(p){
-  if(p.pos==='QB')return[{v:p.careerCMP?fmtPct(p.careerCMP):'—',l:'Career CMP%'},{v:fmt(p.careerYPA,2),l:'Career YPA'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
+  if(p.pos==='QB')return[{v:p.careerCMP?fmtPct(p.careerCMP):'—',l:'Career CMP%'},{v:fmt(p.careerYPA,1),l:'Career YPA'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
   if(p.pos==='RB')return[{v:fmt(p.yptp,1),l:'YPTP'},{v:p.bestRec!=null?p.bestRec:'—',l:'Best Rec'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
-  if(p.pos==='WR')return[{v:p.boy30!=null?'Yr '+fmt(p.boy30,0):'—',l:'Breakout Yr 30%'},{v:p.bestYPTPA?fmt(p.bestYPTPA,3):'—',l:'Best YPTPA'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
-  return[{v:p.boa20!=null?fmt(p.boa20,1)+'y':'—',l:'Breakout Age 20%'},{v:p.bestYPTPA?fmt(p.bestYPTPA,3):'—',l:'Best YPTPA'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
+  if(p.pos==='WR')return[{v:p.boy30!=null?'Yr '+fmt(p.boy30,0):'—',l:'Breakout Yr 30%'},{v:p.bestYPTPA?fmt(p.bestYPTPA,1):'—',l:'Best YPTPA'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
+  return[{v:p.boa20!=null?fmt(p.boa20,1)+'y':'—',l:'Breakout Age 20%'},{v:p.bestYPTPA?fmt(p.bestYPTPA,1):'—',l:'Best YPTPA'},{v:fmt(p.bestPPG,1),l:'Best PPG'}];
 }
 
 function renderHeroStats(){
@@ -678,6 +691,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentPos=btn.dataset.pos;render();});
 });
 document.getElementById('searchBox').addEventListener('input',e=>{searchQuery=e.target.value.trim();render();});
+document.getElementById('schoolFilter').addEventListener('change',e=>{currentSchool=e.target.value;render();});
 document.getElementById('labelFilter').addEventListener('change',e=>{currentLabel=e.target.value;render();});
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;render();});
 document.getElementById('cardViewBtn').addEventListener('click',()=>{viewMode='cards';document.getElementById('cardViewBtn').classList.add('active');document.getElementById('tableViewBtn').classList.remove('active');render();});
