@@ -89,11 +89,6 @@ td{padding:12px 16px;white-space:nowrap;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:720px;max-height:92vh;overflow-y:auto;transform:scale(.95);transition:transform .2s;position:relative;}
 .modal-overlay.open .modal{transform:scale(1);}
-.modal-headshot-wrap{position:relative;width:100%;height:260px;overflow:hidden;background:var(--surface2);}
-.modal-headshot-wrap img{width:100%;height:100%;object-fit:cover;object-position:center 15%;}
-.modal-headshot-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:80px;color:var(--border);}
-.modal-headshot-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(17,20,24,.98) 0%,rgba(17,20,24,.5) 40%,transparent 100%);}
-.modal-headshot-info{position:absolute;bottom:24px;left:28px;right:28px;}
 .modal-pos-badge{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 10px;border-radius:4px;display:inline-block;margin-bottom:8px;}
 .modal-name{font-family:'Bebas Neue',cursive;font-size:44px;letter-spacing:2px;line-height:1;margin-bottom:4px;}
 .modal-school{font-size:13px;color:rgba(232,237,243,.6);}
@@ -326,27 +321,150 @@ function renderHeroStats(){
     '<div class="stat-pill"><div class="val c-gold">'+fmt(avg,1)+'</div><div class="lbl">Avg Grade (Ranked)</div></div>';
 }
 
+// Dynamic rank label based on current sort
+function rankLabel(p, sortedList) {
+  const pos = sortedList.indexOf(p) + 1;
+  switch(currentSort) {
+    case 'grade':   return '#'+pos+' BY GRADE';
+    case 'markers': return '#'+pos+' BY MARKERS';
+    case 'age':     return '#'+pos+' BY AGE';
+    case 'name':    return p.pos;
+    default:        return '#'+pos+' OVERALL';
+  }
+}
+
 function cardMetrics(p){
   if(p.pos==='QB')return[
-    {v:fmt(p.careerYPA,2),l:'Career YPA'},
-    {v:p.careerCMP?fmtPct(p.careerCMP):'—',l:'CMP%'},
-    {v:fmt(p.bestPPG,1),l:'Best PPG'}
+    {v:p.careerCMP?fmtPct(p.careerCMP):'—', l:'Career CMP%'},
+    {v:fmt(p.careerYPA,2),                   l:'Career YPA'},
+    {v:fmt(p.bestPPG,1),                     l:'Best PPG'}
   ];
   if(p.pos==='RB')return[
-    {v:fmt(p.ypc,2),l:'YPC'},
-    {v:fmt(p.yptp,3),l:'YPTP'},
-    {v:fmt(p.bestPPG,1),l:'Best PPG'}
+    {v:fmt(p.yptp,1),                        l:'YPTP'},
+    {v:p.bestRec!=null?p.bestRec:'—',        l:'Best Rec'},
+    {v:fmt(p.bestPPG,1),                     l:'Best PPG'}
   ];
   if(p.pos==='WR')return[
-    {v:p.bestYPTPA?fmt(p.bestYPTPA,3):'—',l:'Best YPTPA'},
-    {v:p.boa20?fmt(p.boa20,1)+'y':'—',l:'BOA20'},
-    {v:fmt(p.bestPPG,1),l:'Best PPG'}
+    {v:p.boy30!=null?fmt(p.boy30,0)+'y':'—', l:'BOA30'},
+    {v:p.bestYPTPA?fmt(p.bestYPTPA,3):'—',  l:'Best YPTPA'},
+    {v:fmt(p.bestPPG,1),                     l:'Best PPG'}
   ];
+  // TE
   return[
-    {v:p.bestYPTPA?fmt(p.bestYPTPA,3):'—',l:'Best YPTPA'},
-    {v:p.careerYPG?fmt(p.careerYPG,1):'—',l:'YPG'},
-    {v:fmt(p.bestPPG,1),l:'Best PPG'}
+    {v:p.boa20!=null?fmt(p.boa20,1)+'y':'—', l:'BOA20'},
+    {v:p.bestYPTPA?fmt(p.bestYPTPA,3):'—',  l:'Best YPTPA'},
+    {v:fmt(p.bestPPG,1),                     l:'Best PPG'}
   ];
+}
+
+// Marker value display — shows actual metric value for each marker
+function markerValue(p, markerLabel) {
+  const v = (val, dec) => val != null && !isNaN(val) ? parseFloat(val).toFixed(dec) : '—';
+  const pct = (val) => val != null ? (val*100).toFixed(1)+'%' : '—';
+  const map = {
+    // QB
+    'Overall Pick ≤ 12':              p.overall != null ? '#'+p.overall : '—',
+    'Career CMP% ≥ 65%':              pct(p.careerCMP),
+    'Career PA ≥ 900 & PAPG ≥ 28 (< 6yr)': (p.careerPA!=null?p.careerPA:'-')+' PA / '+(p.careerPAPG!=null?v(p.careerPAPG,1):'-')+' PAPG',
+    'Career PYd ≥ 8500 & YPG ≥ 225 (< 6yr)': (p.careerPYd!=null?p.careerPYd:'-')+' Yds / '+(p.careerYPG!=null?v(p.careerYPG,0):'-')+' YPG',
+    'Career YPA ≥ 8.2':               v(p.careerYPA,2),
+    'Career PTD ≥ 75 & TDPG ≥ 2 (< 6yr)': (p.careerPTD!=null?p.careerPTD:'-')+' TD / '+(p.careerTDPG!=null?v(p.careerTDPG,2):'-')+' TDPG',
+    'Career INT ≤ 25 & INTPG ≤ 0.5 (< 6yr)': (p.careerINT!=null?p.careerINT:'-')+' INT / '+(p.careerINTPG!=null?v(p.careerINTPG,2):'-')+' INTPG',
+    'Career RuYPG ≥ 20':              v(p.careerRuYPG,1)+' YPG',
+    'Best PYd ≥ 3500':                p.bestPYd!=null?p.bestPYd+' Yds':'—',
+    'Best PTD ≥ 30':                  p.bestPTD!=null?p.bestPTD+' TD':'—',
+    'Best INT ≤ 7':                   p.bestINT!=null?p.bestINT+' INT':'—',
+    'Best CMP% ≥ 67%':                pct(p.bestCMP),
+    'Best RuYd ≥ 150':                p.bestRuYd!=null?p.bestRuYd+' Yds':'—',
+    'Last PPG ≥ 25':                  v(p.lastPPG,1)+' PPG',
+    'Best PPG ≥ 25':                  v(p.bestPPG,1)+' PPG',
+    'Height ≥ 76"':                   p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—',
+    'BMI ≥ 28':                       v(p.bmi,2),
+    // RB
+    'Age < 23':                       p.age!=null?fmtAge(p.age):'—',
+    'Round ≤ 2':                      p.round!=null?'Rd '+p.round:'—',
+    'Career YPTP ≥ 1.25':             v(p.yptp,3),
+    'Best Receptions ≥ 25':           p.bestRec!=null?p.bestRec+' Rec':'—',
+    'Best Total Yards ≥ 1000':        p.bestTotalYds!=null?p.bestTotalYds+' Yds':'—',
+    'Last PPG ≥ 20':                  v(p.lastPPG,1)+' PPG',
+    'Best PPG ≥ 25':                  v(p.bestPPG,1)+' PPG',
+    'BMI > 29.97':                    v(p.bmi,2),
+    'Weight > 200 lbs':               p.wt!=null?p.wt+' lbs':'—',
+    '40-Yard Dash ≤ 4.55s':          p.dash!=null?p.dash+'s':'—',
+    'Speed Score ≥ 100':              v(p.wass,1),
+    'Burst Score ≥ 120':              v(p.burst,1),
+    // WR
+    'Age ≤ 22':                       p.age!=null?fmtAge(p.age):'—',
+    'BOY20 ≤ 2':                      p.boy20!=null?'Yr '+p.boy20:'—',
+    'BOY30 ≤ 3':                      p.boy30!=null?'Yr '+p.boy30:'—',
+    'Last YPTPA ≥ 2.5':               v(p.lastYPTPA,3),
+    'Best YPTPA ≥ 2.85':              v(p.bestYPTPA,3),
+    'Best MS Yards ≥ 35%':            p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—',
+    'Last PPG ≥ 20':                  v(p.lastPPG,1)+' PPG',
+    'Best PPG ≥ 20':                  v(p.bestPPG,1)+' PPG',
+    'BMI ≥ 27':                       v(p.bmi,2),
+    'Height ≥ 72"':                   p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—',
+    // TE
+    'Round ≤ 3':                      p.round!=null?'Rd '+p.round:'—',
+    'BOY15 ≤ 2':                      p.boy15!=null?'Yr '+p.boy15:'—',
+    'Career YPG ≥ 13':                v(p.careerYPG,1)+' YPG',
+    'Last YPTPA ≥ 1.5':               v(p.lastYPTPA,3),
+    'Best YPTPA ≥ 1.75':              v(p.bestYPTPA,3),
+    'Best MS Yards ≥ 20%':            p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—',
+    'Last PPG ≥ 11':                  v(p.lastPPG,1)+' PPG',
+    'Best PPG ≥ 13':                  v(p.bestPPG,1)+' PPG',
+    'Weight ≥ 250 lbs':               p.wt!=null?p.wt+' lbs':'—',
+    'Height ≥ 76"':                   p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—',
+  };
+  return map[markerLabel] || '—';
+}
+
+function statSquare(val, lbl, highlight) {
+  const color = highlight ? 'color:'+highlight+';' : '';
+  return '<div class="modal-stat-item"><div class="modal-stat-val" style="'+color+'">'+val+'</div><div class="modal-stat-lbl">'+lbl+'</div></div>';
+}
+
+function posStats(p, col) {
+  if(p.pos==='QB') return [
+    statSquare(p.careerCMP?fmtPct(p.careerCMP):'—','Career CMP%'),
+    statSquare(fmt(p.careerYPA,2),'Career YPA'),
+    statSquare(p.careerPYd!=null?p.careerPYd:'—','Career PYds'),
+    statSquare(p.careerPTD!=null?p.careerPTD:'—','Career PTD'),
+    statSquare(p.careerINT!=null?p.careerINT:'—','Career INT'),
+    statSquare(fmt(p.careerRuYPG,1),'Ru YPG'),
+    statSquare(p.bestPYd!=null?p.bestPYd:'—','Best PYds'),
+    statSquare(p.bestPTD!=null?p.bestPTD:'—','Best PTD'),
+    statSquare(fmt(p.lastPPG,1),'Last PPG'),
+    statSquare(fmt(p.bestPPG,1),'Best PPG',col),
+  ].join('');
+  if(p.pos==='RB') return [
+    statSquare(fmt(p.ypc,2),'YPC'),
+    statSquare(fmt(p.yptp,3),'YPTP'),
+    statSquare(p.bestRec!=null?p.bestRec:'—','Best Rec'),
+    statSquare(p.bestTotalYds!=null?p.bestTotalYds:'—','Best Yds'),
+    statSquare(fmt(p.lastPPG,1),'Last PPG'),
+    statSquare(fmt(p.bestPPG,1),'Best PPG',col),
+  ].join('');
+  if(p.pos==='WR') return [
+    statSquare(p.boy20!=null?'Yr '+p.boy20:'—','BOY20'),
+    statSquare(p.boy30!=null?'Yr '+p.boy30:'—','BOY30'),
+    statSquare(p.lastYPTPA?fmt(p.lastYPTPA,3):'—','Last YPTPA'),
+    statSquare(p.bestYPTPA?fmt(p.bestYPTPA,3):'—','Best YPTPA'),
+    statSquare(p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—','Best MS Yds'),
+    statSquare(fmt(p.lastPPG,1),'Last PPG'),
+    statSquare(fmt(p.bestPPG,1),'Best PPG',col),
+  ].join('');
+  // TE
+  return [
+    statSquare(p.boy15!=null?'Yr '+p.boy15:'—','BOY15'),
+    statSquare(p.boy20!=null?'Yr '+p.boy20:'—','BOY20'),
+    statSquare(p.lastYPTPA?fmt(p.lastYPTPA,3):'—','Last YPTPA'),
+    statSquare(p.bestYPTPA?fmt(p.bestYPTPA,3):'—','Best YPTPA'),
+    statSquare(p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—','Best MS Yds'),
+    statSquare(p.careerYPG?fmt(p.careerYPG,1):'—','Career YPG'),
+    statSquare(fmt(p.lastPPG,1),'Last PPG'),
+    statSquare(fmt(p.bestPPG,1),'Best PPG',col),
+  ].join('');
 }
 
 function renderCards(){
@@ -359,14 +477,14 @@ function renderCards(){
     const col=posColor(p.pos);const g=p.grade||0;
     const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
     const src=hshotSrc(p);
-    const rankLabel=p.rank!==999?'#'+p.rank+' OVERALL':'UNRANKED';
+    const rl=rankLabel(p,list);
     const metrics=cardMetrics(p).map(m=>'<div class="metric-item"><span class="metric-val">'+m.v+'</span><span class="metric-lbl">'+m.l+'</span></div>').join('');
     let dots='';
     for(let i=0;i<mx;i++)dots+='<div class="marker-dot '+(i<mk?'hit':'miss')+'" style="background:'+(i<mk?col:'')+'"></div>';
     const idx=PLAYERS.indexOf(p);
     html+='<div class="player-card" style="--pos-color:'+col+'" onclick="openModal('+idx+')">';
     html+='<div class="card-body">';
-    html+='<div class="card-header"><div class="card-rank">'+rankLabel+'</div><div class="card-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+'</div></div>';
+    html+='<div class="card-header"><div class="card-rank">'+rl+'</div><div class="card-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+'</div></div>';
     html+='<div class="card-name-row">';
     html+='<div class="card-avatar" style="--pos-color:'+col+'">';
     if(src)html+='<img src="'+src+'" alt="'+p.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
@@ -390,12 +508,12 @@ function renderTable(){
   const list=getFiltered();
   if(!list.length){document.getElementById('tableBody').innerHTML='';document.getElementById('emptyState').style.display='block';return;}
   document.getElementById('emptyState').style.display='none';
-  document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>Pos</th><th>School</th><th>Conf</th><th>Age</th><th>Markers</th><th>Grade</th><th>Ath%</th><th>Prod%</th><th>PFF</th><th>Wt</th><th>40-Yd</th><th>WaSS</th><th>Best PPG</th></tr>';
+  document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>Pos</th><th>School</th><th>Conf</th><th>Age</th><th>Markers</th><th>Grade</th><th>PFF</th><th>Wt</th><th>40-Yd</th><th>WaSS</th><th>Best PPG</th></tr>';
   let html='';
-  list.forEach(p=>{
+  list.forEach((p,i)=>{
     const col=posColor(p.pos);const idx=PLAYERS.indexOf(p);
     html+='<tr onclick="openModal('+idx+')">';
-    html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--muted);font-weight:700">'+(p.rank!==999?'#'+p.rank:'—')+'</td>';
+    html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--muted);font-weight:700">'+(i+1)+'</td>';
     html+='<td style="font-weight:600">'+p.name+'</td>';
     html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;font-weight:700;color:'+col+'">'+p.pos+'</td>';
     html+='<td>'+p.school+'</td>';
@@ -403,8 +521,6 @@ function renderTable(){
     html+='<td>'+fmtAge(p.age)+'</td>';
     html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:'+col+'">'+p.markers+'</td>';
     html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</td>';
-    html+='<td>'+(p.ath!=null?(p.ath*100).toFixed(0)+'%':'—')+'</td>';
-    html+='<td>'+(p.prod!=null?(p.prod*100).toFixed(0)+'%':'—')+'</td>';
     html+='<td>'+(p.pff||'—')+'</td>';
     html+='<td>'+(p.wt?p.wt+' lbs':'—')+'</td>';
     html+='<td>'+(p.dash||'—')+'</td>';
@@ -421,85 +537,54 @@ function openModal(idx){
   const col=posColor(p.pos);const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
   const src=hshotSrc(p);
   const markers=evalMarkers(p);
-  
-  // Mini bar helper
-  function mbar(lbl,val,max,color){
-    const pct=max?Math.min(100,(val/max)*100):0;
-    const display=val!=null&&!isNaN(val)?typeof val==='number'?val<10?val.toFixed(2):val.toFixed(0):val:'—';
-    return '<div class="mini-bar-row"><div class="mini-bar-lbl">'+lbl+'</div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div><div class="mini-bar-val">'+display+'</div></div>';
-  }
+  const list=getFiltered();
+  const rl=rankLabel(p,list);
 
-  // Position stats
-  let statsHtml='';
-  if(p.pos==='QB'){
-    statsHtml+=mbar('YPA',p.careerYPA,12,col);
-    statsHtml+=mbar('CMP%',p.careerCMP?p.careerCMP*100:null,100,col);
-    statsHtml+=mbar('Career PTD',p.careerPTD,100,col);
-    statsHtml+=mbar('Career INT',p.careerINT,50,col);
-    statsHtml+=mbar('Best PPG',p.bestPPG,35,col);
-    statsHtml+=mbar('Ru YPG',p.careerRuYPG,80,col);
-  } else if(p.pos==='RB'){
-    statsHtml+=mbar('YPC',p.ypc,8,col);
-    statsHtml+=mbar('YPTP',p.yptp,2,col);
-    statsHtml+=mbar('Best Rec',p.bestRec,70,col);
-    statsHtml+=mbar('Best Yds',p.bestTotalYds,1800,col);
-    statsHtml+=mbar('Last PPG',p.lastPPG,35,col);
-    statsHtml+=mbar('Best PPG',p.bestPPG,35,col);
-  } else if(p.pos==='WR'){
-    statsHtml+=mbar('Last YPTPA',p.lastYPTPA,6,col);
-    statsHtml+=mbar('Best YPTPA',p.bestYPTPA,6,col);
-    statsHtml+=mbar('Best MS Yds',p.bestMSYards?p.bestMSYards*100:null,100,col);
-    statsHtml+=mbar('Last PPG',p.lastPPG,35,col);
-    statsHtml+=mbar('Best PPG',p.bestPPG,35,col);
-    statsHtml+=mbar('BOA20',p.boa20,25,col);
-  } else {
-    statsHtml+=mbar('Last YPTPA',p.lastYPTPA,3,col);
-    statsHtml+=mbar('Best YPTPA',p.bestYPTPA,3,col);
-    statsHtml+=mbar('Best MS Yds',p.bestMSYards?p.bestMSYards*100:null,100,col);
-    statsHtml+=mbar('Career YPG',p.careerYPG,60,col);
-    statsHtml+=mbar('Last PPG',p.lastPPG,25,col);
-    statsHtml+=mbar('Best PPG',p.bestPPG,25,col);
-  }
-
-  // Marker checklist HTML
+  // Marker checklist with actual values
   let checkHtml='<div class="marker-checklist">';
   markers.forEach(m=>{
+    const val=markerValue(p,m.label);
     checkHtml+='<div class="marker-item '+(m.hit?'hit':'miss')+'">';
     checkHtml+='<div class="marker-icon">'+(m.hit?'✓':'✗')+'</div>';
-    checkHtml+='<div class="marker-text">'+m.label+'</div>';
+    checkHtml+='<div style="flex:1;min-width:0"><div class="marker-text">'+m.label+'</div>';
+    checkHtml+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:'+(m.hit?col:'var(--muted)')+';margin-top:2px">'+val+'</div></div>';
     checkHtml+='</div>';
   });
   checkHtml+='</div>';
 
-  document.getElementById('modalContent').innerHTML=
-    '<div class="modal-headshot-wrap">'+
-      (src?'<img src="'+src+'" alt="'+p.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">':'')+
-      '<div class="modal-headshot-fallback" style="'+(src?'display:none':'')+'">'+p.pos+'</div>'+
-      '<div class="modal-headshot-overlay"></div>'+
-      '<div class="modal-headshot-info">'+
-        '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+(p.rank!==999?' · #'+p.rank+' OVERALL':' · UNRANKED')+'</div>'+
-        '<div class="modal-name">'+p.name+'</div>'+
-        '<div class="modal-school">'+p.school+' · '+p.conf+(p.age?' · Age '+fmtAge(p.age):'')+'</div>'+
+  // Circular modal headshot
+  const avatarHtml=
+    '<div style="display:flex;align-items:center;gap:20px;padding:24px 28px;border-bottom:1px solid var(--border)">'+
+      '<div style="width:90px;height:90px;border-radius:50%;overflow:hidden;flex-shrink:0;border:3px solid '+col+';background:var(--surface2)">'+
+        (src?'<img src="'+src+'" alt="'+p.name+'" style="width:100%;height:100%;object-fit:cover;object-position:center 20%" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">':'')+
+        '<div style="'+(src?'display:none':'')+'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',cursive;font-size:28px;color:var(--muted)">'+p.pos+'</div>'+
       '</div>'+
-    '</div>'+
+      '<div>'+
+        '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'" style="margin-bottom:6px">'+p.pos+' · '+rl+'</div>'+
+        '<div class="modal-name" style="font-size:34px">'+p.name+'</div>'+
+        '<div class="modal-school" style="color:var(--muted);font-size:13px">'+p.school+' · '+p.conf+(p.age?' · Age '+fmtAge(p.age):'')+'</div>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById('modalContent').innerHTML=
+    avatarHtml+
     '<div class="modal-grade-row">'+
       '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Final Grade</div></div>'+
       '<div class="modal-grade-item"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers Hit</div></div>'+
-      '<div class="modal-grade-item"><div class="val">'+(p.ath!=null?(p.ath*100).toFixed(0)+'%':'—')+'</div><div class="lbl">Athleticism</div></div>'+
-      '<div class="modal-grade-item"><div class="val">'+(p.prod!=null?(p.prod*100).toFixed(0)+'%':'—')+'</div><div class="lbl">Production</div></div>'+
       '<div class="modal-grade-item"><div class="val c-gold">'+(p.pff||'—')+'</div><div class="lbl">PFF Markers</div></div>'+
+      '<div class="modal-grade-item"><div class="val">'+(p.round?'Rd '+p.round:'—')+'</div><div class="lbl">Draft Round</div></div>'+
     '</div>'+
     '<div class="modal-body">'+
-      '<div class="modal-section"><div class="modal-section-title">Marker System — '+mx+' Markers ('+mk+' Hit)</div>'+checkHtml+'</div>'+
-      '<div class="modal-section"><div class="modal-section-title">Key Production Stats</div>'+statsHtml+'</div>'+
+      '<div class="modal-section"><div class="modal-section-title">Marker System — '+mx+' Total ('+mk+' Hit)</div>'+checkHtml+'</div>'+
+      '<div class="modal-section"><div class="modal-section-title">Key Production Stats</div><div class="modal-stats-grid">'+posStats(p,col)+'</div></div>'+
       '<div class="modal-section"><div class="modal-section-title">Athleticism & Combine</div>'+
         '<div class="modal-stats-grid">'+
-          '<div class="modal-stat-item"><div class="modal-stat-val">'+(p.wt?p.wt+' lbs':'—')+'</div><div class="modal-stat-lbl">Weight</div></div>'+
-          '<div class="modal-stat-item"><div class="modal-stat-val">'+(p.ht?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—')+'</div><div class="modal-stat-lbl">Height</div></div>'+
-          '<div class="modal-stat-item"><div class="modal-stat-val" style="color:'+(p.dash&&p.dash<=4.4?'var(--green)':'var(--text)')+'">'+(p.dash?p.dash+'s':'—')+'</div><div class="modal-stat-lbl">40-Yard Dash</div></div>'+
-          '<div class="modal-stat-item"><div class="modal-stat-val" style="color:'+(p.wass&&p.wass>=100?'var(--green)':'var(--text)')+'">'+(p.wass?fmt(p.wass,1):'—')+'</div><div class="modal-stat-lbl">Speed Score</div></div>'+
-          '<div class="modal-stat-item"><div class="modal-stat-val" style="color:'+(p.burst&&p.burst>=120?'var(--green)':'var(--text)')+'">'+(p.burst?fmt(p.burst,1):'—')+'</div><div class="modal-stat-lbl">Burst Score</div></div>'+
-          '<div class="modal-stat-item"><div class="modal-stat-val">'+(p.bmi?fmt(p.bmi,2):'—')+'</div><div class="modal-stat-lbl">BMI</div></div>'+
+          statSquare(p.ht?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—','Height')+ 
+          statSquare(p.wt?p.wt+' lbs':'—','Weight')+
+          statSquare(p.dash?p.dash+'s':'—','40-Yard Dash', p.dash&&p.dash<=4.4?'var(--green)':null)+
+          statSquare(p.wass?fmt(p.wass,1):'—','Speed Score', p.wass&&p.wass>=100?'var(--green)':null)+
+          statSquare(p.burst?fmt(p.burst,1):'—','Burst Score', p.burst&&p.burst>=120?'var(--green)':null)+
+          statSquare(p.bmi?fmt(p.bmi,2):'—','BMI')+
         '</div>'+
       '</div>'+
     '</div>';
