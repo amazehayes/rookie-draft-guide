@@ -170,6 +170,24 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="filter-btn" data-pos="TE">TE</button>
   </div>
   <input type="text" class="search-box" id="searchBox" placeholder="Search player or school...">
+  <select class="sort-select" id="labelFilter">
+    <option value="ALL">All Labels</option>
+    <option value="Greatest Prospect Since...">🏆 Greatest Prospect Since...</option>
+    <option value="Iffy, But He Runs">🏃 Iffy, But He Runs</option>
+    <option value="N.F.L. = Not For Long">⚠️ N.F.L. = Not For Long</option>
+    <option value="Late-Round Target">🎯 Late-Round Target</option>
+    <option value="Fine, I'll Do It Myself">💪 Fine, I'll Do It Myself</option>
+    <option value="Try To Tackle Me">⚡ Try To Tackle Me</option>
+    <option value="The McConkey List">🏆 The McConkey List</option>
+    <option value="The N'Keal List">⚠️ The N'Keal List</option>
+    <option value="Phreshman Phenom">⚠️ Phreshman Phenom</option>
+    <option value="Zone Crusher">💥 Zone Crusher</option>
+    <option value="Crushed by Zone">🔒 Crushed by Zone</option>
+    <option value="The Bowers List">🏆 The Bowers List</option>
+    <option value="Analytical Darling">⭐ Analytical Darling</option>
+    <option value="You Have My Attention">✏️ You Have My Attention</option>
+    <option value="_ANY">— Has Any Label —</option>
+  </select>
   <select class="sort-select" id="sortSelect">
     <option value="rank">Dynasty Value</option>
     <option value="grade">Final Grade</option>
@@ -324,12 +342,17 @@ function dynastySort(p){
   return grade;
 }
 
-let currentPos='ALL',currentSort='rank',searchQuery='',viewMode='cards';
+let currentPos='ALL',currentSort='rank',searchQuery='',viewMode='cards',currentLabel='ALL';
 
 function getFiltered(){
   return PLAYERS.filter(p=>{
     if(currentPos!=='ALL'&&p.pos!==currentPos)return false;
     if(searchQuery){const q=searchQuery.toLowerCase();if(!p.name.toLowerCase().includes(q)&&!(p.school||'').toLowerCase().includes(q))return false;}
+    if(currentLabel!=='ALL'){
+      const t=getTag(p);
+      if(currentLabel==='_ANY'){if(!t)return false;}
+      else{if(!t||t.label!==currentLabel)return false;}
+    }
     return true;
   }).sort((a,b)=>{
     switch(currentSort){
@@ -534,7 +557,7 @@ function renderCards(){
     html+='<div class="marker-section"><div class="marker-section-label">Markers '+mk+'/'+mx+'</div><div class="marker-dots">'+dots+'</div></div>';
     html+='<div class="marker-section" style="margin-top:8px"><div class="marker-section-label">PFF Markers '+pmk+'/'+pmx+'</div><div class="marker-dots">'+pdots+'</div></div>';
     const tag=tagHTML(p);
-    if(tag)html+=tag;
+    html+=tag||'<div style="height:26px;margin-top:8px"></div>';
     html+='<div class="card-metrics">'+metrics+'</div>';
     html+='</div></div>';
   });
@@ -546,7 +569,7 @@ function renderTable(){
   const list=getFiltered();
   if(!list.length){document.getElementById('tableBody').innerHTML='';document.getElementById('emptyState').style.display='block';return;}
   document.getElementById('emptyState').style.display='none';
-  document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>Pos</th><th>School</th><th>Age</th><th>Markers</th><th>PFF Mkrs</th><th>Grade</th><th>Ltr</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
+  document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>Pos</th><th>School</th><th>Age</th><th>Markers</th><th>PFF Mkrs</th><th>Grade</th><th>Ltr</th><th>Label</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
   let html='';
   list.forEach((p,i)=>{
     const col=posColor(p.pos);const idx=PLAYERS.indexOf(p);const lg=letterGrade(p.grade);
@@ -566,6 +589,8 @@ function renderTable(){
     html+='<td style="font-weight:700;color:var(--accent3)">'+(p.pff!=null?Math.round(p.pff):'—')+'</td>';
     html+='<td style="font-weight:700;color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</td>';
     html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:'+lg.c+'">'+lg.l+'</td>';
+    const rowTag=getTag(p);
+    html+='<td>'+(rowTag?'<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;white-space:nowrap;color:'+rowTag.color+';background:'+rowTag.color+'18;border:1px solid '+rowTag.color+'44">'+rowTag.icon+' '+rowTag.label+'</span>':'<span style="color:var(--muted);font-size:10px">—</span>')+'</td>';
     html+='<td style="color:var(--muted)">'+(p.overall!=null?'#'+p.overall:'—')+'</td>';
     html+='<td>'+(p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—')+'</td>';
     html+='<td>'+(p.dash!=null?p.dash+'s':'—')+'</td>';
@@ -653,6 +678,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentPos=btn.dataset.pos;render();});
 });
 document.getElementById('searchBox').addEventListener('input',e=>{searchQuery=e.target.value.trim();render();});
+document.getElementById('labelFilter').addEventListener('change',e=>{currentLabel=e.target.value;render();});
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;render();});
 document.getElementById('cardViewBtn').addEventListener('click',()=>{viewMode='cards';document.getElementById('cardViewBtn').classList.add('active');document.getElementById('tableViewBtn').classList.remove('active');render();});
 document.getElementById('tableViewBtn').addEventListener('click',()=>{viewMode='table';document.getElementById('tableViewBtn').classList.add('active');document.getElementById('cardViewBtn').classList.remove('active');render();});
