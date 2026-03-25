@@ -217,7 +217,7 @@ td{padding:10px 14px;white-space:nowrap;}
 </div>
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modal">
-    <button class="close-btn" onclick="closeModal()">✕</button>
+    <button class="close-btn" id="closeModalBtn">✕</button>
     <div id="modalContent"></div>
   </div>
 </div>
@@ -523,11 +523,12 @@ function cardMetrics(p){
 
 function renderCards(){
   const list=getFiltered();
+  _lastRenderedList=list;
   const container=document.getElementById('cardsContainer');
   if(!list.length){container.innerHTML='';document.getElementById('emptyState').style.display='block';return;}
   document.getElementById('emptyState').style.display='none';
   let html='';
-  list.forEach(p=>{
+  list.forEach((p,i)=>{
     const col=posColor(p.pos);const g=p.grade||0;
     const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
     const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
@@ -537,8 +538,7 @@ function renderCards(){
     let dots='',pdots='';
     for(let i=0;i<mx;i++)dots+='<div class="marker-dot '+(i<mk?'hit':'miss')+'" style="background:'+(i<mk?col:'')+'"></div>';
     for(let i=0;i<pmx;i++)pdots+='<div class="marker-dot '+(i<pmk?'hit':'miss')+'" style="background:'+(i<pmk?'var(--accent3)':'')+'"></div>';
-    const idx=PLAYERS.indexOf(p);
-    html+='<div class="player-card" style="--pos-color:'+col+'" onclick="openModal('+idx+')">';
+    html+='<div class="player-card" style="--pos-color:'+col+'" onclick="openModalFromList('+i+')">';
     html+='<div class="card-body">';
     html+='<div class="card-header"><div class="card-rank">'+rl+'</div><div class="card-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+'</div></div>';
     html+='<div class="card-name-row">';
@@ -568,13 +568,14 @@ function renderCards(){
 
 function renderTable(){
   const list=getFiltered();
+  _lastRenderedList=list;
   if(!list.length){document.getElementById('tableBody').innerHTML='';document.getElementById('emptyState').style.display='block';return;}
   document.getElementById('emptyState').style.display='none';
   document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Markers</th><th>PFF Mkrs</th><th>Grade</th><th>Ltr</th><th>Label</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
   let html='';
   list.forEach((p,i)=>{
-    const col=posColor(p.pos);const idx=PLAYERS.indexOf(p);const lg=letterGrade(p.grade);
-    html+='<tr onclick="openModal('+idx+')">';
+    const col=posColor(p.pos);const lg=letterGrade(p.grade);
+    html+='<tr onclick="openModalFromList('+i+')">';
     html+='<td style="color:var(--muted);font-size:10px;font-weight:700">'+(i+1)+'</td>';
     html+='<td><div class="table-name-cell">';
     html+='<div class="table-avatar" style="--pos-color:'+col+'">';
@@ -602,8 +603,14 @@ function renderTable(){
   document.getElementById('resultsCount').textContent=list.length+' player'+(list.length!==1?'s':'')+' shown';
 }
 
-function openModal(idx){
-  const p=PLAYERS[idx];if(!p)return;
+// Cache of last rendered list for modal lookup
+let _lastRenderedList=[];
+function openModalFromList(i){
+  const p=_lastRenderedList[i];if(!p)return;
+  openModal(p);
+}
+function openModal(p){
+  if(!p)return;
   const col=posColor(p.pos);
   const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
   const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
@@ -685,6 +692,7 @@ document.getElementById('labelFilter').addEventListener('change',e=>{currentLabe
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;render();});
 document.getElementById('cardViewBtn').addEventListener('click',()=>{viewMode='cards';document.getElementById('cardViewBtn').classList.add('active');document.getElementById('tableViewBtn').classList.remove('active');render();});
 document.getElementById('tableViewBtn').addEventListener('click',()=>{viewMode='table';document.getElementById('tableViewBtn').classList.add('active');document.getElementById('cardViewBtn').classList.remove('active');render();});
+document.getElementById('closeModalBtn').addEventListener('click',closeModal);
 document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
