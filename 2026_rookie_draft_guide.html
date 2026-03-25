@@ -237,7 +237,11 @@ function fmt(v,d=1){if(v==null||isNaN(v))return'—';return parseFloat(v).toFixe
 function fmtPct(v){if(v==null||isNaN(v))return'—';return(v*100).toFixed(1)+'%';}
 function fmtAge(v){if(!v||isNaN(v))return'—';const yr=Math.floor(v);const mo=Math.round((v-yr)*12);return yr+'y '+mo+'m';}
 const LOGO_BASE='logos/';
-function hshotSrc(p){return p.cfr_id?HEADSHOT_BASE+p.cfr_id+'.jpeg':null;}
+function hshotSrc(p){
+  if(p.cfr_id) return HEADSHOT_BASE+p.cfr_id+'.jpeg';
+  if(p.pfr_id) return HEADSHOT_BASE+p.pfr_id+'.jpeg';
+  return null;
+}
 function logoSrc(school){
   if(!school)return null;
   // Special cases
