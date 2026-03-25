@@ -723,7 +723,7 @@ async function switchYear(yr) {
   if(!yearCache[yr]) {
     document.getElementById('resultsCount').textContent = 'Loading ' + yr + ' class...';
     try {
-      const res = await fetch('data/' + yr + '.json?v=2');
+      const res = await fetch('data/' + yr + '.json?v=3');
       yearCache[yr] = await res.json();
     } catch(e) {
       document.getElementById('resultsCount').textContent = 'Error loading ' + yr + ' data.';
