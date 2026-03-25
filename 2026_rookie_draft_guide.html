@@ -102,6 +102,8 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:740px;max-height:92vh;overflow-y:auto;transform:scale(.96);transition:transform .2s;position:relative;}
 .modal-overlay.open .modal{transform:scale(1);}
+.close-btn{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;z-index:20;}
+.close-btn:hover{color:var(--text);border-color:var(--text);}
 .modal-header{display:flex;align-items:center;gap:18px;padding:22px 26px;border-bottom:1px solid var(--border);position:relative;}
 .modal-header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--pos-color,var(--accent)),transparent);}
 .modal-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--pos-color,var(--accent));background:var(--surface2);}
@@ -110,8 +112,6 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-pos-badge{font-size:9px;font-weight:700;letter-spacing:2px;padding:3px 8px;border-radius:3px;display:inline-block;margin-bottom:7px;text-transform:uppercase;}
 .modal-name{font-family:'Bebas Neue',cursive;font-size:36px;letter-spacing:2px;line-height:1;margin-bottom:4px;}
 .modal-school{font-size:13px;color:var(--muted);}
-.close-btn{position:absolute;top:18px;right:18px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
-.close-btn:hover{color:var(--text);border-color:var(--text);}
 .modal-grade-row{display:flex;gap:0;border-bottom:1px solid var(--border);}
 .modal-grade-item{flex:1;padding:14px 18px;border-right:1px solid var(--border);text-align:center;}
 .modal-grade-item:last-child{border-right:none;}
@@ -217,7 +217,6 @@ td{padding:10px 14px;white-space:nowrap;}
 </div>
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modal">
-    <button class="close-btn" id="closeModalBtn">✕</button>
     <div id="modalContent"></div>
   </div>
 </div>
@@ -633,6 +632,7 @@ function openModal(p){
   for(let i=0;i<pmx;i++)pdots+='<div class="marker-dot '+(i<pmk?'hit':'miss')+'" style="background:'+(i<pmk?'var(--accent3)':'')+'"></div>';
 
   document.getElementById('modalContent').innerHTML=
+    '<button class="close-btn" onclick="closeModal()">✕</button>'+
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+'">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
@@ -692,7 +692,6 @@ document.getElementById('labelFilter').addEventListener('change',e=>{currentLabe
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;render();});
 document.getElementById('cardViewBtn').addEventListener('click',()=>{viewMode='cards';document.getElementById('cardViewBtn').classList.add('active');document.getElementById('tableViewBtn').classList.remove('active');render();});
 document.getElementById('tableViewBtn').addEventListener('click',()=>{viewMode='table';document.getElementById('tableViewBtn').classList.add('active');document.getElementById('cardViewBtn').classList.remove('active');render();});
-document.getElementById('closeModalBtn').addEventListener('click',closeModal);
 document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
