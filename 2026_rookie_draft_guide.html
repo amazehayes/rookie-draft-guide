@@ -238,9 +238,19 @@ function fmtPct(v){if(v==null||isNaN(v))return'—';return(v*100).toFixed(1)+'%'
 function fmtAge(v){if(!v||isNaN(v))return'—';const yr=Math.floor(v);const mo=Math.round((v-yr)*12);return yr+'y '+mo+'m';}
 const LOGO_BASE='logos/';
 function hshotSrc(p){
-  if(p.cfr_id) return HEADSHOT_BASE+p.cfr_id+'.jpeg';
-  if(p.pfr_id) return HEADSHOT_BASE+p.pfr_id+'.jpeg';
+  // Returns {primary, fallback} — try primary first, fall back to secondary on 404
+  if(p.cfr_id && p.pfr_id) return {primary: HEADSHOT_BASE+p.cfr_id+'.jpeg', fallback: HEADSHOT_BASE+p.pfr_id+'.jpeg'};
+  if(p.cfr_id) return {primary: HEADSHOT_BASE+p.cfr_id+'.jpeg', fallback: null};
+  if(p.pfr_id) return {primary: HEADSHOT_BASE+p.pfr_id+'.jpeg', fallback: null};
   return null;
+}
+function hshotImg(p, cls, style){
+  const s = hshotSrc(p);
+  if(!s) return '';
+  const fb = s.fallback
+    ? 'this.onerror=function(){this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'};this.src=\''+s.fallback+'\''
+    : 'this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'';
+  return '<img src="'+s.primary+'" class="'+cls+'" style="'+(style||'')+'" onerror="'+fb+'">';
 }
 function logoSrc(school){
   if(!school)return null;
@@ -521,7 +531,7 @@ function renderCards(){
     const col=posColor(p.pos);const g=p.grade||0;
     const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
     const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
-    const src=hshotSrc(p);const rl=rankLabel(p,list);
+    const rl=rankLabel(p,list);
     const lg=letterGrade(g);
     const metrics=cardMetrics(p).map(m=>'<div class="metric-item"><span class="metric-val">'+m.v+'</span><span class="metric-lbl">'+m.l+'</span></div>').join('');
     let dots='',pdots='';
@@ -533,8 +543,8 @@ function renderCards(){
     html+='<div class="card-header"><div class="card-rank">'+rl+'</div><div class="card-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+'</div></div>';
     html+='<div class="card-name-row">';
     html+='<div class="card-avatar" style="border-color:'+col+'">';
-    if(src)html+='<img src="'+src+'" alt="'+p.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
-    html+='<div class="card-avatar-fallback" style="'+(src?'display:none':'')+';color:'+col+'">'+p.pos+'</div>';
+    html+=hshotImg(p,'','')||'';
+    html+='<div class="card-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>';
     html+='</div>';
     html+='<div style="flex:1;min-width:0"><div class="card-name">'+p.name+'</div><div class="card-school">'+p.school+' <span>· '+p.conf+'</span></div></div>';
     html+='<img src="'+logoSrc(p.school)+'" class="school-logo" alt="" onerror="this.style.display=\'none\'">';
@@ -564,13 +574,12 @@ function renderTable(){
   let html='';
   list.forEach((p,i)=>{
     const col=posColor(p.pos);const idx=PLAYERS.indexOf(p);const lg=letterGrade(p.grade);
-    const src=hshotSrc(p);
     html+='<tr onclick="openModal('+idx+')">';
     html+='<td style="color:var(--muted);font-size:10px;font-weight:700">'+(i+1)+'</td>';
     html+='<td><div class="table-name-cell">';
     html+='<div class="table-avatar" style="--pos-color:'+col+'">';
-    if(src)html+='<img src="'+src+'" alt="'+p.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
-    html+='<div class="table-avatar-fallback" style="'+(src?'display:none':'display:flex')+'">'+p.pos+'</div>';
+    html+=hshotImg(p,'','')||'';
+    html+='<div class="table-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'display:flex')+'">'+p.pos+'</div>';
     html+='</div>';
     html+='<span style="font-weight:600">'+p.name+'</span></div></td>';
     html+='<td><img src="'+logoSrc(p.school)+'" class="school-logo-sm" alt="'+p.school+'" onerror="this.style.display=\'none\'">'+p.school+'</td>';
@@ -598,7 +607,6 @@ function openModal(idx){
   const col=posColor(p.pos);
   const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
   const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
-  const src=hshotSrc(p);
   const markers=evalMarkers(p);
   const list=getFiltered();
   const rl=rankLabel(p,list);
@@ -620,8 +628,8 @@ function openModal(idx){
   document.getElementById('modalContent').innerHTML=
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+'">'+
-        (src?'<img src="'+src+'" alt="'+p.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">':'')+
-        '<div class="modal-avatar-fallback" style="'+(src?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
+        hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
+        '<div class="modal-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
       '</div>'+
       '<div style="flex:1;min-width:0">'+
         '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+' · '+rl+'</div>'+
