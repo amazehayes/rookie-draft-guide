@@ -704,7 +704,7 @@ function pffStats(p,col){
     statSq(fmtPct(p.career1D),'Career 1st Downs/Att'),
     statSq(fmt(p.careerYACO,1),'Career YACO/Att'),
     statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
-    statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
+    statSq(fmtPct(p.careerTPRR),'Career Tgts/Route Run'),
     statSq(fmtPct(p.bestBA),'Best Broken Tkls/Att',col),
     statSq(fmtPct(p.bestMTF),'Best Miss Tkls Forced/Att',col),
     statSq(fmt(p.bestYACO,1),'Best YACO/Att'),
@@ -712,21 +712,21 @@ function pffStats(p,col){
   ].join('');
   if(p.pos==='WR') return[
     statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
-    statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
+    statSq(fmtPct(p.careerTPRR),'Career Tgts/Route Run'),
     statSq(fmtPct(p.career1DRR),'Career 1st Downs/Route'),
     statSq(fmt(p.careerYACR,1),'Career YAC/Route'),
     statSq(fmt(p.careerMTF,2),'Career Miss Tkls Forced',col),
     statSq(fmtPct(p.careerSlot),'Career Slot Rate'),
     statSq(fmt(p.bestYPRR,1),'Best Yds/Route Run',col),
-    statSq(fmt(p.bestTPRR,1),'Best Tgts/Route Run'),
+    statSq(fmtPct(p.bestTPRR),'Best Tgts/Route Run'),
   ].join('');
   // TE
   return[
     statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
-    statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
+    statSq(fmtPct(p.careerTPRR),'Career Tgts/Route Run'),
     statSq(fmtPct(p.career1DRR),'Career 1st Downs/Route'),
     statSq(fmt(p.careerYACR,1),'Career YAC/Route'),
-    statSq(fmt(p.careerMTF,2),'Career Miss Tkls Forced',col),
+    statSq(fmtPct(p.careerMTF),'Career Miss Tkls Forced',col),
     statSq(fmtPct(p.careerSlot),'Career Slot Rate'),
     statSq(fmt(p.avgPassBlock,1),'Avg Pass Block Grade',col),
     statSq(fmt(p.avgRunBlock,1),'Avg Run Block Grade'),
@@ -1375,7 +1375,7 @@ function compStatRows(pos) {
       {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
       {l:'Best YPRR', k:'bestYPRR', fmt:'dec'},
       {l:'Career YPRR Zone', k:'careerYPRRzone', fmt:'dec'},
-      {l:'Career TPRR', k:'careerTPRR', fmt:'dec'},
+      {l:'Career TPRR', k:'careerTPRR', fmt:'pct'},
       {l:'Best YPTPA', k:'bestYPTPA', fmt:'dec'},
       {l:'Best MS Yards%', k:'bestMSYards', fmt:'pct'},
       {l:'BOY 20%', k:'boy20', fmt:'int', low:true},
@@ -1387,7 +1387,7 @@ function compStatRows(pos) {
     TE: [
       {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
       {l:'Best YPRR', k:'bestYPRR', fmt:'dec'},
-      {l:'Career TPRR', k:'careerTPRR', fmt:'dec'},
+      {l:'Career TPRR', k:'careerTPRR', fmt:'pct'},
       {l:'Best YPTPA', k:'bestYPTPA', fmt:'dec'},
       {l:'Best MS Yards%', k:'bestMSYards', fmt:'pct'},
       {l:'Career YPG', k:'careerYPG', fmt:'dec'},
