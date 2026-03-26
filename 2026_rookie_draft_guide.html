@@ -59,7 +59,9 @@
 .comp-placeholder{display:flex;align-items:center;justify-content:center;height:300px;color:var(--muted);font-size:11px;letter-spacing:1px;border:1px dashed var(--border);border-radius:10px;}
 /* ---- BREAKDOWN PAGE ---- */
 .breakdown-controls{padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
-.breakdown-chart-wrap{padding:16px 32px;}
+.breakdown-chart-wrap{padding:16px 32px;display:flex;gap:24px;align-items:flex-start;}
+.breakdown-chart-left{flex:0 0 38%;}
+.breakdown-chart-right{flex:1;}
 .breakdown-table-wrap{padding:0 32px 32px;}
 .bk-table{width:100%;border-collapse:collapse;font-size:11px;}
 .bk-table th{text-align:left;padding:8px 10px;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);cursor:pointer;}
@@ -347,8 +349,8 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="format-btn" data-bksort="year">Year</button>
   </div>
   <div class="breakdown-chart-wrap">
-    <canvas id="breakdownChart" height="120"></canvas>
-    <canvas id="breakdownPosChart" style="margin-top:20px" height="120"></canvas>
+    <div class="breakdown-chart-left" style="height:280px"><canvas id="breakdownChart"></canvas></div>
+    <div class="breakdown-chart-right" style="height:280px"><canvas id="breakdownPosChart"></canvas></div>
   </div>
   <div class="breakdown-table-wrap">
     <table class="bk-table"><thead id="bkHead"></thead><tbody id="bkBody"></tbody></table>
@@ -1421,6 +1423,7 @@ function renderBreakdown() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend:{display:false},
         title:{display:true,text:'Class Average Grade (2005–2026)',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
@@ -1448,6 +1451,7 @@ function renderBreakdown() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend:{labels:{color:'#e8edf3',font:{family:'IBM Plex Mono',size:9}}},
         title:{display:true,text:'Average Grade by Position Group',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
