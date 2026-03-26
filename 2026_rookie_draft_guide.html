@@ -205,10 +205,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .bg-rb{background:color-mix(in srgb,var(--pos-rb) 15%,transparent);color:var(--pos-rb);border:1px solid color-mix(in srgb,var(--pos-rb) 30%,transparent);}
 .bg-wr{background:color-mix(in srgb,var(--pos-wr) 15%,transparent);color:var(--pos-wr);border:1px solid color-mix(in srgb,var(--pos-wr) 30%,transparent);}
 .bg-te{background:color-mix(in srgb,var(--pos-te) 15%,transparent);color:var(--pos-te);border:1px solid color-mix(in srgb,var(--pos-te) 30%,transparent);}
-.year-tabs{display:flex;gap:3px;align-items:center;overflow-x:auto;max-width:70vw;}
-.year-tab{background:none;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:5px 10px;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:1px;}
-.year-tab:hover{color:var(--text);}
-.year-tab.active{background:var(--accent);color:var(--bg);}
+/* year-tabs CSS moved to year-bar section */
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
@@ -933,6 +930,8 @@ async function switchYear(yr) {
 
   renderHeroStats();
   render();
+  if(activePage === 'rankings') renderRankings();
+  allPlayersCache = null;
 }
 
 // Override getFiltered to use activeYear data
@@ -1518,15 +1517,7 @@ document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
   });
 });
 
-// Re-render rankings when year switches
-const _origSwitchYear = switchYear;
-async function switchYear(yr) {
-  await _origSwitchYear(yr);
-  if(activePage === 'rankings') renderRankings();
-  if(activePage === 'breakdown') renderBreakdown();
-  allPlayersCache = null; // reset comparison cache on year switch
-  if(activePage === 'breakdown') renderBreakdown();
-}
+// year switch re-renders handled inside switchYear directly
 
 </script>
 </body>
