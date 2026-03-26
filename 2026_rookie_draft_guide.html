@@ -489,19 +489,59 @@ function tagHTML(p){
 }
 
 // ---- DYNASTY SORT ----
-function dynastySort(p){
-  const pos=p.pos,round=p.round,overall=p.overall,grade=p.grade||0;
-  if(round===8)                                            return grade*0.5;
-  if(pos==='QB'&&round===1)                                return grade*1.05;
-  if(pos==='QB'&&round>1)                                  return grade*0.85;
-  if(pos==='TE'&&overall!=null&&overall<=15)               return grade*0.97;
-  if(pos==='TE'&&overall!=null&&overall>15&&round!=null&&round<=2) return grade*0.9;
-  if(pos==='TE'&&round===3)                                return grade*0.85;
-  if(pos==='WR'&&overall!=null&&overall<=10)               return grade*1.05;
-  if(pos==='WR'&&round===3)                                return grade*0.9;
-  if((pos==='RB'&&round!=null&&round>4)||((pos==='WR'||pos==='TE')&&round!=null&&round>3)) return grade*0.85;
+// Step 1: Draft Capital Adjustment on Final Grade
+function draftCapitalAdj(grade, round) {
+  if(round == null) return grade; // undrafted/unknown — no adjustment
+  if(round === 1)              return grade * 1.10;
+  if(round === 2)              return grade * 1.05;
+  if(round === 3)              return grade * 0.90;
+  if(round === 4)              return grade * 0.80;
+  if(round > 4 && round < 8)  return grade * 0.70;
+  if(round === 8)              return grade * 0.50;
   return grade;
 }
+
+// Step 2: Superflex base sort (applied to draft-capital-adjusted score)
+function superflexBase(p) {
+  const g    = draftCapitalAdj(p.grade || 0, p.round);
+  const pos  = p.pos;
+  const rd   = p.round;
+  const ov   = p.overall;
+  if(rd === 8)                                        return g * 0.50;
+  if(pos==='QB' && rd === 1)                          return g * 1.05;
+  if(pos==='QB' && rd != null && rd > 1)              return g * 0.85;
+  if(pos==='TE' && ov != null && ov <= 15)            return g * 0.97;
+  if(pos==='TE' && ov != null && ov > 15 && rd != null && rd <= 2) return g * 0.90;
+  if(pos==='TE' && rd === 3)                          return g * 0.85;
+  if(pos==='WR' && ov != null && ov <= 10)            return g * 1.05;
+  if(pos==='WR' && rd === 3)                          return g * 0.90;
+  if((pos==='RB' && rd != null && rd > 4) || ((pos==='WR'||pos==='TE') && rd != null && rd > 3)) return g * 0.85;
+  return g;
+}
+
+// Step 3: Format-specific adjustments on top of superflexBase
+function dynastySortForFormat(p, format) {
+  let score = superflexBase(p);
+  const pos = p.pos;
+  const rd  = p.round;
+
+  // 1QB: override QB value — all QBs de-valued regardless of round
+  if(format.includes('1qb') && pos === 'QB') {
+    const dcAdj = draftCapitalAdj(p.grade || 0, rd);
+    score = dcAdj * 0.75;
+  }
+
+  // TEP: boost TEs in rounds 1-3
+  if(format.includes('tep') && pos === 'TE') {
+    if(rd === 1 || rd === 2)     score *= 1.10;
+    else if(rd === 3)            score *= 1.05;
+  }
+
+  return score;
+}
+
+// Player Grades default sort = superflex base
+function dynastySort(p) { return superflexBase(p); }
 
 let currentPos='ALL',currentSort='rank',searchQuery='',viewMode='cards',currentLabel='ALL',currentSchool='ALL';
 
@@ -975,43 +1015,6 @@ document.querySelectorAll('.nav-btn').forEach(b => {
 // PAGE 2: DYNASTY RANKINGS
 // ============================================================
 let currentFormat = 'superflex';
-
-function dynastySortForFormat(p, format) {
-  const g = p.grade || 0;
-  const pos = p.pos;
-  const rd = p.round;
-  const ov = p.overall;
-
-  // TEP boost
-  const tepBoost = (format.includes('tep') && pos === 'TE')
-    ? (rd <= 2 ? 1.1 : rd === 3 ? 1.05 : 1.0)
-    : 1.0;
-
-  // QB value based on format
-  let score = g;
-  if(pos === 'QB') {
-    if(format.includes('1qb')) {
-      // All QBs de-valued like round 2+
-      score = g * 0.75;
-    } else {
-      // Superflex — existing logic
-      if(rd === 1) score = g * 1.05;
-      else score = g * 0.85;
-    }
-    return score; // No TEP boost for QBs
-  }
-
-  // Non-QB base logic (same as dynastySort)
-  if(rd === 8) score = g * 0.5;
-  else if(pos === 'TE' && ov && ov <= 15) score = g * 0.97;
-  else if(pos === 'TE' && ov && ov > 15 && rd && rd <= 2) score = g * 0.9;
-  else if(pos === 'TE' && rd === 3) score = g * 0.85;
-  else if(pos === 'WR' && ov && ov <= 10) score = g * 1.05;
-  else if(pos === 'WR' && rd === 3) score = g * 0.9;
-  else if((pos === 'RB' && rd && rd > 4) || ((pos === 'WR' || pos === 'TE') && rd && rd > 3)) score = g * 0.85;
-
-  return score * tepBoost;
-}
 
 function renderRankings() {
   const data = yearCache[activeYear] || PLAYERS;
