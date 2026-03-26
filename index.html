@@ -23,18 +23,25 @@
 .tf-toggle-left{display:flex;align-items:center;gap:10px;}
 .tf-toggle-icon{transition:transform .2s;}
 .tf-toggle.open .tf-toggle-icon{transform:rotate(180deg);}
-.tf-body{display:none;padding:12px 32px 16px;}
+.tf-body{display:none;padding:4px 32px 20px;}
 .tf-body.open{display:block;}
-.tf-row{display:flex;gap:24px;flex-wrap:nowrap;}
+.tf-row{display:flex;gap:32px;}
 .tf-col{flex:1;min-width:0;}
-.tf-col-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.tf-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex-wrap:nowrap;}
-.tf-chips::-webkit-scrollbar{height:3px;}
-.tf-chips::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-.tf-chip{display:inline-flex;flex-direction:column;gap:2px;padding:6px 10px;border-radius:6px;border:1px solid;white-space:nowrap;cursor:pointer;transition:opacity .15s;flex-shrink:0;}
-.tf-chip:hover{opacity:.8;}
-.tf-chip-name{font-size:10px;font-weight:700;letter-spacing:.3px;}
-.tf-chip-reason{font-size:8px;opacity:.75;letter-spacing:.3px;}
+.tf-col-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.tf-cards{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;flex-wrap:nowrap;}
+.tf-cards::-webkit-scrollbar{height:3px;}
+.tf-cards::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.tf-card{display:inline-flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:8px;border:1px solid;white-space:nowrap;cursor:pointer;transition:all .15s;flex-shrink:0;min-width:160px;background:var(--bg);}
+.tf-card:hover{transform:translateY(-2px);}
+.tf-card-top{display:flex;align-items:center;gap:8px;}
+.tf-card-avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:11px;}
+.tf-card-avatar img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
+.tf-card-info{min-width:0;}
+.tf-card-name{font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.5px;line-height:1;}
+.tf-card-meta{font-size:9px;color:var(--muted);margin-top:1px;}
+.tf-card-grade{display:flex;align-items:baseline;gap:4px;}
+.tf-card-grade-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;}
+.tf-card-reason{font-size:9px;letter-spacing:.3px;font-weight:700;text-transform:uppercase;}
 
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
@@ -319,14 +326,14 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
   </div>
   <div class="tf-section">
-    <button class="tf-toggle" id="tfToggle">
+    <button class="tf-toggle open" id="tfToggle">
       <div class="tf-toggle-left">
         <span>🎯 Draft Targets &amp; ⚠️ Fades</span>
         <span id="tfCounts" style="color:var(--muted);font-weight:400"></span>
       </div>
       <span class="tf-toggle-icon">▼</span>
     </button>
-    <div class="tf-body" id="tfBody">
+    <div class="tf-body open" id="tfBody">
       <div class="tf-row">
         <div class="tf-col">
           <div class="tf-col-label" style="color:var(--green)">🎯 Targets</div>
@@ -1056,13 +1063,13 @@ document.querySelectorAll('.nav-btn').forEach(b => {
 
 // ---- TARGETS & FADES ----
 const POSITIVE_LABELS = new Set([
-  'Greatest Prospect Since...','Iffy, But He Runs','Late-Round Target',
+  'Greatest Prospect Since...','Late-Round Target',
   "Fine, I'll Do It Myself",'Try To Tackle Me','The McConkey List',
-  'Phreshman Phenom','Zone Crusher','The Bowers List','Analytical Darling',
-  'You Have My Attention'
+  'Zone Crusher','The Bowers List','Analytical Darling','You Have My Attention'
 ]);
 const FADE_LABELS = new Set([
-  "The N'Keal List",'N.F.L. = Not For Long','Crushed by Zone'
+  "The N'Keal List",'N.F.L. = Not For Long','Crushed by Zone',
+  'Iffy, But He Runs','Phreshman Phenom'
 ]);
 
 // Round thresholds below which a pick is a "reach"
@@ -1090,7 +1097,7 @@ function classifyPlayer(p, format) {
 
   // ── TARGET checks ─────────────────────────────────────────────────────────
   // Elite grade
-  if(grade >= 85)
+  if(grade >= 80)
     return {type:'target', reason:'Elite grade ('+grade.toFixed(1)+')'};
 
   // Strong grade + positive label
@@ -1118,21 +1125,42 @@ function renderTargetsFades(players, format) {
   targets.sort((a,b) => dynastySortForFormat(b.p, format) - dynastySortForFormat(a.p, format));
   fades.sort((a,b) => dynastySortForFormat(a.p, format) - dynastySortForFormat(b.p, format));
 
-  const chipHTML = ({p, reason}, type) => {
+  const miniCard = ({p, reason}, type) => {
     const col = type === 'target' ? 'var(--green)' : 'var(--red)';
-    const bg  = type === 'target' ? 'rgba(0,232,138,.08)' : 'rgba(255,70,85,.08)';
-    return '<div class="tf-chip" style="border-color:'+col+'40;background:'+bg+'" onclick="openModalFromList('+_lastRenderedList.indexOf(p)+')" title="'+p.name+'">'+
-      '<span class="tf-chip-name" style="color:'+col+'">'+p.name+'</span>'+
-      '<span class="tf-chip-reason">'+reason+'</span>'+
+    const borderAlpha = type === 'target' ? 'rgba(0,232,138,.3)' : 'rgba(255,70,85,.3)';
+    const posCol = posColor(p.pos);
+    const g = p.grade || 0;
+    const lg = letterGrade(g);
+    const idx = _lastRenderedList.indexOf(p);
+    const hs = hshotSrc(p);
+    const avatarImg = hs ? hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%') : '';
+
+
+    return '<div class="tf-card" style="border-color:'+borderAlpha+'" onclick="openModalFromList('+idx+')">'+
+      '<div class="tf-card-top">'+
+        '<div class="tf-card-avatar" style="border-color:'+posCol+'">'+
+          avatarImg+
+          (hs?'':'<span style="color:'+posCol+'">'+p.pos+'</span>')+
+        '</div>'+
+        '<div class="tf-card-info">'+
+          '<div class="tf-card-name">'+p.name+'</div>'+
+          '<div class="tf-card-meta">'+p.pos+' · '+(p.school||'')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="tf-card-grade">'+
+        '<span class="tf-card-grade-val" style="color:'+lg.c+'">'+fmt(g,1)+'</span>'+
+        '<span style="font-size:10px;font-weight:700;color:'+lg.c+';background:'+lg.c+'22;padding:1px 5px;border-radius:3px">'+lg.l+'</span>'+
+      '</div>'+
+      '<div class="tf-card-reason" style="color:'+col+'">'+reason+'</div>'+
     '</div>';
   };
 
   document.getElementById('tfTargets').innerHTML =
-    targets.length ? targets.map(t => chipHTML(t,'target')).join('') :
+    targets.length ? '<div class="tf-cards">'+targets.map(t => miniCard(t,'target')).join('')+'</div>' :
     '<span style="color:var(--muted);font-size:10px">None this class</span>';
 
   document.getElementById('tfFades').innerHTML =
-    fades.length ? fades.map(f => chipHTML(f,'fade')).join('') :
+    fades.length ? '<div class="tf-cards">'+fades.map(f => miniCard(f,'fade')).join('')+'</div>' :
     '<span style="color:var(--muted);font-size:10px">None this class</span>';
 
   document.getElementById('tfCounts').textContent =
