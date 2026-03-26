@@ -15,6 +15,27 @@
   --pos-qb:#7b61ff;--pos-rb:#00e88a;--pos-wr:#00c2ff;--pos-te:#ff8c42;
 }
 
+
+/* ---- TARGETS / FADES ---- */
+.tf-section{border-bottom:1px solid var(--border);background:var(--surface);}
+.tf-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 32px;background:none;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);transition:color .15s;}
+.tf-toggle:hover{color:var(--text);}
+.tf-toggle-left{display:flex;align-items:center;gap:10px;}
+.tf-toggle-icon{transition:transform .2s;}
+.tf-toggle.open .tf-toggle-icon{transform:rotate(180deg);}
+.tf-body{display:none;padding:12px 32px 16px;}
+.tf-body.open{display:block;}
+.tf-row{display:flex;gap:24px;flex-wrap:nowrap;}
+.tf-col{flex:1;min-width:0;}
+.tf-col-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.tf-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex-wrap:nowrap;}
+.tf-chips::-webkit-scrollbar{height:3px;}
+.tf-chips::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.tf-chip{display:inline-flex;flex-direction:column;gap:2px;padding:6px 10px;border-radius:6px;border:1px solid;white-space:nowrap;cursor:pointer;transition:opacity .15s;flex-shrink:0;}
+.tf-chip:hover{opacity:.8;}
+.tf-chip-name{font-size:10px;font-weight:700;letter-spacing:.3px;}
+.tf-chip-reason{font-size:8px;opacity:.75;letter-spacing:.3px;}
+
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
@@ -296,6 +317,27 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="format-btn" data-format="1qb">1QB</button>
     <button class="format-btn" data-format="superflex-tep">Superflex + TEP</button>
     <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
+  </div>
+  <div class="tf-section">
+    <button class="tf-toggle" id="tfToggle">
+      <div class="tf-toggle-left">
+        <span>🎯 Draft Targets &amp; ⚠️ Fades</span>
+        <span id="tfCounts" style="color:var(--muted);font-weight:400"></span>
+      </div>
+      <span class="tf-toggle-icon">▼</span>
+    </button>
+    <div class="tf-body" id="tfBody">
+      <div class="tf-row">
+        <div class="tf-col">
+          <div class="tf-col-label" style="color:var(--green)">🎯 Targets</div>
+          <div class="tf-chips" id="tfTargets"></div>
+        </div>
+        <div class="tf-col">
+          <div class="tf-col-label" style="color:var(--red)">⚠️ Fades</div>
+          <div class="tf-chips" id="tfFades"></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="main">
     <div class="table-wrap"><table><thead id="rankingsHead"></thead><tbody id="rankingsBody"></tbody></table></div>
@@ -1011,6 +1053,101 @@ document.querySelectorAll('.nav-btn').forEach(b => {
 });
 
 // ============================================================
+
+// ---- TARGETS & FADES ----
+const POSITIVE_LABELS = new Set([
+  'Greatest Prospect Since...','Iffy, But He Runs','Late-Round Target',
+  "Fine, I'll Do It Myself",'Try To Tackle Me','The McConkey List',
+  'Phreshman Phenom','Zone Crusher','The Bowers List','Analytical Darling',
+  'You Have My Attention'
+]);
+const FADE_LABELS = new Set([
+  "The N'Keal List",'N.F.L. = Not For Long','Crushed by Zone'
+]);
+
+// Round thresholds below which a pick is a "reach"
+const REACH_THRESHOLDS = {1:60, 2:45, 3:35};
+
+function classifyPlayer(p, format) {
+  const grade = p.grade || 0;
+  const rd    = p.round;
+  const tag   = getTag(p);
+  const label = tag ? tag.label : null;
+  const adjScore = dynastySortForFormat(p, format);
+
+  // ── FADE checks (run first — fades override targets) ──────────────────────
+  // Negative label
+  if(label && FADE_LABELS.has(label))
+    return {type:'fade', reason: tag.icon + ' ' + label};
+
+  // Reach pick: drafted but grade below threshold for that round
+  if(rd && REACH_THRESHOLDS[rd] && grade < REACH_THRESHOLDS[rd])
+    return {type:'fade', reason:'Rd '+rd+' reach ('+grade.toFixed(1)+' grade)'};
+
+  // Overvalued ADP: Rd 1-2 pick, grade < 50, no positive label
+  if(rd && rd <= 2 && grade < 50 && (!label || !POSITIVE_LABELS.has(label)))
+    return {type:'fade', reason:'Rd '+rd+' pick, grade only '+grade.toFixed(1)};
+
+  // ── TARGET checks ─────────────────────────────────────────────────────────
+  // Elite grade
+  if(grade >= 85)
+    return {type:'target', reason:'Elite grade ('+grade.toFixed(1)+')'};
+
+  // Strong grade + positive label
+  if(grade >= 70 && label && POSITIVE_LABELS.has(label))
+    return {type:'target', reason: (tag ? tag.icon+' ' : '') + label};
+
+  // Any label (worth knowing about)
+  if(label && POSITIVE_LABELS.has(label))
+    return {type:'target', reason: (tag ? tag.icon+' ' : '') + label};
+
+  return null;
+}
+
+function renderTargetsFades(players, format) {
+  const targets = [], fades = [];
+
+  players.forEach(p => {
+    const result = classifyPlayer(p, format);
+    if(!result) return;
+    if(result.type === 'target') targets.push({p, reason: result.reason});
+    else fades.push({p, reason: result.reason});
+  });
+
+  // Sort targets by adj score desc, fades by adj score asc (worst first)
+  targets.sort((a,b) => dynastySortForFormat(b.p, format) - dynastySortForFormat(a.p, format));
+  fades.sort((a,b) => dynastySortForFormat(a.p, format) - dynastySortForFormat(b.p, format));
+
+  const chipHTML = ({p, reason}, type) => {
+    const col = type === 'target' ? 'var(--green)' : 'var(--red)';
+    const bg  = type === 'target' ? 'rgba(0,232,138,.08)' : 'rgba(255,70,85,.08)';
+    return '<div class="tf-chip" style="border-color:'+col+'40;background:'+bg+'" onclick="openModalFromList('+_lastRenderedList.indexOf(p)+')" title="'+p.name+'">'+
+      '<span class="tf-chip-name" style="color:'+col+'">'+p.name+'</span>'+
+      '<span class="tf-chip-reason">'+reason+'</span>'+
+    '</div>';
+  };
+
+  document.getElementById('tfTargets').innerHTML =
+    targets.length ? targets.map(t => chipHTML(t,'target')).join('') :
+    '<span style="color:var(--muted);font-size:10px">None this class</span>';
+
+  document.getElementById('tfFades').innerHTML =
+    fades.length ? fades.map(f => chipHTML(f,'fade')).join('') :
+    '<span style="color:var(--muted);font-size:10px">None this class</span>';
+
+  document.getElementById('tfCounts').textContent =
+    targets.length + ' target' + (targets.length !== 1 ? 's' : '') + ' · ' +
+    fades.length + ' fade' + (fades.length !== 1 ? 's' : '');
+}
+
+// Toggle open/close
+document.getElementById('tfToggle').addEventListener('click', () => {
+  const btn  = document.getElementById('tfToggle');
+  const body = document.getElementById('tfBody');
+  btn.classList.toggle('open');
+  body.classList.toggle('open');
+});
+
 // PAGE 2: DYNASTY RANKINGS
 // ============================================================
 let currentFormat = 'superflex';
@@ -1049,6 +1186,7 @@ function renderRankings() {
     html += '</tr>';
   });
   document.getElementById('rankingsBody').innerHTML = html;
+  renderTargetsFades(sorted, currentFormat);
 }
 
 document.querySelectorAll('.format-btn[data-format]').forEach(b => {
