@@ -279,7 +279,6 @@ td{padding:10px 14px;white-space:nowrap;}
   </div>
 </div>
 <div class="main">
-  <div class="results-meta" id="resultsCount"></div>
   <div id="cardsContainer" class="cards-grid"></div>
   <div id="tableContainer" style="display:none"><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div></div>
   <div class="empty-state" id="emptyState" style="display:none">No players match your filters.</div>
@@ -302,7 +301,6 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
   </div>
   <div class="main">
-    <div class="results-meta" id="rankingsCount"></div>
     <div class="table-wrap"><table><thead id="rankingsHead"></thead><tbody id="rankingsBody"></tbody></table></div>
   </div>
 </div>
@@ -699,7 +697,7 @@ function renderCards(){
     html+='</div></div>';
   });
   container.innerHTML=html;
-  document.getElementById('resultsCount').textContent=list.length+' player'+(list.length!==1?'s':'')+' shown';
+  
 }
 
 function renderTable(){
@@ -736,7 +734,7 @@ function renderTable(){
     html+='</tr>';
   });
   document.getElementById('tableBody').innerHTML=html;
-  document.getElementById('resultsCount').textContent=list.length+' player'+(list.length!==1?'s':'')+' shown';
+  
 }
 
 // Cache of last rendered list for modal lookup
@@ -877,12 +875,12 @@ async function switchYear(yr) {
 
   // Load data if not cached
   if(!yearCache[yr]) {
-    document.getElementById('resultsCount').textContent = 'Loading ' + yr + ' class...';
+    
     try {
       const res = await fetch('data/' + yr + '.json?v=3');
       yearCache[yr] = await res.json();
     } catch(e) {
-      document.getElementById('resultsCount').textContent = 'Error loading ' + yr + ' data.';
+      
       return;
     }
   }
@@ -1021,8 +1019,7 @@ function renderRankings() {
     .filter(p => p.grade)
     .sort((a,b) => dynastySortForFormat(b, currentFormat) - dynastySortForFormat(a, currentFormat));
 
-  document.getElementById('rankingsCount').textContent =
-    sorted.length + ' players · ' + activeYear + ' class · ' + currentFormat.toUpperCase().replace('-',' + ');
+  
 
   document.getElementById('rankingsHead').innerHTML =
     '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Adj Score</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
