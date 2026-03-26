@@ -349,8 +349,8 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="format-btn" data-bksort="year">Year</button>
   </div>
   <div class="breakdown-chart-wrap">
-    <div class="breakdown-chart-left" style="height:280px"><canvas id="breakdownChart"></canvas></div>
-    <div class="breakdown-chart-right" style="height:280px"><canvas id="breakdownPosChart"></canvas></div>
+    <div class="breakdown-chart-left" style="height:350px"><canvas id="breakdownChart"></canvas></div>
+    <div class="breakdown-chart-right" style="height:350px"><canvas id="breakdownPosChart"></canvas></div>
   </div>
   <div class="breakdown-table-wrap">
     <table class="bk-table"><thead id="bkHead"></thead><tbody id="bkBody"></tbody></table>
@@ -966,7 +966,7 @@ function switchPage(page) {
   document.getElementById('page-' + page).classList.add('active');
 
   if(page === 'rankings') renderRankings();
-  if(page === 'breakdown') renderBreakdown();
+  if(page === 'breakdown') loadAndRenderBreakdown();
 }
 
 document.querySelectorAll('.nav-btn').forEach(b => {
@@ -1385,6 +1385,24 @@ function getBreakdownData() {
   });
 }
 
+async function loadAndRenderBreakdown() {
+  // Show loading state
+  document.getElementById('bkBody').innerHTML =
+    '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);font-size:11px;letter-spacing:1px">Loading all class data...</td></tr>';
+
+  // Load all years not yet cached
+  const years = [2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  await Promise.all(years.map(async yr => {
+    if(!yearCache[yr]) {
+      try {
+        const res = await fetch('data/'+yr+'.json?v=3');
+        yearCache[yr] = await res.json();
+      } catch(e) { yearCache[yr] = []; }
+    }
+  }));
+  renderBreakdown();
+}
+
 function renderBreakdown() {
   const raw = getBreakdownData();
 
@@ -1507,6 +1525,7 @@ async function switchYear(yr) {
   if(activePage === 'rankings') renderRankings();
   if(activePage === 'breakdown') renderBreakdown();
   allPlayersCache = null; // reset comparison cache on year switch
+  if(activePage === 'breakdown') renderBreakdown();
 }
 
 </script>
