@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026 Rookie Draft Guide — The Marker System</title>
+<title>The Marker System — Dynasty Draft Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:#0a0c0f;--surface:#111418;--surface2:#181c22;--border:#1e2530;
@@ -13,6 +14,63 @@
   --green:#00e88a;--red:#ff4655;--orange:#ff8c42;--purple:#7b61ff;
   --pos-qb:#7b61ff;--pos-rb:#00e88a;--pos-wr:#00c2ff;--pos-te:#ff8c42;
 }
+
+/* ---- SITE NAV ---- */
+.site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;}
+.nav-brand{flex-shrink:0;}
+.nav-links{display:flex;gap:2px;flex-shrink:0;}
+.nav-btn{background:none;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{background:var(--accent);color:var(--bg);}
+.year-tabs{display:flex;gap:2px;overflow-x:auto;flex:1;}
+.year-tab{background:none;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:5px 9px;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.5px;}
+.year-tab:hover{color:var(--text);}
+.year-tab.active{background:var(--surface2);color:var(--accent);border:1px solid var(--border);}
+/* Hide year tabs on non-grades pages */
+.year-tabs.hidden{display:none;}
+/* ---- PAGE SECTIONS ---- */
+.page-section{display:none;}
+.page-section.active{display:block;}
+/* ---- DYNASTY RANKINGS PAGE ---- */
+.format-bar{display:flex;gap:6px;padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;flex-wrap:wrap;}
+.format-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-right:6px;}
+.format-btn{background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;padding:6px 14px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.format-btn:hover{color:var(--text);border-color:var(--muted);}
+.format-btn.active{background:var(--accent2);color:var(--bg);border-color:var(--accent2);}
+/* ---- COMPARISON PAGE ---- */
+.comparison-search-bar{padding:24px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.comp-search-wrap{position:relative;flex:1;min-width:260px;}
+.comp-search-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.comp-search-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 12px;outline:none;transition:border-color .15s;}
+.comp-search-input:focus{border-color:var(--accent);}
+.comp-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:5px;max-height:220px;overflow-y:auto;z-index:50;display:none;}
+.comp-dropdown.open{display:block;}
+.comp-dropdown-item{padding:8px 12px;cursor:pointer;font-size:11px;border-bottom:1px solid var(--border);transition:background .1s;}
+.comp-dropdown-item:hover{background:var(--surface);}
+.comp-dropdown-item .comp-item-name{font-weight:700;}
+.comp-dropdown-item .comp-item-meta{font-size:9px;color:var(--muted);margin-top:2px;}
+.comparison-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 32px;max-width:1100px;margin:0 auto;}
+.comparison-stats{padding:0 32px 32px;max-width:1100px;margin:0 auto;}
+.comp-stat-table{width:100%;border-collapse:collapse;font-size:11px;}
+.comp-stat-table th{text-align:left;padding:6px 10px;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);}
+.comp-stat-table td{padding:7px 10px;border-bottom:1px solid var(--border);}
+.comp-stat-table tr:hover td{background:var(--surface2);}
+.comp-winner-left{color:var(--green);font-weight:700;}
+.comp-winner-right{color:var(--accent2);font-weight:700;}
+.comp-placeholder{display:flex;align-items:center;justify-content:center;height:300px;color:var(--muted);font-size:11px;letter-spacing:1px;border:1px dashed var(--border);border-radius:10px;}
+/* ---- BREAKDOWN PAGE ---- */
+.breakdown-controls{padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.breakdown-chart-wrap{padding:24px 32px;}
+.breakdown-table-wrap{padding:0 32px 32px;}
+.bk-table{width:100%;border-collapse:collapse;font-size:11px;}
+.bk-table th{text-align:left;padding:8px 10px;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);cursor:pointer;}
+.bk-table th:hover{color:var(--accent);}
+.bk-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.bk-table tr:hover td{background:var(--surface2);}
+.bk-rank{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--muted);}
+.bk-year{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--accent);}
+.bk-bar{height:6px;border-radius:3px;background:var(--accent);display:inline-block;vertical-align:middle;}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;overflow-x:hidden;}
 /* HEADER */
@@ -158,10 +216,20 @@ td{padding:10px 14px;white-space:nowrap;}
 </style>
 </head>
 <body>
-<header>
-  <div><div class="logo-title">The Marker System</div><div class="logo-sub">Rookie Draft Guide</div></div>
+<nav class="site-nav" id="siteNav">
+  <div class="nav-brand">
+    <div class="logo-title">The Marker System</div>
+    <div class="logo-sub">Dynasty Draft Hub</div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" data-page="grades">Player Grades</button>
+    <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
+    <button class="nav-btn" data-page="comparison">Player Comparison</button>
+    <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
+  </div>
   <div class="year-tabs" id="yearTabs"></div>
-</header>
+</nav>
+<div class="page-section active" id="page-grades">
 <div class="hero">
   <div class="hero-bg-text">2026</div>
   <h1 id="heroTitle">2026 <span>ROOKIE DRAFT CLASS</span></h1>
@@ -220,6 +288,64 @@ td{padding:10px 14px;white-space:nowrap;}
     <div id="modalContent"></div>
   </div>
 </div>
+</div>
+
+<!-- PAGE 2: DYNASTY RANKINGS -->
+<div class="page-section" id="page-rankings">
+  <div class="format-bar">
+    <span class="format-label">Format:</span>
+    <button class="format-btn active" data-format="superflex">Superflex / 2QB</button>
+    <button class="format-btn" data-format="1qb">1QB</button>
+    <button class="format-btn" data-format="superflex-tep">Superflex + TEP</button>
+    <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
+  </div>
+  <div class="main">
+    <div class="results-meta" id="rankingsCount"></div>
+    <div class="table-wrap"><table><thead id="rankingsHead"></thead><tbody id="rankingsBody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- PAGE 3: PLAYER COMPARISON -->
+<div class="page-section" id="page-comparison">
+  <div class="comparison-search-bar">
+    <div class="comp-search-wrap">
+      <div class="comp-search-label">Player 1</div>
+      <input type="text" class="comp-search-input" id="compSearch1" placeholder="Search any player, any year..." autocomplete="off">
+      <div class="comp-dropdown" id="compDropdown1"></div>
+    </div>
+    <div style="padding-top:24px;color:var(--muted);font-family:'Bebas Neue',cursive;font-size:24px;">VS</div>
+    <div class="comp-search-wrap">
+      <div class="comp-search-label">Player 2</div>
+      <input type="text" class="comp-search-input" id="compSearch2" placeholder="Search any player, any year..." autocomplete="off">
+      <div class="comp-dropdown" id="compDropdown2"></div>
+    </div>
+    <button class="format-btn" id="compClearBtn" style="margin-top:20px">Clear</button>
+  </div>
+  <div class="comparison-cards" id="compCards">
+    <div class="comp-placeholder">Search for Player 1</div>
+    <div class="comp-placeholder">Search for Player 2</div>
+  </div>
+  <div class="comparison-stats" id="compStats"></div>
+</div>
+
+<!-- PAGE 4: CLASS BREAKDOWN -->
+<div class="page-section" id="page-breakdown">
+  <div class="breakdown-controls">
+    <span class="format-label">Sort By:</span>
+    <button class="format-btn active" data-bksort="avg">Avg Grade</button>
+    <button class="format-btn" data-bksort="size">Class Size</button>
+    <button class="format-btn" data-bksort="elite">Elite Prospects</button>
+    <button class="format-btn" data-bksort="year">Year</button>
+  </div>
+  <div class="breakdown-chart-wrap">
+    <canvas id="breakdownChart" height="320"></canvas>
+    <canvas id="breakdownPosChart" style="margin-top:32px" height="280"></canvas>
+  </div>
+  <div class="breakdown-table-wrap">
+    <table class="bk-table"><thead id="bkHead"></thead><tbody id="bkBody"></tbody></table>
+  </div>
+</div>
+
 <script>
 const HEADSHOT_BASE='headshots/';
 const POS_COLORS={QB:'#c084fc',RB:'#3dffa0',WR:'#e8ff47',TE:'#ff6b35'};
@@ -812,6 +938,486 @@ function renderHeroStats() {
 buildYearTabs();
 renderHeroStats();
 render();
+
+// ============================================================
+// SITE NAVIGATION
+// ============================================================
+let activePage = 'grades';
+
+function switchPage(page) {
+  activePage = page;
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  document.getElementById('page-' + page).classList.add('active');
+  // Year tabs only visible on grades and rankings pages
+  const yt = document.getElementById('yearTabs');
+  yt.classList.toggle('hidden', page !== 'grades' && page !== 'rankings');
+  if(page === 'rankings') renderRankings();
+  if(page === 'breakdown') renderBreakdown();
+}
+
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => switchPage(b.dataset.page));
+});
+
+// ============================================================
+// PAGE 2: DYNASTY RANKINGS
+// ============================================================
+let currentFormat = 'superflex';
+
+function dynastySortForFormat(p, format) {
+  const g = p.grade || 0;
+  const pos = p.pos;
+  const rd = p.round;
+  const ov = p.overall;
+
+  // TEP boost
+  const tepBoost = (format.includes('tep') && pos === 'TE')
+    ? (rd <= 2 ? 1.1 : rd === 3 ? 1.05 : 1.0)
+    : 1.0;
+
+  // QB value based on format
+  let score = g;
+  if(pos === 'QB') {
+    if(format.includes('1qb')) {
+      // All QBs de-valued like round 2+
+      score = g * 0.75;
+    } else {
+      // Superflex — existing logic
+      if(rd === 1) score = g * 1.05;
+      else score = g * 0.85;
+    }
+    return score; // No TEP boost for QBs
+  }
+
+  // Non-QB base logic (same as dynastySort)
+  if(rd === 8) score = g * 0.5;
+  else if(pos === 'TE' && ov && ov <= 15) score = g * 0.97;
+  else if(pos === 'TE' && ov && ov > 15 && rd && rd <= 2) score = g * 0.9;
+  else if(pos === 'TE' && rd === 3) score = g * 0.85;
+  else if(pos === 'WR' && ov && ov <= 10) score = g * 1.05;
+  else if(pos === 'WR' && rd === 3) score = g * 0.9;
+  else if((pos === 'RB' && rd && rd > 4) || ((pos === 'WR' || pos === 'TE') && rd && rd > 3)) score = g * 0.85;
+
+  return score * tepBoost;
+}
+
+function renderRankings() {
+  const data = yearCache[activeYear] || PLAYERS;
+  const sorted = [...data]
+    .filter(p => p.grade)
+    .sort((a,b) => dynastySortForFormat(b, currentFormat) - dynastySortForFormat(a, currentFormat));
+
+  document.getElementById('rankingsCount').textContent =
+    sorted.length + ' players · ' + activeYear + ' class · ' + currentFormat.toUpperCase().replace('-',' + ');
+
+  document.getElementById('rankingsHead').innerHTML =
+    '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Adj Score</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
+
+  _lastRenderedList = sorted;
+  let html = '';
+  sorted.forEach((p, i) => {
+    const col = posColor(p.pos);
+    const lg = letterGrade(p.grade);
+    const adjScore = dynastySortForFormat(p, currentFormat);
+    const tag = getTag(p);
+    const logo = logoSrc(p.school);
+    html += '<tr onclick="openModalFromList('+i+')" style="cursor:pointer">';
+    html += '<td style="font-family:\'Bebas Neue\',cursive;font-size:18px;color:var(--muted)">'+(i+1)+'</td>';
+    html += '<td style="font-weight:700">'+p.name+'</td>';
+    html += '<td><img src="'+logo+'" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">'+p.school+'</td>';
+    html += '<td style="color:'+col+';font-weight:700;font-size:10px">'+p.pos+'</td>';
+    html += '<td>'+(p.age ? fmtAge(p.age) : '—')+'</td>';
+    html += '<td>'+(p.round ? 'Rd '+p.round : '—')+'</td>';
+    html += '<td style="color:'+lg.c+';font-weight:700">'+fmt(p.grade,1)+'</td>';
+    html += '<td style="color:var(--accent2);font-weight:700">'+fmt(adjScore,1)+'</td>';
+    html += '<td style="color:'+col+'">'+(p.markers||0)+'</td>';
+    html += '<td style="color:var(--accent3)">'+(p.pff!=null?Math.round(p.pff):'—')+'</td>';
+    html += '<td>'+(tag?'<span style="color:'+tag.color+';font-size:9px;font-weight:700">'+tag.icon+' '+tag.label+'</span>':'—')+'</td>';
+    html += '</tr>';
+  });
+  document.getElementById('rankingsBody').innerHTML = html;
+}
+
+document.querySelectorAll('.format-btn[data-format]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.format-btn[data-format]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentFormat = b.dataset.format;
+    if(activePage === 'rankings') renderRankings();
+  });
+});
+
+// ============================================================
+// PAGE 3: PLAYER COMPARISON
+// ============================================================
+let compPlayers = [null, null];
+let allPlayersCache = null;
+
+async function getAllPlayers() {
+  if(allPlayersCache) return allPlayersCache;
+  // Load all years we don't have yet
+  const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005];
+  for(const yr of years) {
+    if(!yearCache[yr]) {
+      try {
+        const res = await fetch('data/'+yr+'.json?v=3');
+        yearCache[yr] = await res.json();
+      } catch(e) { yearCache[yr] = []; }
+    }
+  }
+  const all = [];
+  years.forEach(yr => {
+    (yearCache[yr]||[]).forEach(p => all.push({...p, year: yr}));
+  });
+  allPlayersCache = all;
+  return all;
+}
+
+function setupCompSearch(n) {
+  const input = document.getElementById('compSearch'+n);
+  const dropdown = document.getElementById('compDropdown'+n);
+
+  input.addEventListener('input', async () => {
+    const q = input.value.trim().toLowerCase();
+    if(q.length < 2) { dropdown.classList.remove('open'); return; }
+    const all = await getAllPlayers();
+    const matches = all.filter(p => p.name && p.name.toLowerCase().includes(q)).slice(0, 30);
+    if(!matches.length) { dropdown.classList.remove('open'); return; }
+    dropdown.innerHTML = matches.map((p,i) =>
+      '<div class="comp-dropdown-item" data-i="'+i+'">' +
+        '<div class="comp-item-name">'+p.name+'</div>' +
+        '<div class="comp-item-meta">'+(p.year||'2026')+' · '+p.pos+' · '+(p.school||'')+'</div>' +
+      '</div>'
+    ).join('');
+    dropdown._matches = matches;
+    dropdown.classList.add('open');
+  });
+
+  dropdown.addEventListener('click', e => {
+    const item = e.target.closest('.comp-dropdown-item');
+    if(!item) return;
+    const p = dropdown._matches[+item.dataset.i];
+    compPlayers[n-1] = p;
+    input.value = p.name + ' (' + (p.year||2026) + ')';
+    dropdown.classList.remove('open');
+    renderComparison();
+  });
+
+  document.addEventListener('click', e => {
+    if(!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.remove('open');
+  });
+}
+
+function renderComparison() {
+  const [p1, p2] = compPlayers;
+  const container = document.getElementById('compCards');
+
+  const cardHTML = (p, side) => {
+    if(!p) return '<div class="comp-placeholder">Search for Player '+(side+1)+'</div>';
+    const col = posColor(p.pos);
+    const g = p.grade || 0;
+    const lg = letterGrade(g);
+    const tag = getTag(p);
+    const mx = POS_MAX[p.pos]||14; const mk = p.markers||0;
+    const pmx = PFF_MAX[p.pos]||10; const pmk = p.pff!=null?Math.round(p.pff):0;
+    let dots='',pdots='';
+    for(let i=0;i<mx;i++) dots+='<div class="marker-dot '+(i<mk?'hit':'miss')+'" style="background:'+(i<mk?col:'')+'"></div>';
+    for(let i=0;i<pmx;i++) pdots+='<div class="marker-dot '+(i<pmk?'hit':'miss')+'" style="background:'+(i<pmk?'var(--accent3)':'')+'"></div>';
+    const borderColor = side === 0 ? 'var(--green)' : 'var(--accent2)';
+    return '<div class="player-card" style="--pos-color:'+col+';border-color:'+borderColor+';cursor:default">'+
+      '<div class="card-body">'+
+        '<div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">'+(p.year||2026)+' CLASS</div>'+
+        '<div class="card-name-row">'+
+          '<div class="card-avatar" style="border-color:'+col+'">'+
+            hshotImg(p,'','')+
+            '<div class="card-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
+          '</div>'+
+          '<div style="flex:1;min-width:0"><div class="card-name">'+p.name+'</div><div class="card-school">'+(p.school||'')+'</div></div>'+
+          '<img src="'+logoSrc(p.school)+'" class="school-logo" alt="" onerror="this.style.display=\'none\'">'+
+        '</div>'+
+        (tag?'<div class="player-tag" style="color:'+tag.color+';background:'+tag.color+'18;border-color:'+tag.color+'44">'+tag.icon+' '+tag.label+'</div>':'<div style="height:26px;margin-top:8px"></div>')+
+        '<div class="grade-bar-wrap">'+
+          '<div class="grade-bar-label"><span class="grade-bar-lbl-text">Final Grade</span>'+
+            '<div class="grade-val-row"><span class="grade-val" style="color:'+lg.c+'">'+fmt(g,1)+'</span>'+
+              '<span class="grade-letter" style="color:'+lg.c+';background:'+lg.c+'22">'+lg.l+'</span>'+
+            '</div></div>'+
+          '<div class="grade-bar-track"><div class="grade-bar-fill" style="width:'+Math.min(g,100)+'%;background:'+lg.c+'"></div></div>'+
+        '</div>'+
+        '<div class="marker-section"><div class="marker-section-label">Markers '+mk+'/'+mx+'</div><div class="marker-dots">'+dots+'</div></div>'+
+        '<div class="marker-section" style="margin-top:8px"><div class="marker-section-label">PFF Markers '+pmk+'/'+pmx+'</div><div class="marker-dots">'+pdots+'</div></div>'+
+      '</div>'+
+    '</div>';
+  };
+
+  container.innerHTML = cardHTML(p1, 0) + cardHTML(p2, 1);
+
+  // Stat comparison table
+  if(p1 && p2 && p1.pos === p2.pos) {
+    renderCompStats(p1, p2);
+  } else if(p1 && p2) {
+    document.getElementById('compStats').innerHTML =
+      '<p style="color:var(--muted);font-size:11px;text-align:center;padding:16px">Stat comparison available for same-position players</p>';
+  } else {
+    document.getElementById('compStats').innerHTML = '';
+  }
+}
+
+function compStatRows(pos) {
+  const rows = {
+    QB: [
+      {l:'Career Pass Yds', k:'careerPYd', fmt:'int'},
+      {l:'Career YPG', k:'careerYPG', fmt:'dec'},
+      {l:'Career YPA', k:'careerYPA', fmt:'dec'},
+      {l:'Career TD', k:'careerPTD', fmt:'int'},
+      {l:'Career INT', k:'careerINT', fmt:'int', low:true},
+      {l:'Career CMP%', k:'careerCMP', fmt:'pct'},
+      {l:'Career Rush Yds', k:'careerRuYd', fmt:'int'},
+      {l:'Best Pass Yds', k:'bestPYd', fmt:'int'},
+      {l:'Best Pass TD', k:'bestPTD', fmt:'int'},
+      {l:'True Acc%', k:'careerAcc', fmt:'pct'},
+      {l:'BTT%', k:'careerBTT', fmt:'pct'},
+      {l:'TWP%', k:'careerTWP', fmt:'pct', low:true},
+      {l:'Last PPG', k:'lastPPG', fmt:'dec'},
+      {l:'Best PPG', k:'bestPPG', fmt:'dec'},
+    ],
+    RB: [
+      {l:'YPC', k:'ypc', fmt:'dec'},
+      {l:'YPTP', k:'yptp', fmt:'dec'},
+      {l:'Best Rec', k:'bestRec', fmt:'int'},
+      {l:'Best Total Yds', k:'bestTotalYds', fmt:'int'},
+      {l:'Career BA/A', k:'careerBA', fmt:'dec'},
+      {l:'Career MTF/A', k:'careerMTF', fmt:'dec'},
+      {l:'Career YACO/A', k:'careerYACO', fmt:'dec'},
+      {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
+      {l:'Best YPRR', k:'bestYPRR', fmt:'dec'},
+      {l:'Last PPG', k:'lastPPG', fmt:'dec'},
+      {l:'Best PPG', k:'bestPPG', fmt:'dec'},
+    ],
+    WR: [
+      {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
+      {l:'Best YPRR', k:'bestYPRR', fmt:'dec'},
+      {l:'Career YPRR Zone', k:'careerYPRRzone', fmt:'dec'},
+      {l:'Career TPRR', k:'careerTPRR', fmt:'dec'},
+      {l:'Best YPTPA', k:'bestYPTPA', fmt:'dec'},
+      {l:'Best MS Yards%', k:'bestMSYards', fmt:'pct'},
+      {l:'BOY 20%', k:'boy20', fmt:'int', low:true},
+      {l:'BOY 30%', k:'boy30', fmt:'int', low:true},
+      {l:'Slot Rate', k:'careerSlot', fmt:'pct'},
+      {l:'Last PPG', k:'lastPPG', fmt:'dec'},
+      {l:'Best PPG', k:'bestPPG', fmt:'dec'},
+    ],
+    TE: [
+      {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
+      {l:'Best YPRR', k:'bestYPRR', fmt:'dec'},
+      {l:'Career TPRR', k:'careerTPRR', fmt:'dec'},
+      {l:'Best YPTPA', k:'bestYPTPA', fmt:'dec'},
+      {l:'Best MS Yards%', k:'bestMSYards', fmt:'pct'},
+      {l:'Career YPG', k:'careerYPG', fmt:'dec'},
+      {l:'BOY 15%', k:'boy15', fmt:'int', low:true},
+      {l:'BOY 20%', k:'boy20', fmt:'int', low:true},
+      {l:'Avg Pass Block', k:'avgPassBlock', fmt:'dec'},
+      {l:'Avg Run Block', k:'avgRunBlock', fmt:'dec'},
+      {l:'Last PPG', k:'lastPPG', fmt:'dec'},
+      {l:'Best PPG', k:'bestPPG', fmt:'dec'},
+    ],
+  };
+  return rows[pos] || [];
+}
+
+function renderCompStats(p1, p2) {
+  const rows = compStatRows(p1.pos);
+  const p1col = 'var(--green)', p2col = 'var(--accent2)';
+  let html = '<div style="font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Stat Comparison · '+p1.pos+'</div>';
+  html += '<table class="comp-stat-table"><thead><tr>'+
+    '<th>Stat</th>'+
+    '<th style="color:var(--green)">'+p1.name+' ('+(p1.year||2026)+')</th>'+
+    '<th style="color:var(--accent2)">'+p2.name+' ('+(p2.year||2026)+')</th>'+
+    '</tr></thead><tbody>';
+
+  rows.forEach(row => {
+    const v1 = p1[row.k]; const v2 = p2[row.k];
+    if(v1==null && v2==null) return;
+    const fv = v => v==null ? '—' : row.fmt==='int' ? Math.round(v) : row.fmt==='pct' ? fmtPct(v) : fmt(v,1);
+    // Winner: higher is better unless low:true
+    let w1=false, w2=false;
+    if(v1!=null && v2!=null) {
+      if(row.low) { w1=v1<v2; w2=v2<v1; }
+      else { w1=v1>v2; w2=v2>v1; }
+    }
+    html += '<tr><td style="color:var(--muted);font-size:9px;letter-spacing:.5px">'+row.l+'</td>'+
+      '<td class="'+(w1?'comp-winner-left':'')+'">'+fv(v1)+'</td>'+
+      '<td class="'+(w2?'comp-winner-right':'')+'">'+fv(v2)+'</td>'+
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('compStats').innerHTML = html;
+}
+
+setupCompSearch(1);
+setupCompSearch(2);
+
+document.getElementById('compClearBtn').addEventListener('click', () => {
+  compPlayers = [null, null];
+  document.getElementById('compSearch1').value = '';
+  document.getElementById('compSearch2').value = '';
+  allPlayersCache = null;
+  renderComparison();
+});
+
+// ============================================================
+// PAGE 4: CLASS BREAKDOWN
+// ============================================================
+let bkSort = 'avg';
+let bkCharts = [];
+
+function getBreakdownData() {
+  const allYears = Object.keys(ALL_CLASS_AVGS).map(Number).sort((a,b)=>a-b);
+  return allYears.map(yr => {
+    const data = yearCache[yr] || [];
+    const graded = data.filter(p => p.grade);
+    const byPos = {QB:[],RB:[],WR:[],TE:[]};
+    graded.forEach(p => { if(byPos[p.pos]) byPos[p.pos].push(p.grade); });
+    const avg = g => g.length ? g.reduce((s,v)=>s+v,0)/g.length : 0;
+    const topPlayer = graded.length ? graded.reduce((best,p) => p.grade > (best?.grade||0) ? p : best, null) : null;
+    const elite = graded.filter(p => p.grade >= 85).length;
+    return {
+      year: yr,
+      avg: ALL_CLASS_AVGS[yr] || avg(graded.map(p=>p.grade)),
+      size: data.length,
+      elite,
+      topPlayer,
+      qbAvg: avg(byPos.QB),
+      rbAvg: avg(byPos.RB),
+      wrAvg: avg(byPos.WR),
+      teAvg: avg(byPos.TE),
+      loaded: data.length > 0,
+    };
+  });
+}
+
+function renderBreakdown() {
+  const raw = getBreakdownData();
+
+  // Sort
+  const sortFns = {
+    avg: (a,b) => b.avg - a.avg,
+    size: (a,b) => b.size - a.size,
+    elite: (a,b) => b.elite - a.elite,
+    year: (a,b) => b.year - a.year,
+  };
+  const sorted = [...raw].sort(sortFns[bkSort]);
+  const byYear = [...raw].sort((a,b)=>a.year-b.year);
+
+  // Destroy old charts
+  bkCharts.forEach(c => c.destroy());
+  bkCharts = [];
+
+  // Chart 1: Avg grade bar chart by year
+  const maxAvg = Math.max(...byYear.map(d=>d.avg));
+  const ctx1 = document.getElementById('breakdownChart').getContext('2d');
+  bkCharts.push(new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: byYear.map(d=>d.year),
+      datasets: [{
+        label: 'Avg Grade',
+        data: byYear.map(d=>d.avg),
+        backgroundColor: byYear.map(d => {
+          const ratio = d.avg / maxAvg;
+          return `rgba(0,194,255,${0.3 + ratio*0.7})`;
+        }),
+        borderColor: byYear.map(d => d.year === activeYear ? '#f5c842' : 'transparent'),
+        borderWidth: 2,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend:{display:false},
+        title:{display:true,text:'Class Average Grade (2005–2026)',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
+        tooltip:{callbacks:{label:ctx=>'Avg: '+ctx.parsed.y.toFixed(1)}}
+      },
+      scales: {
+        x:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'}},
+        y:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'},min:0}
+      }
+    }
+  }));
+
+  // Chart 2: Positional breakdown stacked bar
+  const ctx2 = document.getElementById('breakdownPosChart').getContext('2d');
+  bkCharts.push(new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: byYear.map(d=>d.year),
+      datasets: [
+        {label:'QB',data:byYear.map(d=>d.qbAvg),backgroundColor:'rgba(123,97,255,.7)',borderRadius:2},
+        {label:'RB',data:byYear.map(d=>d.rbAvg),backgroundColor:'rgba(0,232,138,.7)',borderRadius:2},
+        {label:'WR',data:byYear.map(d=>d.wrAvg),backgroundColor:'rgba(0,194,255,.7)',borderRadius:2},
+        {label:'TE',data:byYear.map(d=>d.teAvg),backgroundColor:'rgba(255,140,66,.7)',borderRadius:2},
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend:{labels:{color:'#e8edf3',font:{family:'IBM Plex Mono',size:9}}},
+        title:{display:true,text:'Average Grade by Position Group',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
+      },
+      scales: {
+        x:{stacked:false,ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'}},
+        y:{stacked:false,ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'},min:0}
+      }
+    }
+  }));
+
+  // Ranked table
+  document.getElementById('bkHead').innerHTML =
+    '<tr><th>Rank</th><th>Year</th><th>Avg Grade</th><th>Class Size</th><th>Elite (85+)</th><th>Top Player</th><th>QB Avg</th><th>RB Avg</th><th>WR Avg</th><th>TE Avg</th></tr>';
+
+  const maxBar = Math.max(...sorted.map(d=>d.avg));
+  let html = '';
+  sorted.forEach((d,i) => {
+    const barW = Math.round((d.avg/maxBar)*120);
+    const isActive = d.year === activeYear;
+    html += '<tr style="'+(isActive?'background:rgba(245,200,66,.05)':'')+'">';
+    html += '<td class="bk-rank">'+(i+1)+'</td>';
+    html += '<td class="bk-year" style="'+(isActive?'color:var(--accent2)':'')+'">'+d.year+(isActive?' ★':'')+'</td>';
+    html += '<td><div style="display:flex;align-items:center;gap:8px">'+
+      '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
+      '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
+      '</div></td>';
+    html += '<td>'+d.size+'</td>';
+    html += '<td style="color:var(--accent2);font-weight:700">'+d.elite+'</td>';
+    html += '<td style="font-size:10px">'+(d.topPlayer ? d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>' : '—')+'</td>';
+    html += '<td style="color:var(--pos-qb)">'+( d.qbAvg ? fmt(d.qbAvg,1) : '—')+'</td>';
+    html += '<td style="color:var(--pos-rb)">'+( d.rbAvg ? fmt(d.rbAvg,1) : '—')+'</td>';
+    html += '<td style="color:var(--pos-wr)">'+( d.wrAvg ? fmt(d.wrAvg,1) : '—')+'</td>';
+    html += '<td style="color:var(--pos-te)">'+( d.teAvg ? fmt(d.teAvg,1) : '—')+'</td>';
+    html += '</tr>';
+  });
+  document.getElementById('bkBody').innerHTML = html;
+}
+
+document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.format-btn[data-bksort]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    bkSort = b.dataset.bksort;
+    renderBreakdown();
+  });
+});
+
+// Re-render rankings when year switches
+const _origSwitchYear = switchYear;
+async function switchYear(yr) {
+  await _origSwitchYear(yr);
+  if(activePage === 'rankings') renderRankings();
+  if(activePage === 'breakdown') renderBreakdown();
+  allPlayersCache = null; // reset comparison cache on year switch
+}
+
 </script>
 </body>
 </html>
