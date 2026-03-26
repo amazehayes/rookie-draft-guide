@@ -469,7 +469,7 @@ function gradeColor(g){
 
 // ---- TAG EVALUATION ----
 function getTag(p) {
-  const pos=p.pos, round=p.round, markers=p.markers||0, pff=p.pff||0, grade=p.grade||0;
+  const pos=p.pos, round=p.round, markers=p.markers||0, hasPff=p.pff!=null, pff=p.pff!=null?p.pff:0, grade=p.grade||0;
 
   if(pos==='QB'){
     const hasVolume = (p.careerPA>=900 && p.careerPAPG>=28 && p.years!=null && p.years<6) ||
@@ -477,11 +477,11 @@ function getTag(p) {
     const lackVolume = (p.careerPA<900 || (p.careerPAPG<28 && p.years!=null && p.years<6)) ||
                        (p.careerPYd<8500 || (p.careerYPG<225 && p.years!=null && p.years<6));
     const runs = p.careerRuYd!=null && p.careerRuYd>=1000;
-    if(pff>=6 && round===1 && hasVolume)
+    if(hasPff && pff>=6 && round===1 && hasVolume)
       return {label:'Greatest Prospect Since...', color:'#16A34A', icon:'🏆'};
-    if(((pff<6 && runs && round===1)) || (pff>=6 && runs && round===1 && lackVolume))
+    if(hasPff && ((pff<6 && runs && round===1) || (pff>=6 && runs && round===1 && lackVolume)))
       return {label:'Iffy, But He Runs', color:'#F59E0B', icon:'🏃'};
-    if(((pff<6 && !runs && round===1)) || (pff>=6 && round===1 && lackVolume))
+    if(hasPff && ((pff<6 && !runs && round===1) || (pff>=6 && round===1 && lackVolume)))
       return {label:'N.F.L. = Not For Long', color:'#DC2626', icon:'⚠️'};
     return null;
   }
@@ -500,9 +500,9 @@ function getTag(p) {
   }
 
   if(pos==='WR'){
-    if(pff>=11 && pff>(markers*2) && round!=null && round<=5)
+    if(hasPff && pff>=11 && pff>(markers*2) && round!=null && round<=5)
       return {label:'The McConkey List', color:'#16A34A', icon:'🏆'};
-    if((pff*2)<=markers && round!=null && round<=2 && markers>3)
+    if(hasPff && (pff*2)<=markers && round!=null && round<=2 && markers>3)
       return {label:"The N'Keal List", color:'#DC2626', icon:'⚠️'};
     if(p.firstYPTPA!=null && p.firstYPTPA===p.bestYPTPA &&
        p.firstMSYards!=null && p.firstMSYards===p.bestMSYards &&
@@ -516,11 +516,11 @@ function getTag(p) {
   }
 
   if(pos==='TE'){
-    if(pff>7 && (markers>=10 || grade>=85))
+    if(hasPff && pff>7 && (markers>=10 || grade>=85))
       return {label:'The Bowers List', color:'#1687A3', icon:'🏆'};
     if(markers>=10 || grade>=85)
       return {label:'Analytical Darling', color:'#16A34A', icon:'⭐'};
-    if(pff>7 && (round==null || round<=5))
+    if(hasPff && pff>7 && (round==null || round<=5))
       return {label:'You Have My Attention', color:'#16A34A', icon:'✏️'};
     return null;
   }
@@ -699,21 +699,21 @@ function pffStats(p,col){
     statSq(fmtPct(p.bestSackPct),'Best Sack%'),
   ].join('');
   if(p.pos==='RB') return[
-    statSq(fmt(p.careerBA,1),'Career Broken Tkls/Att',col),
-    statSq(fmt(p.careerMTF,1),'Career Miss Tkls Forced/Att',col),
-    statSq(fmt(p.career1D,1),'Career 1st Downs/Att'),
+    statSq(fmtPct(p.careerBA),'Career Broken Tkls/Att',col),
+    statSq(fmtPct(p.careerMTF),'Career Miss Tkls Forced/Att',col),
+    statSq(fmtPct(p.career1D),'Career 1st Downs/Att'),
     statSq(fmt(p.careerYACO,1),'Career YACO/Att'),
     statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
     statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
-    statSq(fmt(p.bestBA,1),'Best Broken Tkls/Att',col),
-    statSq(fmt(p.bestMTF,1),'Best Miss Tkls Forced/Att',col),
+    statSq(fmtPct(p.bestBA),'Best Broken Tkls/Att',col),
+    statSq(fmtPct(p.bestMTF),'Best Miss Tkls Forced/Att',col),
     statSq(fmt(p.bestYACO,1),'Best YACO/Att'),
     statSq(fmt(p.bestYPRR,1),'Best Yds/Route Run',col),
   ].join('');
   if(p.pos==='WR') return[
     statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
     statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
-    statSq(fmt(p.career1DRR,1),'Career 1st Downs/Route'),
+    statSq(fmtPct(p.career1DRR),'Career 1st Downs/Route'),
     statSq(fmt(p.careerYACR,1),'Career YAC/Route'),
     statSq(fmt(p.careerMTF,2),'Career Miss Tkls Forced',col),
     statSq(fmtPct(p.careerSlot),'Career Slot Rate'),
@@ -724,7 +724,7 @@ function pffStats(p,col){
   return[
     statSq(fmt(p.careerYPRR,1),'Career Yds/Route Run',col),
     statSq(fmt(p.careerTPRR,1),'Career Tgts/Route Run'),
-    statSq(fmt(p.career1DRR,1),'Career 1st Downs/Route'),
+    statSq(fmtPct(p.career1DRR),'Career 1st Downs/Route'),
     statSq(fmt(p.careerYACR,1),'Career YAC/Route'),
     statSq(fmt(p.careerMTF,2),'Career Miss Tkls Forced',col),
     statSq(fmtPct(p.careerSlot),'Career Slot Rate'),
@@ -1354,6 +1354,7 @@ function compStatRows(pos) {
       {l:'True Acc%', k:'careerAcc', fmt:'pct'},
       {l:'BTT%', k:'careerBTT', fmt:'pct'},
       {l:'TWP%', k:'careerTWP', fmt:'pct', low:true},
+      {l:'Sack%', k:'careerSackPct', fmt:'pct', low:true},
       {l:'Last PPG', k:'lastPPG', fmt:'dec'},
       {l:'Best PPG', k:'bestPPG', fmt:'dec'},
     ],
@@ -1362,8 +1363,8 @@ function compStatRows(pos) {
       {l:'YPTP', k:'yptp', fmt:'dec'},
       {l:'Best Rec', k:'bestRec', fmt:'int'},
       {l:'Best Total Yds', k:'bestTotalYds', fmt:'int'},
-      {l:'Career BA/A', k:'careerBA', fmt:'dec'},
-      {l:'Career MTF/A', k:'careerMTF', fmt:'dec'},
+      {l:'Career BA/A', k:'careerBA', fmt:'pct'},
+      {l:'Career MTF/A', k:'careerMTF', fmt:'pct'},
       {l:'Career YACO/A', k:'careerYACO', fmt:'dec'},
       {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
       {l:'Best YPRR', k:'bestYPRR', fmt:'dec'},
