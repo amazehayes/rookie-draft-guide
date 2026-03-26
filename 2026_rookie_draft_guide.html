@@ -234,7 +234,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <p class="hero-desc">Threshold-based marker scoring — calibrated against historically successful NFL players at the collegiate level.</p>
   <div class="stat-row" id="heroStats"></div>
 </div>
-<div class="year-bar" id="gradesYearBar"></div>
+<div class="year-bar" id="gradesYearBar"><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
 <div class="controls">
   <div class="filter-group" id="posFilters">
     <button class="filter-btn active" data-pos="ALL">ALL</button>
@@ -291,7 +291,7 @@ td{padding:10px 14px;white-space:nowrap;}
 
 <!-- PAGE 2: DYNASTY RANKINGS -->
 <div class="page-section" id="page-rankings">
-  <div class="year-bar" id="rankingsYearBar"></div>
+  <div class="year-bar" id="rankingsYearBar"><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
   <div class="format-bar">
     <span class="format-label">Format:</span>
     <button class="format-btn active" data-format="superflex">Superflex / 2QB</button>
@@ -1063,6 +1063,7 @@ document.querySelectorAll('.format-btn[data-format]').forEach(b => {
 // PAGE 3: PLAYER COMPARISON
 // ============================================================
 let compPlayers = [null, null, null, null];
+const COMP_COLORS = ['var(--green)','var(--accent2)','var(--accent)','var(--orange)'];
 let allPlayersCache = null;
 
 async function getAllPlayers() {
@@ -1121,11 +1122,10 @@ function setupCompSearch(n) {
 }
 
 function renderComparison() {
-  const [p1, p2] = compPlayers;
   const container = document.getElementById('compCards');
 
   const cardHTML = (p, side) => {
-    if(!p) return '<div class="comp-placeholder">Search for Player '+(side+1)+'</div>';
+    if(!p) return '';
     const col = posColor(p.pos);
     const g = p.grade || 0;
     const lg = letterGrade(g);
@@ -1135,17 +1135,17 @@ function renderComparison() {
     let dots='',pdots='';
     for(let i=0;i<mx;i++) dots+='<div class="marker-dot '+(i<mk?'hit':'miss')+'" style="background:'+(i<mk?col:'')+'"></div>';
     for(let i=0;i<pmx;i++) pdots+='<div class="marker-dot '+(i<pmk?'hit':'miss')+'" style="background:'+(i<pmk?'var(--accent3)':'')+'"></div>';
-    const borderColor = side === 0 ? 'var(--green)' : 'var(--accent2)';
+    const borderColor = COMP_COLORS[side];
     return '<div class="player-card" style="--pos-color:'+col+';border-color:'+borderColor+';cursor:default">'+
       '<div class="card-body">'+
-        '<div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">'+(p.year||2026)+' CLASS</div>'+
+        '<div style="font-size:9px;color:'+borderColor+';letter-spacing:2px;margin-bottom:6px;font-weight:700">PLAYER '+(side+1)+' · '+(p.year||2026)+'</div>'+
         '<div class="card-name-row">'+
           '<div class="card-avatar" style="border-color:'+col+'">'+
             hshotImg(p,'','')+
             '<div class="card-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
           '</div>'+
-          '<div style="flex:1;min-width:0"><div class="card-name">'+p.name+'</div><div class="card-school">'+(p.school||'')+'</div></div>'+
-          '<img src="'+logoSrc(p.school)+'" class="school-logo" alt="" onerror="this.style.display=\'none\'">'+
+          '<div style="flex:1;min-width:0"><div class="card-name" style="font-size:16px">'+p.name+'</div><div class="card-school">'+(p.school||'')+'</div></div>'+
+          '<img src="'+logoSrc(p.school)+'" class="school-logo" alt="" onerror="this.style.display='none'">'+
         '</div>'+
         (tag?'<div class="player-tag" style="color:'+tag.color+';background:'+tag.color+'18;border-color:'+tag.color+'44">'+tag.icon+' '+tag.label+'</div>':'<div style="height:26px;margin-top:8px"></div>')+
         '<div class="grade-bar-wrap">'+
@@ -1161,17 +1161,15 @@ function renderComparison() {
     '</div>';
   };
 
-  container.innerHTML = cardHTML(p1, 0) + cardHTML(p2, 1);
-
-  // Stat comparison table
-  if(p1 && p2 && p1.pos === p2.pos) {
-    renderCompStats(p1, p2);
-  } else if(p1 && p2) {
-    document.getElementById('compStats').innerHTML =
-      '<p style="color:var(--muted);font-size:11px;text-align:center;padding:16px">Stat comparison available for same-position players</p>';
-  } else {
+  const activePlayers = compPlayers.filter(p => p);
+  if(!activePlayers.length) {
+    container.innerHTML = '<div class="comp-placeholder">Search for a player</div><div class="comp-placeholder">Search for a player</div>';
     document.getElementById('compStats').innerHTML = '';
+    return;
   }
+
+  container.innerHTML = compPlayers.map((p,i) => cardHTML(p,i)).join('');
+  renderCompStats(activePlayers);
 }
 
 function compStatRows(pos) {
@@ -1366,20 +1364,21 @@ function getBreakdownData() {
     const graded = data.filter(p => p.grade);
     const byPos = {QB:[],RB:[],WR:[],TE:[]};
     graded.forEach(p => { if(byPos[p.pos]) byPos[p.pos].push(p.grade); });
-    const avg = g => g.length ? g.reduce((s,v)=>s+v,0)/g.length : 0;
+    const avg = g => g.length ? g.reduce((s,v)=>s+v,0)/g.length : null;
     const topPlayer = graded.length ? graded.reduce((best,p) => p.grade > (best?.grade||0) ? p : best, null) : null;
     const elite = graded.filter(p => p.grade >= 85).length;
+    const loaded = data.length > 0;
     return {
       year: yr,
-      avg: ALL_CLASS_AVGS[yr] || avg(graded.map(p=>p.grade)),
-      size: data.length,
-      elite,
-      topPlayer,
+      avg: ALL_CLASS_AVGS[yr],           // always use pre-computed avg
+      size: loaded ? data.length : null,
+      elite: loaded ? elite : null,
+      topPlayer: loaded ? topPlayer : null,
       qbAvg: avg(byPos.QB),
       rbAvg: avg(byPos.RB),
       wrAvg: avg(byPos.WR),
       teAvg: avg(byPos.TE),
-      loaded: data.length > 0,
+      loaded,
     };
   });
 }
@@ -1476,9 +1475,9 @@ function renderBreakdown() {
       '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
       '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
       '</div></td>';
-    html += '<td>'+d.size+'</td>';
-    html += '<td style="color:var(--accent2);font-weight:700">'+d.elite+'</td>';
-    html += '<td style="font-size:10px">'+(d.topPlayer ? d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>' : '—')+'</td>';
+    html += '<td>'+(d.size!=null?d.size:'—')+'</td>';
+    html += '<td style="color:var(--accent2);font-weight:700">'+(d.elite!=null?d.elite:'—')+'</td>';
+    html += '<td style="font-size:10px">'+(d.topPlayer ? d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>' : d.loaded?'—':'<span style="color:var(--muted);font-size:9px">Load year to view</span>')+'</td>';
     html += '<td style="color:var(--pos-qb)">'+( d.qbAvg ? fmt(d.qbAvg,1) : '—')+'</td>';
     html += '<td style="color:var(--pos-rb)">'+( d.rbAvg ? fmt(d.rbAvg,1) : '—')+'</td>';
     html += '<td style="color:var(--pos-wr)">'+( d.wrAvg ? fmt(d.wrAvg,1) : '—')+'</td>';
