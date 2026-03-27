@@ -1569,6 +1569,15 @@ document.getElementById('tfToggle').addEventListener('click', () => {
 // ============================================================
 let currentFormat = 'superflex';
 
+function toggleBkDetail(id, row) {
+  const det = document.getElementById(id);
+  if(!det) return;
+  const isOpen = det.classList.contains('open');
+  det.classList.toggle('open', !isOpen);
+  const arrow = row.querySelector('td:last-child');
+  if(arrow) arrow.textContent = isOpen ? '▾' : '▴';
+}
+
 function toggleRankDetail(id, row) {
   const det = document.getElementById(id);
   if(!det) return;
