@@ -1284,7 +1284,7 @@ const POSITIVE_LABELS = new Set([
 ]);
 const FADE_LABELS = new Set([
   "The N'Keal List",'N.F.L. = Not For Long','Crushed by Zone',
-  'Iffy, But He Runs','Phreshman Phenom'
+  'Phreshman Phenom'
 ]);
 
 // Round thresholds below which a pick is a "reach"
@@ -1337,8 +1337,8 @@ function renderTargetsFades(players, format) {
   });
 
   // Sort targets by adj score desc, fades by adj score asc (worst first)
-  targets.sort((a,b) => dynastySortForFormat(b.p, format) - dynastySortForFormat(a.p, format));
-  fades.sort((a,b) => dynastySortForFormat(a.p, format) - dynastySortForFormat(b.p, format));
+  targets.sort((a,b) => (b.p.grade||0) - (a.p.grade||0));
+  fades.sort((a,b) => (b.p.grade||0) - (a.p.grade||0));
 
   const miniCard = ({p, reason}, type) => {
     const col = type === 'target' ? 'var(--green)' : 'var(--red)';
