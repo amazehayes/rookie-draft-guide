@@ -132,6 +132,126 @@
 .bk-year{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--accent);}
 .bk-bar{height:6px;border-radius:3px;background:var(--accent);display:inline-block;vertical-align:middle;}
 
+
+/* ============================================================
+   MOBILE RESPONSIVENESS
+   ============================================================ */
+
+/* ---- HAMBURGER / DRAWER ---- */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:none;background:none;z-index:201;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .25s;}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+.nav-drawer{position:fixed;top:0;right:-280px;width:280px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:200;transition:right .25s ease;padding:72px 0 24px;overflow-y:auto;}
+.nav-drawer.open{right:0;}
+.nav-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;}
+.nav-drawer-overlay.open{display:block;}
+.nav-drawer .nav-btn{display:block;width:100%;text-align:left;padding:14px 24px;font-size:11px;border-radius:0;border-bottom:1px solid var(--border);}
+.nav-drawer .nav-btn.active{background:rgba(0,194,255,.1);color:var(--accent);border-left:3px solid var(--accent);}
+
+/* ---- MOBILE TABLE ---- */
+.mobile-row-detail{display:none;background:var(--surface2);padding:12px 16px;}
+.mobile-row-detail.open{display:block;}
+.mobile-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;}
+.mobile-detail-item{font-size:10px;}
+.mobile-detail-label{color:var(--muted);font-size:8px;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.mobile-expand-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;padding:2px 6px;border-radius:3px;}
+.mobile-expand-btn:hover{color:var(--accent);}
+
+@media (max-width: 768px) {
+  /* Nav */
+  .site-nav{padding:0 16px;height:56px;}
+  .nav-links{display:none;}
+  .hamburger{display:flex;}
+  .year-bar{padding:8px 12px;}
+  .year-tab{font-size:9px;padding:4px 7px;}
+
+  /* Hero */
+  .hero{padding:32px 16px 28px;}
+  .hero-bg-text{font-size:120px;}
+  h1{font-size:28px;}
+  .stat-row{gap:8px;}
+  .stat-pill{padding:8px 10px;min-width:56px;}
+  .stat-pill .val{font-size:20px;}
+
+  /* Controls */
+  .controls{padding:10px 12px;gap:8px;flex-wrap:wrap;}
+  .filter-group{gap:4px;flex-wrap:wrap;}
+  .filter-btn{padding:5px 10px;font-size:9px;}
+  .search-box{width:100%;min-width:0;}
+  .sort-select{width:100%;font-size:10px;}
+
+  /* Cards grid */
+  .cards-grid{grid-template-columns:1fr 1fr;gap:10px;padding:12px;}
+  .player-card{font-size:10px;}
+  .card-name{font-size:14px;}
+
+  /* Format bar */
+  .format-bar{padding:10px 12px;gap:6px;}
+  .format-btn{font-size:9px;padding:5px 10px;}
+
+  /* Rankings table — hide non-essential columns */
+  .rankings-hide-mobile{display:none;}
+
+  /* Comparison */
+  .comparison-search-bar{padding:12px;gap:10px;}
+  .comp-search-wrap{min-width:0;max-width:100%;flex:1 1 calc(50% - 8px);}
+  .comparison-cards{grid-template-columns:1fr 1fr;gap:10px;padding:12px;}
+  .comparison-stats{padding:0 12px 24px;}
+
+  /* Breakdown */
+  .breakdown-chart-wrap{flex-direction:column;padding:12px;}
+  .breakdown-chart-left,.breakdown-chart-right{width:100%;flex:none;}
+  .breakdown-chart-left{height:220px !important;}
+  .breakdown-chart-right{height:220px !important;}
+  .breakdown-controls{padding:10px 12px;gap:6px;}
+  .breakdown-table-wrap{padding:0 12px 24px;}
+
+  /* Targets/Fades */
+  .tf-body{padding:8px 12px 16px;}
+  .tf-row{gap:12px;}
+  .tf-card{min-width:140px;padding:10px 12px;}
+  .tf-card-name{font-size:13px;}
+  .tf-toggle{padding:10px 16px;}
+
+  /* Glossary */
+  .glossary-body{flex-direction:column;height:auto;}
+  .glossary-index{width:100%;height:auto;max-height:200px;border-right:none;border-bottom:1px solid var(--border);}
+  .glossary-panel{height:auto;max-height:none;}
+  .glossary-entry{padding:20px 16px;}
+  .glossary-controls{padding:10px 12px;gap:8px;}
+  .glossary-search{width:100%;min-width:0;}
+
+  /* Modal */
+  .modal-overlay{padding:0;}
+  .modal{width:100%;max-width:100%;height:100vh;border-radius:0;overflow-y:auto;}
+
+  /* Main content padding */
+  .main{padding:12px;}
+  .table-wrap{overflow-x:auto;}
+}
+
+@media (max-width: 480px) {
+  /* Tighter cards — single column on small phones */
+  .cards-grid{grid-template-columns:1fr;}
+  .comparison-cards{grid-template-columns:1fr 1fr;}
+  .comp-search-wrap{flex:1 1 100%;}
+
+  /* Smaller stat pills */
+  .stat-pill .val{font-size:17px;}
+  .stat-pill .lbl{font-size:7px;}
+
+  /* Tighter format buttons */
+  .format-btn{font-size:8px;padding:4px 8px;}
+
+  /* Year bar horizontal scroll */
+  .year-bar{overflow-x:auto;flex-wrap:nowrap;}
+
+  /* TF section stacks */
+  .tf-row{flex-direction:column;}
+}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;overflow-x:hidden;}
 /* HEADER */
@@ -286,7 +406,18 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-drawer-overlay" id="drawerOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <button class="nav-btn active" data-page="grades">Player Grades</button>
+  <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
+  <button class="nav-btn" data-page="comparison">Player Comparison</button>
+  <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
+  <button class="nav-btn" data-page="glossary">Glossary</button>
+</div>
 <div class="page-section active" id="page-grades">
 <div class="hero">
   <div class="hero-bg-text">2026</div>
@@ -1255,6 +1386,49 @@ renderHeroStats();
 render();
 
 // ============================================================
+// MOBILE — HAMBURGER DRAWER
+// ============================================================
+const hamburger = document.getElementById('hamburger');
+const navDrawer = document.getElementById('navDrawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+
+function openDrawer() {
+  hamburger.classList.add('open');
+  navDrawer.classList.add('open');
+  drawerOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  hamburger.classList.remove('open');
+  navDrawer.classList.remove('open');
+  drawerOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+hamburger.addEventListener('click', () => {
+  navDrawer.classList.contains('open') ? closeDrawer() : openDrawer();
+});
+drawerOverlay.addEventListener('click', closeDrawer);
+
+// Wire drawer nav buttons to switchPage
+navDrawer.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    switchPage(b.dataset.page);
+    closeDrawer();
+  });
+});
+
+// Keep drawer nav active state in sync
+const _origSwitchPageMobile = switchPage;
+function switchPage(page) {
+  _origSwitchPageMobile(page);
+  navDrawer.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+  });
+}
+
+
+// ============================================================
 // SITE NAVIGATION
 // ============================================================
 let activePage = 'grades';
@@ -1395,6 +1569,15 @@ document.getElementById('tfToggle').addEventListener('click', () => {
 // ============================================================
 let currentFormat = 'superflex';
 
+function toggleRankDetail(id, row) {
+  const det = document.getElementById(id);
+  if(!det) return;
+  const isOpen = det.classList.contains('open');
+  det.classList.toggle('open', !isOpen);
+  const arrow = row.querySelector('td:last-child');
+  if(arrow) arrow.textContent = isOpen ? '▾' : '▴';
+}
+
 function renderRankings() {
   const data = yearCache[activeYear] || PLAYERS;
   const sorted = [...data]
@@ -1403,8 +1586,10 @@ function renderRankings() {
 
   
 
-  document.getElementById('rankingsHead').innerHTML =
-    '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Adj Score</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
+  const isMobile = window.innerWidth <= 768;
+  document.getElementById('rankingsHead').innerHTML = isMobile
+    ? '<tr><th>#</th><th>Player</th><th>Pos</th><th>Grade</th><th>Label</th><th></th></tr>'
+    : '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Adj Score</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
 
   _lastRenderedList = sorted;
   let html = '';
@@ -1414,19 +1599,43 @@ function renderRankings() {
     const adjScore = dynastySortForFormat(p, currentFormat);
     const tag = getTag(p);
     const logo = logoSrc(p.school);
-    html += '<tr onclick="openModalFromList('+i+')" style="cursor:pointer">';
-    html += '<td style="font-family:\'Bebas Neue\',cursive;font-size:18px;color:var(--muted)">'+(i+1)+'</td>';
-    html += '<td style="font-weight:700">'+p.name+'</td>';
-    html += '<td><img src="'+logo+'" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">'+p.school+'</td>';
-    html += '<td style="color:'+col+';font-weight:700;font-size:10px">'+p.pos+'</td>';
-    html += '<td>'+(p.age ? fmtAge(p.age) : '—')+'</td>';
-    html += '<td>'+(p.round ? 'Rd '+p.round : '—')+'</td>';
-    html += '<td style="color:'+lg.c+';font-weight:700">'+fmt(p.grade,1)+'</td>';
-    html += '<td style="color:var(--accent2);font-weight:700">'+fmt(adjScore,1)+'</td>';
-    html += '<td style="color:'+col+'">'+(p.markers||0)+'</td>';
-    html += '<td style="color:var(--accent3)">'+(p.pff!=null?Math.round(p.pff):'—')+'</td>';
-    html += '<td>'+(tag?'<span style="color:'+tag.color+';font-size:9px;font-weight:700">'+tag.icon+' '+tag.label+'</span>':'—')+'</td>';
-    html += '</tr>';
+    if(isMobile) {
+      // Condensed mobile row + expandable detail
+      const detailId = 'rdet-'+i;
+      html += '<tr data-det="'+detailId+'" onclick="toggleRankDetail(this.dataset.det,this)" style="cursor:pointer">';
+      html += '<td style="font-family:\'Bebas Neue\',cursive;font-size:16px;color:var(--muted)">'+(i+1)+'</td>';
+      html += '<td style="font-weight:700;font-size:11px">'+p.name+'</td>';
+      html += '<td style="color:'+col+';font-weight:700;font-size:10px">'+p.pos+'</td>';
+      html += '<td style="color:'+lg.c+';font-weight:700">'+fmt(p.grade,1)+'</td>';
+      html += '<td>'+(tag?'<span style="color:'+tag.color+';font-size:9px;font-weight:700">'+tag.icon+'</span>':'—')+'</td>';
+      html += '<td style="color:var(--muted);font-size:10px">▾</td>';
+      html += '</tr>';
+      // Detail expansion row
+      html += '<tr id="'+detailId+'" class="mobile-row-detail"><td colspan="6">';
+      html += '<div class="mobile-detail-grid">';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">School</div>'+p.school+'</div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Age</div>'+(p.age?fmtAge(p.age):'—')+'</div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Round</div>'+(p.round?'Rd '+p.round:'UDFA')+'</div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Adj Score</div><span style="color:var(--accent2);font-weight:700">'+fmt(adjScore,1)+'</span></div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Markers</div><span style="color:'+col+'font-weight:700">'+(p.markers||0)+'</span></div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">PFF</div>'+(p.pff!=null?Math.round(p.pff):'—')+'</div>';
+      if(tag) html += '<div class="mobile-detail-item" style="grid-column:1/-1"><div class="mobile-detail-label">Label</div><span style="color:'+tag.color+';font-weight:700">'+tag.icon+' '+tag.label+'</span></div>';
+      html += '</div></td></tr>';
+    } else {
+      html += '<tr onclick="openModalFromList('+i+')" style="cursor:pointer">';
+      html += '<td style="font-family:\'Bebas Neue\',cursive;font-size:18px;color:var(--muted)">'+(i+1)+'</td>';
+      html += '<td style="font-weight:700">'+p.name+'</td>';
+      html += '<td><img src="'+logo+'" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">'+p.school+'</td>';
+      html += '<td style="color:'+col+';font-weight:700;font-size:10px">'+p.pos+'</td>';
+      html += '<td>'+(p.age ? fmtAge(p.age) : '—')+'</td>';
+      html += '<td>'+(p.round ? 'Rd '+p.round : '—')+'</td>';
+      html += '<td style="color:'+lg.c+';font-weight:700">'+fmt(p.grade,1)+'</td>';
+      html += '<td style="color:var(--accent2);font-weight:700">'+fmt(adjScore,1)+'</td>';
+      html += '<td style="color:'+col+'">'+(p.markers||0)+'</td>';
+      html += '<td style="color:var(--accent3)">'+(p.pff!=null?Math.round(p.pff):'—')+'</td>';
+      html += '<td>'+(tag?'<span style="color:'+tag.color+';font-size:9px;font-weight:700">'+tag.icon+' '+tag.label+'</span>':'—')+'</td>';
+      html += '</tr>';
+    }
   });
   document.getElementById('rankingsBody').innerHTML = html;
   renderTargetsFades(sorted, currentFormat);
