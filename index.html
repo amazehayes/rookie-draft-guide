@@ -2080,31 +2080,65 @@ function renderBreakdown() {
     }
   }));
 
-  // Ranked table
-  document.getElementById('bkHead').innerHTML =
-    '<tr><th>Rank</th><th>Year</th><th>Avg Grade</th><th>Class Size</th><th>Elite (85+)</th><th>Top Player</th><th>QB Avg</th><th>RB Avg</th><th>WR Avg</th><th>TE Avg</th></tr>';
-
+  // Ranked table — mobile-aware
+  const isBkMobile = window.innerWidth <= 768;
   const maxBar = Math.max(...sorted.map(d=>d.avg));
   let html = '';
-  sorted.forEach((d,i) => {
-    const barW = Math.round((d.avg/maxBar)*120);
-    const isActive = d.year === activeYear;
-    html += '<tr style="'+(isActive?'background:rgba(245,200,66,.05)':'')+'">';
-    html += '<td class="bk-rank">'+(i+1)+'</td>';
-    html += '<td class="bk-year" style="'+(isActive?'color:var(--accent2)':'')+'">'+d.year+(isActive?' ★':'')+'</td>';
-    html += '<td><div style="display:flex;align-items:center;gap:8px">'+
-      '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
-      '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
-      '</div></td>';
-    html += '<td>'+(d.size!=null?d.size:'—')+'</td>';
-    html += '<td style="color:var(--accent2);font-weight:700">'+(d.elite!=null?d.elite:'—')+'</td>';
-    html += '<td style="font-size:10px">'+(d.topPlayer ? d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>' : d.loaded?'—':'<span style="color:var(--muted);font-size:9px">Load year to view</span>')+'</td>';
-    html += '<td style="color:var(--pos-qb)">'+( d.qbAvg ? fmt(d.qbAvg,1) : '—')+'</td>';
-    html += '<td style="color:var(--pos-rb)">'+( d.rbAvg ? fmt(d.rbAvg,1) : '—')+'</td>';
-    html += '<td style="color:var(--pos-wr)">'+( d.wrAvg ? fmt(d.wrAvg,1) : '—')+'</td>';
-    html += '<td style="color:var(--pos-te)">'+( d.teAvg ? fmt(d.teAvg,1) : '—')+'</td>';
-    html += '</tr>';
-  });
+
+  if(isBkMobile) {
+    document.getElementById('bkHead').innerHTML =
+      '<tr><th>#</th><th>Year</th><th>Avg Grade</th><th></th></tr>';
+
+    sorted.forEach((d,i) => {
+      const isActive = d.year === activeYear;
+      const detId = 'bkdet-'+i;
+      const barW = Math.round((d.avg/maxBar)*80);
+      html += '<tr data-det="'+detId+'" onclick="toggleBkDetail(this.dataset.det,this)" style="cursor:pointer;'+(isActive?'background:rgba(245,200,66,.05)':'')+'\">';
+      html += '<td class="bk-rank">'+(i+1)+'</td>';
+      html += '<td class="bk-year" style="'+(isActive?'color:var(--accent2)':'')+'">'+d.year+(isActive?' ★':'')+'</td>';
+      html += '<td><div style="display:flex;align-items:center;gap:6px">'+
+        '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
+        '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
+        '</div></td>';
+      html += '<td style="color:var(--muted);font-size:10px">▾</td>';
+      html += '</tr>';
+      html += '<tr id="'+detId+'" class="mobile-row-detail"><td colspan="4">';
+      html += '<div class="mobile-detail-grid">';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Class Size</div>'+(d.size!=null?d.size:'—')+'</div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Elite (85+)</div><span style="color:var(--accent2);font-weight:700">'+(d.elite!=null?d.elite:'—')+'</span></div>';
+      html += '<div class="mobile-detail-item" style="grid-column:1/-1"><div class="mobile-detail-label">Top Player</div>'+(d.topPlayer?d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>':d.loaded?'—':'<span style="color:var(--muted);font-size:9px">Load year to view</span>')+'</div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-qb)">QB Avg</div><span style="color:var(--pos-qb)">'+(d.qbAvg?fmt(d.qbAvg,1):'—')+'</span></div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-rb)">RB Avg</div><span style="color:var(--pos-rb)">'+(d.rbAvg?fmt(d.rbAvg,1):'—')+'</span></div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-wr)">WR Avg</div><span style="color:var(--pos-wr)">'+(d.wrAvg?fmt(d.wrAvg,1):'—')+'</span></div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-te)">TE Avg</div><span style="color:var(--pos-te)">'+(d.teAvg?fmt(d.teAvg,1):'—')+'</span></div>';
+      html += '</div></td></tr>';
+    });
+
+  } else {
+    document.getElementById('bkHead').innerHTML =
+      '<tr><th>Rank</th><th>Year</th><th>Avg Grade</th><th>Class Size</th><th>Elite (85+)</th><th>Top Player</th><th>QB Avg</th><th>RB Avg</th><th>WR Avg</th><th>TE Avg</th></tr>';
+
+    sorted.forEach((d,i) => {
+      const barW = Math.round((d.avg/maxBar)*120);
+      const isActive = d.year === activeYear;
+      html += '<tr style="'+(isActive?'background:rgba(245,200,66,.05)':'')+'">';
+      html += '<td class="bk-rank">'+(i+1)+'</td>';
+      html += '<td class="bk-year" style="'+(isActive?'color:var(--accent2)':'')+'">'+d.year+(isActive?' ★':'')+'</td>';
+      html += '<td><div style="display:flex;align-items:center;gap:8px">'+
+        '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
+        '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
+        '</div></td>';
+      html += '<td>'+(d.size!=null?d.size:'—')+'</td>';
+      html += '<td style="color:var(--accent2);font-weight:700">'+(d.elite!=null?d.elite:'—')+'</td>';
+      html += '<td style="font-size:10px">'+(d.topPlayer ? d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>' : d.loaded?'—':'<span style="color:var(--muted);font-size:9px">Load year to view</span>')+'</td>';
+      html += '<td style="color:var(--pos-qb)">'+( d.qbAvg ? fmt(d.qbAvg,1) : '—')+'</td>';
+      html += '<td style="color:var(--pos-rb)">'+( d.rbAvg ? fmt(d.rbAvg,1) : '—')+'</td>';
+      html += '<td style="color:var(--pos-wr)">'+( d.wrAvg ? fmt(d.wrAvg,1) : '—')+'</td>';
+      html += '<td style="color:var(--pos-te)">'+( d.teAvg ? fmt(d.teAvg,1) : '—')+'</td>';
+      html += '</tr>';
+    });
+  }
+
   document.getElementById('bkBody').innerHTML = html;
 }
 
