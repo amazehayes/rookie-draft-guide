@@ -2082,6 +2082,7 @@ document.getElementById('compClearBtn').addEventListener('click', () => {
 // PAGE 4: CLASS BREAKDOWN
 // ============================================================
 let bkSort = 'avg';
+let bkSortDir = 'desc';
 let bkPosFilter = 'ALL';
 let bkCharts = [];
 
@@ -2136,8 +2137,13 @@ function renderBreakdown() {
     avg:   (a,b) => b.avg - a.avg,
     elite: (a,b) => (b.elite||0) - (a.elite||0),
     year:  (a,b) => b.year - a.year,
+    qbAvg: (a,b) => (b.qbAvg||0) - (a.qbAvg||0),
+    rbAvg: (a,b) => (b.rbAvg||0) - (a.rbAvg||0),
+    wrAvg: (a,b) => (b.wrAvg||0) - (a.wrAvg||0),
+    teAvg: (a,b) => (b.teAvg||0) - (a.teAvg||0),
   };
-  const sorted = [...raw].sort(sortFns[bkSort]);
+  const sortedRaw = [...raw].sort(sortFns[bkSort] || sortFns.avg);
+  const sorted = bkSortDir === 'asc' ? sortedRaw.reverse() : sortedRaw;
   const byYear = [...raw].sort((a,b)=>a.year-b.year);
 
   // Destroy old charts
@@ -2248,12 +2254,19 @@ function renderBreakdown() {
       html += '</div></td></tr>';
     });
   } else {
+    const arrow = k => k === bkSort ? (bkSortDir === 'desc' ? ' ↓' : ' ↑') : '';
+    const th = (k, label, col='') => `<th style="cursor:pointer;${col?'color:'+col:''}" onclick="setBkSort('${k}')">${label}${arrow(k)}</th>`;
     document.getElementById('bkHead').innerHTML =
-      '<tr><th>Rank</th><th>Year</th><th>Avg Grade</th><th>Elite (85+)</th><th>Top Player</th>' +
-      '<th style="color:var(--pos-qb)">QB Avg</th><th style="color:var(--pos-qb)">Top QB</th>' +
-      '<th style="color:var(--pos-rb)">RB Avg</th><th style="color:var(--pos-rb)">Top RB</th>' +
-      '<th style="color:var(--pos-wr)">WR Avg</th><th style="color:var(--pos-wr)">Top WR</th>' +
-      '<th style="color:var(--pos-te)">TE Avg</th><th style="color:var(--pos-te)">Top TE</th></tr>';
+      '<tr>' +
+      th('year','Year') +
+      th('avg','Avg Grade') +
+      th('elite','Elite (85+)') +
+      '<th>Top Player</th>' +
+      th('qbAvg','QB Avg','var(--pos-qb)') + '<th style="color:var(--pos-qb)">Top QB</th>' +
+      th('rbAvg','RB Avg','var(--pos-rb)') + '<th style="color:var(--pos-rb)">Top RB</th>' +
+      th('wrAvg','WR Avg','var(--pos-wr)') + '<th style="color:var(--pos-wr)">Top WR</th>' +
+      th('teAvg','TE Avg','var(--pos-te)') + '<th style="color:var(--pos-te)">Top TE</th>' +
+      '</tr>';
     sorted.forEach((d,i) => {
       const barW = Math.round((d.avg/maxBar)*100);
       const isActive = d.year === activeYear;
@@ -2277,13 +2290,22 @@ function renderBreakdown() {
   document.getElementById('bkBody').innerHTML = html;
 }
 
-document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.format-btn[data-bksort]').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    bkSort = b.dataset.bksort;
-    renderBreakdown();
+function setBkSort(key) {
+  if(bkSort === key) {
+    bkSortDir = bkSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    bkSort = key;
+    bkSortDir = 'desc';
+  }
+  // Sync sort buttons if applicable
+  document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
+    b.classList.toggle('active', b.dataset.bksort === bkSort);
   });
+  renderBreakdown();
+}
+
+document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
+  b.addEventListener('click', () => setBkSort(b.dataset.bksort));
 });
 
 document.querySelectorAll('.format-btn[data-bkpos]').forEach(b => {
