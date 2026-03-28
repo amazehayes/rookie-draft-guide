@@ -3006,47 +3006,81 @@ globalInput.addEventListener('keydown', e => {
 // ============================================================
 // HISTORICAL COMPS
 // ============================================================
+// ── Comp variable definitions per position (translated from R) ───────────────
+const COMP_VARS = {
+  QB: {
+    withGrade:    ['ht','wt','grade','pff','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
+    withoutGrade: ['ht','wt','markers','pff','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
+    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,pff:1,careerPYd:1,careerPTD:1,careerINT:1,careerCMP:1,careerRuYd:1.3}
+  },
+  RB: {
+    withGrade:    ['ht','wt','grade','bestTotalYds','bestRec','bestPPG','burst','dash'],
+    withoutGrade: ['ht','wt','markers','bestTotalYds','bestRec','bestPPG','burst','dash'],
+    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,bestTotalYds:1,bestRec:1,bestPPG:1,burst:1,dash:1}
+  },
+  WR: {
+    withGrade:    ['ht','wt','grade','boy20','boy30','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    withoutGrade: ['ht','wt','markers','boy20','boy30','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,boy20:1,boy30:1,pff:1,bestYPTPA:1,bestMSYards:1,bestPPG:1,burst:1,dash:1,wass:1}
+  },
+  TE: {
+    withGrade:    ['ht','wt','grade','boy15','boy20','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    withoutGrade: ['ht','wt','markers','boy15','boy20','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,boy15:1,boy20:1,pff:1,bestYPTPA:1,bestMSYards:1,bestPPG:1,burst:1,dash:1,wass:1}
+  }
+};
+
+function zScoreParams(vals) {
+  const clean = vals.filter(v => v != null && !isNaN(v));
+  if(!clean.length) return {mean:0, std:1};
+  const mean = clean.reduce((s,v)=>s+v,0) / clean.length;
+  const variance = clean.reduce((s,v)=>s+(v-mean)**2,0) / clean.length;
+  return {mean, std: Math.sqrt(variance) || 1};
+}
+
 function computeComps(player) {
+  const pos = player.pos;
+  const cfg = COMP_VARS[pos];
+  if(!cfg) return [];
+
+  const hasGrade = player.grade != null;
+  const vars = hasGrade ? cfg.withGrade : cfg.withoutGrade;
+  const weights = cfg.weights;
+  const targetYear = player.year || 2026;
+
+  // Candidates: same pos, earlier year, drafted (round not null/8)
   const candidates = [];
   Object.entries(yearCache).forEach(([yr, players]) => {
-    if(Number(yr) === 2026) return;
+    if(Number(yr) >= targetYear) return;
     players.forEach(p => {
-      if(p.pos === player.pos && p.grade && p.name !== player.name) {
-        candidates.push({...p, year: Number(yr)});
-      }
+      if(p.pos !== pos || p.name === player.name) return;
+      if(p.round == null || p.round === 8) return;
+      if(hasGrade && p.grade == null) return;
+      if(!hasGrade && p.markers == null) return;
+      candidates.push({...p, year: Number(yr)});
     });
   });
   if(!candidates.length) return [];
 
-  const keys = ['grade','markers','pff','ath','prod'];
-  const ranges = {};
-  keys.forEach(k => {
-    const vals = candidates.map(p => p[k]).filter(v => v != null);
-    if(vals.length) ranges[k] = {min: Math.min(...vals), max: Math.max(...vals)};
-  });
+  // Joint z-score normalization across [target, ...candidates]
+  const pool = [player, ...candidates];
+  const zp = {};
+  vars.forEach(k => { zp[k] = zScoreParams(pool.map(p => p[k])); });
 
-  function norm(v, k) {
-    const r = ranges[k];
-    if(!r || r.max === r.min) return 0;
-    return (v - r.min) / (r.max - r.min);
-  }
-
-  const weights = {grade:3, markers:2, pff:2, ath:1, prod:1};
-  const totalW = Object.values(weights).reduce((s,v)=>s+v,0);
+  const z = (v, k) => (v == null || isNaN(v)) ? 0 : (v - zp[k].mean) / zp[k].std;
+  const targetVec = vars.map(k => z(player[k], k));
 
   candidates.forEach(p => {
-    let dist = 0, wt = 0;
-    keys.forEach(k => {
-      if(player[k] != null && p[k] != null) {
-        const d = norm(player[k],k) - norm(p[k],k);
-        dist += weights[k] * d * d;
-        wt += weights[k];
-      }
+    let dist = 0;
+    vars.forEach((k, i) => {
+      const d = z(p[k], k) - targetVec[i];
+      dist += (weights[k] || 1) * d * d;
     });
-    p._sim = wt > 0 ? Math.max(0, 100 - Math.sqrt(dist/wt*totalW) * 100) : 0;
+    p._dist = Math.sqrt(dist);
+    p._sim = Math.round(1 / (1 + p._dist) * 1000) / 10;
   });
 
-  return candidates.sort((a,b)=>b._sim-a._sim).slice(0,3);
+  return candidates.sort((a,b) => a._dist - b._dist).slice(0, 3);
 }
 
 async function renderModalComps(player) {
