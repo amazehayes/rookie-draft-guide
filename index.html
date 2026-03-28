@@ -622,11 +622,7 @@ td{padding:10px 14px;white-space:nowrap;}
 <!-- PAGE 4: CLASS BREAKDOWN -->
 <div class="page-section" id="page-breakdown">
   <div class="breakdown-controls">
-    <span class="format-label">Sort By:</span>
-    <button class="format-btn active" data-bksort="avg">Avg Grade</button>
-    <button class="format-btn" data-bksort="elite">Elite Prospects</button>
-    <button class="format-btn" data-bksort="year">Year</button>
-    <span class="format-label" style="margin-left:12px">Position Chart:</span>
+    <span class="format-label">Position Chart:</span>
     <button class="format-btn active" data-bkpos="ALL">All</button>
     <button class="format-btn" data-bkpos="QB" style="color:var(--pos-qb)">QB</button>
     <button class="format-btn" data-bkpos="RB" style="color:var(--pos-rb)">RB</button>
@@ -2259,7 +2255,7 @@ function renderBreakdown() {
     document.getElementById('bkHead').innerHTML =
       '<tr>' +
       th('year','Year') +
-      th('avg','Avg Grade') +
+      th('avg','Avg Grade <span style="font-size:9px;font-weight:400;opacity:.6">(top-50)</span>') +
       th('elite','Elite (85+)') +
       '<th>Top Player</th>' +
       th('qbAvg','QB Avg','var(--pos-qb)') + '<th style="color:var(--pos-qb)">Top QB</th>' +
@@ -2271,7 +2267,6 @@ function renderBreakdown() {
       const barW = Math.round((d.avg/maxBar)*100);
       const isActive = d.year === activeYear;
       html += `<tr style="${isActive?'background:rgba(245,200,66,.05)':''}">`;
-      html += `<td class="bk-rank">${i+1}</td>`;
       html += `<td class="bk-year" style="${isActive?'color:var(--accent2)':''}">${d.year}${isActive?' ★':''}</td>`;
       html += `<td><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--accent)">${fmt(d.avg,1)}</span><div class="bk-bar" style="width:${barW}px;opacity:.6"></div></div></td>`;
       html += `<td style="color:var(--accent2);font-weight:700">${d.elite!=null?d.elite:'—'}</td>`;
