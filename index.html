@@ -1282,6 +1282,7 @@ function openModal(p){
   document.getElementById('modalOverlay').classList.add('open');
   // Render comps after modal opens
   setTimeout(() => renderModalComps(p), 50);
+}
 
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
 function render(){
