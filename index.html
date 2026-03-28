@@ -446,7 +446,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .school-logo{width:28px;height:28px;object-fit:contain;flex-shrink:0;opacity:.9;}
 .school-logo-sm{width:20px;height:20px;object-fit:contain;opacity:.85;vertical-align:middle;margin-right:4px;}
 .school-logo-modal{width:40px;height:40px;object-fit:contain;opacity:.9;flex-shrink:0;}
-.player-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:8px;border:1px solid;}
+.player-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:8px;margin-bottom:12px;border:1px solid;}
 .player-tag .tag-icon{font-size:12px;}
 .empty-state{text-align:center;padding:80px 24px;color:var(--muted);font-size:13px;}
 .c-accent{color:var(--accent);}.c-accent2{color:var(--accent2);}.c-accent3{color:var(--accent3);}
@@ -1083,7 +1083,7 @@ function renderCards(){
     html+='<div class="marker-section"><div class="marker-section-label">Markers '+mk+'/'+mx+'</div><div class="marker-dots">'+dots+'</div></div>';
     html+='<div class="marker-section" style="margin-top:8px"><div class="marker-section-label">PFF Markers '+pmk+'/'+pmx+'</div><div class="marker-dots">'+pdots+'</div></div>';
     const tag=tagHTML(p);
-    html+=tag||'<div style="height:26px;margin-top:8px"></div>';
+    html+=tag||'<div style="height:38px"></div>';
     html+='<div class="card-metrics">'+metrics+'</div>';
     html+='</div></div>';
   });
@@ -1868,7 +1868,7 @@ function renderComparison() {
           '<div style="flex:1;min-width:0"><div class="card-name" style="font-size:16px">'+p.name+'</div><div class="card-school">'+(p.school||'')+'</div></div>'+
           '<img src="'+logoSrc(p.school)+'" class="school-logo" alt="" onerror="this.style.display=\'none\'">'+
         '</div>'+
-        (tag?'<div class="player-tag" style="color:'+tag.color+';background:'+tag.color+'18;border-color:'+tag.color+'44">'+tag.icon+' '+tag.label+'</div>':'<div style="height:26px;margin-top:8px"></div>')+
+        (tag?'<div class="player-tag" style="color:'+tag.color+';background:'+tag.color+'18;border-color:'+tag.color+'44">'+tag.icon+' '+tag.label+'</div>':'<div style="height:38px"></div>')+
         '<div class="grade-bar-wrap">'+
           '<div class="grade-bar-label"><span class="grade-bar-lbl-text">Final Grade</span>'+
             '<div class="grade-val-row"><span class="grade-val" style="color:'+lg.c+'">'+fmt(g,1)+'</span>'+
@@ -2732,7 +2732,7 @@ function explorerRender() {
               </div>
               <img src="${logo}" class="school-logo" onerror="this.style.display=\'none\'">
             </div>
-            ${tag?`<div class="player-tag" style="color:${tag.color};background:${tag.color}18;border-color:${tag.color}44">${tag.icon} ${tag.label}</div>`:'<div style="height:26px;margin-top:8px"></div>'}
+            ${tag?`<div class="player-tag" style="color:${tag.color};background:${tag.color}18;border-color:${tag.color}44">${tag.icon} ${tag.label}</div>`:'<div style="height:38px"></div>'}
             <div class="grade-bar-wrap">
               <div class="grade-bar-label">
                 <span class="grade-bar-lbl-text">Final Grade</span>
