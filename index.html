@@ -16,8 +16,6 @@
 }
 
 
-
-
 /* ---- TARGETS / FADES ---- */
 .tf-section{border-bottom:1px solid var(--border);background:var(--surface);}
 .tf-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 32px;background:none;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);transition:color .15s;}
@@ -533,9 +531,12 @@ td{padding:10px 14px;white-space:nowrap;}
 </head>
 <body>
 <nav class="site-nav" id="siteNav">
-  <div class="nav-brand">
-    <div class="logo-title">The Marker System</div>
-    <div class="logo-sub">Dynasty Draft Hub</div>
+  <div class="nav-brand" style="display:flex;align-items:center;gap:10px;">
+    <img src="logo.png" alt="The Marker System" style="height:42px;width:auto;object-fit:contain;" onerror="this.style.display='none'">
+    <div>
+      <div class="logo-title">The Marker System</div>
+      <div class="logo-sub">Dynasty Draft Hub</div>
+    </div>
   </div>
   <div class="global-search-wrap" id="globalSearchWrap">
     <span class="global-search-icon">⌕</span>
