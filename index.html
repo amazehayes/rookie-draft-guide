@@ -105,8 +105,10 @@
 .explorer-slider-wrap{position:relative;height:20px;margin:4px 0;}
 .explorer-slider-track{position:absolute;top:50%;left:0;right:0;height:3px;background:var(--border);border-radius:2px;transform:translateY(-50%);}
 .explorer-slider-fill{position:absolute;top:50%;height:3px;background:var(--accent);border-radius:2px;transform:translateY(-50%);}
-.explorer-slider-input{position:absolute;width:100%;top:50%;transform:translateY(-50%);opacity:0;cursor:pointer;height:20px;margin:0;}
-.explorer-slider-input::-webkit-slider-thumb{width:16px;height:16px;}
+.explorer-slider-input{position:absolute;width:100%;top:50%;transform:translateY(-50%);opacity:0;cursor:pointer;height:20px;margin:0;pointer-events:none;}
+.explorer-slider-input.active{pointer-events:auto;z-index:3;}
+.explorer-slider-input::-webkit-slider-thumb{width:16px;height:16px;pointer-events:auto;}
+.explorer-slider-wrap:hover .explorer-slider-input{pointer-events:auto;}
 .explorer-thumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);transform:translate(-50%,-50%);pointer-events:none;}
 .explorer-add-metric{margin:12px 16px;background:none;border:1px dashed var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:9px;border-radius:6px;cursor:pointer;width:calc(100% - 32px);transition:all .15s;text-align:center;}
 .explorer-add-metric:hover{border-color:var(--accent);color:var(--accent);}
@@ -2584,27 +2586,48 @@ function renderExplorerFilters() {
   }).join('');
 }
 
+function explorerSliderFocus(i, side) {
+  // Raise clicked slider above the other
+  const lo = document.getElementById('eslo-'+i);
+  const hi = document.getElementById('eshi-'+i);
+  if(!lo || !hi) return;
+  if(side === 'lo') { lo.style.zIndex=4; hi.style.zIndex=2; }
+  else              { hi.style.zIndex=4; lo.style.zIndex=2; }
+}
+
+function explorerSliderSyncInput(i) {
+  // Keep input values in sync with f.lo/f.hi after clamping
+  const f = explorerFilters[i];
+  const lo = document.getElementById('eslo-'+i);
+  const hi = document.getElementById('eshi-'+i);
+  if(lo) lo.value = f.lo;
+  if(hi) hi.value = f.hi;
+}
+
 function updateExplorerSlider(i, side, val) {
   const f = explorerFilters[i];
   val = parseFloat(val);
+  const step = (f.max - f.min) / 200;
   if(side === 'lo') {
-    f.lo = Math.min(val, f.hi - (f.max-f.min)/200);
+    f.lo = Math.min(val, f.hi - step);
+    f.lo = Math.max(f.lo, f.min);
   } else {
-    f.hi = Math.max(val, f.lo + (f.max-f.min)/200);
+    f.hi = Math.max(val, f.lo + step);
+    f.hi = Math.min(f.hi, f.max);
   }
+  explorerSliderSyncInput(i);
   // Update visuals
   const total = f.max - f.min;
   const fillLeft = (f.lo - f.min) / total * 100;
   const fillWidth = (f.hi - f.lo) / total * 100;
   const fill = document.getElementById('efill-'+i);
-  const tlo = document.getElementById('etlo-'+i);
-  const thi = document.getElementById('ethi-'+i);
+  const tlo  = document.getElementById('etlo-'+i);
+  const thi  = document.getElementById('ethi-'+i);
+  const vals = document.getElementById('evals-'+i);
   if(fill) { fill.style.left=fillLeft+'%'; fill.style.width=fillWidth+'%'; }
-  if(tlo) tlo.style.left=fillLeft+'%';
-  if(thi) thi.style.left=(fillLeft+fillWidth)+'%';
-  // Update display val
-  const valEl = document.querySelector(`#explorerMetricList .explorer-metric-item:nth-child(${i+1}) .explorer-metric-vals`);
-  if(valEl) valEl.textContent = explorerFmtVal(f.lo,f.fmt)+' – '+explorerFmtVal(f.hi,f.fmt);
+  if(tlo)  tlo.style.left = fillLeft+'%';
+  if(thi)  thi.style.left = (fillLeft+fillWidth)+'%';
+  if(vals) vals.textContent = explorerFmtVal(f.lo,f.fmt)+' – '+explorerFmtVal(f.hi,f.fmt);
   explorerRender();
 }
 
