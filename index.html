@@ -548,8 +548,10 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
-  <div class="nav-updated" id="navUpdated"></div>
-  <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">☀</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <div class="nav-updated" id="navUpdated"></div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">☀</button>
+  </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
@@ -776,6 +778,21 @@ td{padding:10px 14px;white-space:nowrap;}
           <span>Pick a position and add stat filters to find players</span>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="share-modal" id="shareModal">
+  <div class="share-modal-box">
+    <div class="share-modal-title">Share Player</div>
+    <div id="sharePlayerName" style="font-size:14px;font-weight:700;margin-bottom:4px"></div>
+    <div id="sharePlayerMeta" style="font-size:11px;color:var(--muted);margin-bottom:16px"></div>
+    <div class="share-btn-row">
+      <button class="share-action-btn" id="shareCopyLink">🔗 Copy Link</button>
+      <button class="share-action-btn" id="shareDownloadImg">⬇ Download Card</button>
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="share-action-btn" style="flex:none;padding:6px 14px" onclick="document.getElementById('shareModal').classList.remove('open')">Cancel</button>
     </div>
   </div>
 </div>
@@ -3311,20 +3328,5 @@ async function exportRankingsPDF() {
 }
 
 </script>
-
-<div class="share-modal" id="shareModal">
-  <div class="share-modal-box">
-    <div class="share-modal-title">Share Player</div>
-    <div id="sharePlayerName" style="font-size:14px;font-weight:700;margin-bottom:4px"></div>
-    <div id="sharePlayerMeta" style="font-size:11px;color:var(--muted);margin-bottom:16px"></div>
-    <div class="share-btn-row">
-      <button class="share-action-btn" id="shareCopyLink">🔗 Copy Link</button>
-      <button class="share-action-btn" id="shareDownloadImg">⬇ Download Card</button>
-    </div>
-    <div style="margin-top:12px;text-align:right">
-      <button class="share-action-btn" style="flex:none;padding:6px 14px" onclick="document.getElementById('shareModal').classList.remove('open')">Cancel</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
