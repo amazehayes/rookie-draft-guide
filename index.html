@@ -1229,6 +1229,8 @@ function openModalFromList(i){
 function openModal(p){
   window._currentModalPlayer = p;
   if(!p)return;
+  const col=posColor(p.pos);
+  const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
   const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
   const markers=evalMarkers(p);
   const list=getFiltered();
