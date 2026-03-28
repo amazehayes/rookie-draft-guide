@@ -624,9 +624,14 @@ td{padding:10px 14px;white-space:nowrap;}
   <div class="breakdown-controls">
     <span class="format-label">Sort By:</span>
     <button class="format-btn active" data-bksort="avg">Avg Grade</button>
-    <button class="format-btn" data-bksort="size">Class Size</button>
     <button class="format-btn" data-bksort="elite">Elite Prospects</button>
     <button class="format-btn" data-bksort="year">Year</button>
+    <span class="format-label" style="margin-left:12px">Position Chart:</span>
+    <button class="format-btn active" data-bkpos="ALL">All</button>
+    <button class="format-btn" data-bkpos="QB" style="color:var(--pos-qb)">QB</button>
+    <button class="format-btn" data-bkpos="RB" style="color:var(--pos-rb)">RB</button>
+    <button class="format-btn" data-bkpos="WR" style="color:var(--pos-wr)">WR</button>
+    <button class="format-btn" data-bkpos="TE" style="color:var(--pos-te)">TE</button>
   </div>
   <div class="breakdown-chart-wrap">
     <div class="breakdown-chart-left" style="height:350px"><canvas id="breakdownChart"></canvas></div>
@@ -1222,12 +1227,12 @@ document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 // ---- YEAR TAB SYSTEM ----
-const YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005];
+const YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
 let activeYear = 2026;
 let yearCache = {2026: PLAYERS};
 
 // Historical class averages (all years)
-const ALL_CLASS_AVGS = {2005:42.74,2006:42.01,2007:41.11,2008:38.57,2009:38.56,2010:37.19,2011:35.3,2012:40.28,2013:33.9,2014:42.33,2015:35.85,2016:31.18,2017:35.64,2018:36.63,2019:35.74,2020:36.12,2021:36.2,2022:38.6,2023:38.03,2024:41.26,2025:36.65,2026:22.8};
+const ALL_CLASS_AVGS = {2010:37.19,2011:35.3,2012:40.28,2013:33.9,2014:42.33,2015:35.85,2016:31.18,2017:35.64,2018:36.63,2019:35.74,2020:36.12,2021:36.2,2022:38.6,2023:38.03,2024:41.26,2025:36.65,2026:22.8};
 
 function buildYearTabs() {
   ['gradesYearBar','rankingsYearBar'].forEach(id => {
@@ -1790,7 +1795,7 @@ let allPlayersCache = null;
 async function getAllPlayers() {
   if(allPlayersCache) return allPlayersCache;
   // Load all years we don't have yet
-  const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005];
+  const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
   for(const yr of years) {
     if(!yearCache[yr]) {
       try {
@@ -2077,6 +2082,7 @@ document.getElementById('compClearBtn').addEventListener('click', () => {
 // PAGE 4: CLASS BREAKDOWN
 // ============================================================
 let bkSort = 'avg';
+let bkPosFilter = 'ALL';
 let bkCharts = [];
 
 function getBreakdownData() {
@@ -2084,34 +2090,35 @@ function getBreakdownData() {
   return allYears.map(yr => {
     const data = yearCache[yr] || [];
     const graded = data.filter(p => p.grade);
+    // Top-50 average
+    const top50 = [...graded].sort((a,b)=>b.grade-a.grade).slice(0,50);
+    const top50avg = top50.length ? top50.reduce((s,p)=>s+p.grade,0)/top50.length : null;
+
     const byPos = {QB:[],RB:[],WR:[],TE:[]};
-    graded.forEach(p => { if(byPos[p.pos]) byPos[p.pos].push(p.grade); });
-    const avg = g => g.length ? g.reduce((s,v)=>s+v,0)/g.length : null;
-    const topPlayer = graded.length ? graded.reduce((best,p) => p.grade > (best?.grade||0) ? p : best, null) : null;
-    const elite = graded.filter(p => p.grade >= 85).length;
+    graded.forEach(p => { if(byPos[p.pos]) byPos[p.pos].push(p); });
+    const posAvg  = arr => arr.length ? arr.reduce((s,p)=>s+p.grade,0)/arr.length : null;
+    const posTop  = arr => arr.length ? arr.reduce((best,p) => p.grade>(best?.grade||0)?p:best, null) : null;
+    const topPlayer = graded.length ? graded.reduce((best,p)=>p.grade>(best?.grade||0)?p:best,null) : null;
+    const elite = graded.filter(p=>p.grade>=85).length;
     const loaded = data.length > 0;
     return {
       year: yr,
-      avg: ALL_CLASS_AVGS[yr],           // always use pre-computed avg
-      size: loaded ? data.length : null,
+      avg: loaded && top50avg ? top50avg : ALL_CLASS_AVGS[yr],
       elite: loaded ? elite : null,
       topPlayer: loaded ? topPlayer : null,
-      qbAvg: avg(byPos.QB),
-      rbAvg: avg(byPos.RB),
-      wrAvg: avg(byPos.WR),
-      teAvg: avg(byPos.TE),
+      qbAvg: posAvg(byPos.QB), topQB: posTop(byPos.QB),
+      rbAvg: posAvg(byPos.RB), topRB: posTop(byPos.RB),
+      wrAvg: posAvg(byPos.WR), topWR: posTop(byPos.WR),
+      teAvg: posAvg(byPos.TE), topTE: posTop(byPos.TE),
       loaded,
     };
   });
 }
 
 async function loadAndRenderBreakdown() {
-  // Show loading state
   document.getElementById('bkBody').innerHTML =
     '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;letter-spacing:1px">Loading all class data...</td></tr>';
-
-  // Load all years not yet cached
-  const years = [2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  const years = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
   await Promise.all(years.map(async yr => {
     if(!yearCache[yr]) {
       try {
@@ -2125,13 +2132,10 @@ async function loadAndRenderBreakdown() {
 
 function renderBreakdown() {
   const raw = getBreakdownData();
-
-  // Sort
   const sortFns = {
-    avg: (a,b) => b.avg - a.avg,
-    size: (a,b) => b.size - a.size,
-    elite: (a,b) => b.elite - a.elite,
-    year: (a,b) => b.year - a.year,
+    avg:   (a,b) => b.avg - a.avg,
+    elite: (a,b) => (b.elite||0) - (a.elite||0),
+    year:  (a,b) => b.year - a.year,
   };
   const sorted = [...raw].sort(sortFns[bkSort]);
   const byYear = [...raw].sort((a,b)=>a.year-b.year);
@@ -2140,7 +2144,7 @@ function renderBreakdown() {
   bkCharts.forEach(c => c.destroy());
   bkCharts = [];
 
-  // Chart 1: Avg grade bar chart by year
+  // Chart 1: Overall avg grade bar chart
   const maxAvg = Math.max(...byYear.map(d=>d.avg));
   const ctx1 = document.getElementById('breakdownChart').getContext('2d');
   bkCharts.push(new Chart(ctx1, {
@@ -2148,23 +2152,21 @@ function renderBreakdown() {
     data: {
       labels: byYear.map(d=>d.year),
       datasets: [{
-        label: 'Avg Grade',
+        label: 'Avg Grade (Top 50)',
         data: byYear.map(d=>d.avg),
         backgroundColor: byYear.map(d => {
           const ratio = d.avg / maxAvg;
           return `rgba(0,194,255,${0.3 + ratio*0.7})`;
         }),
         borderColor: byYear.map(d => d.year === activeYear ? '#f5c842' : 'transparent'),
-        borderWidth: 2,
-        borderRadius: 4,
+        borderWidth: 2, borderRadius: 4,
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend:{display:false},
-        title:{display:true,text:'Class Average Grade (2005–2026)',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
+        title:{display:true,text:'Class Average Grade — Top 50 Prospects (2010–2026)',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
         tooltip:{callbacks:{label:ctx=>'Avg: '+ctx.parsed.y.toFixed(1)}}
       },
       scales: {
@@ -2174,92 +2176,104 @@ function renderBreakdown() {
     }
   }));
 
-  // Chart 2: Positional breakdown stacked bar
+  // Chart 2: Positional breakdown — filtered by bkPosFilter
+  const POS_COLORS = {QB:'rgba(123,97,255,.8)',RB:'rgba(0,232,138,.8)',WR:'rgba(0,194,255,.8)',TE:'rgba(255,140,66,.8)'};
+  const allPosDatasets = [
+    {label:'QB', key:'qbAvg', color:POS_COLORS.QB},
+    {label:'RB', key:'rbAvg', color:POS_COLORS.RB},
+    {label:'WR', key:'wrAvg', color:POS_COLORS.WR},
+    {label:'TE', key:'teAvg', color:POS_COLORS.TE},
+  ];
+  const visibleDatasets = bkPosFilter === 'ALL'
+    ? allPosDatasets
+    : allPosDatasets.filter(d => d.label === bkPosFilter);
+
   const ctx2 = document.getElementById('breakdownPosChart').getContext('2d');
   bkCharts.push(new Chart(ctx2, {
     type: 'bar',
     data: {
       labels: byYear.map(d=>d.year),
-      datasets: [
-        {label:'QB',data:byYear.map(d=>d.qbAvg),backgroundColor:'rgba(123,97,255,.7)',borderRadius:2},
-        {label:'RB',data:byYear.map(d=>d.rbAvg),backgroundColor:'rgba(0,232,138,.7)',borderRadius:2},
-        {label:'WR',data:byYear.map(d=>d.wrAvg),backgroundColor:'rgba(0,194,255,.7)',borderRadius:2},
-        {label:'TE',data:byYear.map(d=>d.teAvg),backgroundColor:'rgba(255,140,66,.7)',borderRadius:2},
-      ]
+      datasets: visibleDatasets.map(d => ({
+        label: d.label,
+        data: byYear.map(row => row[d.key]),
+        backgroundColor: d.color,
+        borderRadius: 2,
+      }))
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend:{labels:{color:'#e8edf3',font:{family:'IBM Plex Mono',size:9}}},
-        title:{display:true,text:'Average Grade by Position Group',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
+        title:{display:true,text:'Average Grade by Position'+(bkPosFilter!=='ALL'?' — '+bkPosFilter:''),color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
       },
       scales: {
-        x:{stacked:false,ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'}},
-        y:{stacked:false,ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'},min:0}
+        x:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'}},
+        y:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'},min:0}
       }
     }
   }));
 
-  // Ranked table — mobile-aware
+  // Table
   const isBkMobile = window.innerWidth <= 768;
   const maxBar = Math.max(...sorted.map(d=>d.avg));
   let html = '';
 
+  const topCell = (p, col) => p
+    ? `<span style="font-weight:700">${p.name}</span> <span style="color:var(--muted)">(${fmt(p.grade,1)})</span>`
+    : (col ? '—' : '<span style="color:var(--muted);font-size:11px">Load to view</span>');
+
   if(isBkMobile) {
     document.getElementById('bkHead').innerHTML =
       '<tr><th>#</th><th>Year</th><th>Avg Grade</th><th></th></tr>';
-
     sorted.forEach((d,i) => {
       const isActive = d.year === activeYear;
       const detId = 'bkdet-'+i;
       const barW = Math.round((d.avg/maxBar)*80);
-      html += '<tr data-det="'+detId+'" onclick="toggleBkDetail(this.dataset.det,this)" style="cursor:pointer;'+(isActive?'background:rgba(245,200,66,.05)':'')+'\">';
-      html += '<td class="bk-rank">'+(i+1)+'</td>';
-      html += '<td class="bk-year" style="'+(isActive?'color:var(--accent2)':'')+'">'+d.year+(isActive?' ★':'')+'</td>';
-      html += '<td><div style="display:flex;align-items:center;gap:6px">'+
-        '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
-        '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
-        '</div></td>';
-      html += '<td style="color:var(--muted);font-size:12px">▾</td>';
-      html += '</tr>';
-      html += '<tr id="'+detId+'" class="mobile-row-detail"><td colspan="4">';
-      html += '<div class="mobile-detail-grid">';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Class Size</div>'+(d.size!=null?d.size:'—')+'</div>';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Elite (85+)</div><span style="color:var(--accent2);font-weight:700">'+(d.elite!=null?d.elite:'—')+'</span></div>';
-      html += '<div class="mobile-detail-item" style="grid-column:1/-1"><div class="mobile-detail-label">Top Player</div>'+(d.topPlayer?d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>':d.loaded?'—':'<span style="color:var(--muted);font-size:11px">Load year to view</span>')+'</div>';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-qb)">QB Avg</div><span style="color:var(--pos-qb)">'+(d.qbAvg?fmt(d.qbAvg,1):'—')+'</span></div>';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-rb)">RB Avg</div><span style="color:var(--pos-rb)">'+(d.rbAvg?fmt(d.rbAvg,1):'—')+'</span></div>';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-wr)">WR Avg</div><span style="color:var(--pos-wr)">'+(d.wrAvg?fmt(d.wrAvg,1):'—')+'</span></div>';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-te)">TE Avg</div><span style="color:var(--pos-te)">'+(d.teAvg?fmt(d.teAvg,1):'—')+'</span></div>';
+      html += `<tr data-det="${detId}" onclick="toggleBkDetail(this.dataset.det,this)" style="cursor:pointer;${isActive?'background:rgba(245,200,66,.05)':''}">`;
+      html += `<td class="bk-rank">${i+1}</td>`;
+      html += `<td class="bk-year" style="${isActive?'color:var(--accent2)':''}">${d.year}${isActive?' ★':''}</td>`;
+      html += `<td><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:700;color:var(--accent)">${fmt(d.avg,1)}</span><div class="bk-bar" style="width:${barW}px;opacity:.6"></div></div></td>`;
+      html += `<td style="color:var(--muted);font-size:12px">▾</td></tr>`;
+      html += `<tr id="${detId}" class="mobile-row-detail"><td colspan="4"><div class="mobile-detail-grid">`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Elite (85+)</div><span style="color:var(--accent2);font-weight:700">${d.elite!=null?d.elite:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item" style="grid-column:1/-1"><div class="mobile-detail-label">Top Player</div>${topCell(d.topPlayer, d.loaded)}</div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-qb)">QB Avg</div><span style="color:var(--pos-qb)">${d.qbAvg?fmt(d.qbAvg,1):'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top QB</div><span style="font-size:10px">${d.topQB?d.topQB.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-rb)">RB Avg</div><span style="color:var(--pos-rb)">${d.rbAvg?fmt(d.rbAvg,1):'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top RB</div><span style="font-size:10px">${d.topRB?d.topRB.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-wr)">WR Avg</div><span style="color:var(--pos-wr)">${d.wrAvg?fmt(d.wrAvg,1):'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top WR</div><span style="font-size:10px">${d.topWR?d.topWR.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-te)">TE Avg</div><span style="color:var(--pos-te)">${d.teAvg?fmt(d.teAvg,1):'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top TE</div><span style="font-size:10px">${d.topTE?d.topTE.name:'—'}</span></div>`;
       html += '</div></td></tr>';
     });
-
   } else {
     document.getElementById('bkHead').innerHTML =
-      '<tr><th>Rank</th><th>Year</th><th>Avg Grade</th><th>Class Size</th><th>Elite (85+)</th><th>Top Player</th><th>QB Avg</th><th>RB Avg</th><th>WR Avg</th><th>TE Avg</th></tr>';
-
+      '<tr><th>Rank</th><th>Year</th><th>Avg Grade</th><th>Elite (85+)</th><th>Top Player</th>' +
+      '<th style="color:var(--pos-qb)">QB Avg</th><th style="color:var(--pos-qb)">Top QB</th>' +
+      '<th style="color:var(--pos-rb)">RB Avg</th><th style="color:var(--pos-rb)">Top RB</th>' +
+      '<th style="color:var(--pos-wr)">WR Avg</th><th style="color:var(--pos-wr)">Top WR</th>' +
+      '<th style="color:var(--pos-te)">TE Avg</th><th style="color:var(--pos-te)">Top TE</th></tr>';
     sorted.forEach((d,i) => {
-      const barW = Math.round((d.avg/maxBar)*120);
+      const barW = Math.round((d.avg/maxBar)*100);
       const isActive = d.year === activeYear;
-      html += '<tr style="'+(isActive?'background:rgba(245,200,66,.05)':'')+'">';
-      html += '<td class="bk-rank">'+(i+1)+'</td>';
-      html += '<td class="bk-year" style="'+(isActive?'color:var(--accent2)':'')+'">'+d.year+(isActive?' ★':'')+'</td>';
-      html += '<td><div style="display:flex;align-items:center;gap:8px">'+
-        '<span style="font-weight:700;color:var(--accent)">'+fmt(d.avg,1)+'</span>'+
-        '<div class="bk-bar" style="width:'+barW+'px;opacity:.6"></div>'+
-        '</div></td>';
-      html += '<td>'+(d.size!=null?d.size:'—')+'</td>';
-      html += '<td style="color:var(--accent2);font-weight:700">'+(d.elite!=null?d.elite:'—')+'</td>';
-      html += '<td style="font-size:12px">'+(d.topPlayer ? d.topPlayer.name+' <span style="color:var(--muted)">('+fmt(d.topPlayer.grade,1)+')</span>' : d.loaded?'—':'<span style="color:var(--muted);font-size:11px">Load year to view</span>')+'</td>';
-      html += '<td style="color:var(--pos-qb)">'+( d.qbAvg ? fmt(d.qbAvg,1) : '—')+'</td>';
-      html += '<td style="color:var(--pos-rb)">'+( d.rbAvg ? fmt(d.rbAvg,1) : '—')+'</td>';
-      html += '<td style="color:var(--pos-wr)">'+( d.wrAvg ? fmt(d.wrAvg,1) : '—')+'</td>';
-      html += '<td style="color:var(--pos-te)">'+( d.teAvg ? fmt(d.teAvg,1) : '—')+'</td>';
+      html += `<tr style="${isActive?'background:rgba(245,200,66,.05)':''}">`;
+      html += `<td class="bk-rank">${i+1}</td>`;
+      html += `<td class="bk-year" style="${isActive?'color:var(--accent2)':''}">${d.year}${isActive?' ★':''}</td>`;
+      html += `<td><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--accent)">${fmt(d.avg,1)}</span><div class="bk-bar" style="width:${barW}px;opacity:.6"></div></div></td>`;
+      html += `<td style="color:var(--accent2);font-weight:700">${d.elite!=null?d.elite:'—'}</td>`;
+      html += `<td style="font-size:12px">${topCell(d.topPlayer, d.loaded)}</td>`;
+      html += `<td style="color:var(--pos-qb)">${d.qbAvg?fmt(d.qbAvg,1):'—'}</td>`;
+      html += `<td style="font-size:11px">${d.topQB?d.topQB.name+'<span style="color:var(--muted)"> ('+fmt(d.topQB.grade,1)+')</span>':d.loaded?'—':'<span style="color:var(--muted);font-size:11px">Load</span>'}</td>`;
+      html += `<td style="color:var(--pos-rb)">${d.rbAvg?fmt(d.rbAvg,1):'—'}</td>`;
+      html += `<td style="font-size:11px">${d.topRB?d.topRB.name+'<span style="color:var(--muted)"> ('+fmt(d.topRB.grade,1)+')</span>':d.loaded?'—':'<span style="color:var(--muted);font-size:11px">Load</span>'}</td>`;
+      html += `<td style="color:var(--pos-wr)">${d.wrAvg?fmt(d.wrAvg,1):'—'}</td>`;
+      html += `<td style="font-size:11px">${d.topWR?d.topWR.name+'<span style="color:var(--muted)"> ('+fmt(d.topWR.grade,1)+')</span>':d.loaded?'—':'<span style="color:var(--muted);font-size:11px">Load</span>'}</td>`;
+      html += `<td style="color:var(--pos-te)">${d.teAvg?fmt(d.teAvg,1):'—'}</td>`;
+      html += `<td style="font-size:11px">${d.topTE?d.topTE.name+'<span style="color:var(--muted)"> ('+fmt(d.topTE.grade,1)+')</span>':d.loaded?'—':'<span style="color:var(--muted);font-size:11px">Load</span>'}</td>`;
       html += '</tr>';
     });
   }
-
   document.getElementById('bkBody').innerHTML = html;
 }
 
@@ -2272,7 +2286,17 @@ document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
   });
 });
 
+document.querySelectorAll('.format-btn[data-bkpos]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.format-btn[data-bkpos]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    bkPosFilter = b.dataset.bkpos;
+    renderBreakdown();
+  });
+});
+
 // year switch re-renders handled inside switchYear directly
+
 
 // ============================================================
 // PAGE 6: STAT EXPLORER
@@ -2466,7 +2490,7 @@ let explorerPos = 'QB';
 let explorerYears = new Set([2026]);
 let explorerFilters = []; // [{k, l, fmt, min, max, lo, hi}]
 let explorerView = 'cards';
-const ALL_YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005];
+const ALL_YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
 
 function explorerFmtVal(v, fmt) {
   if(v == null) return '—';
