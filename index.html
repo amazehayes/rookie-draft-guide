@@ -102,14 +102,12 @@
 .explorer-metric-vals{font-size:10px;color:var(--accent);font-family:'IBM Plex Mono',monospace;}
 .explorer-metric-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px;line-height:1;}
 .explorer-metric-remove:hover{color:var(--red);}
-.explorer-slider-wrap{position:relative;height:20px;margin:4px 0;}
-.explorer-slider-track{position:absolute;top:50%;left:0;right:0;height:3px;background:var(--border);border-radius:2px;transform:translateY(-50%);}
-.explorer-slider-fill{position:absolute;top:50%;height:3px;background:var(--accent);border-radius:2px;transform:translateY(-50%);}
-.explorer-slider-input{position:absolute;width:100%;top:50%;transform:translateY(-50%);opacity:0;cursor:pointer;height:20px;margin:0;pointer-events:none;}
-.explorer-slider-input.active{pointer-events:auto;z-index:3;}
-.explorer-slider-input::-webkit-slider-thumb{width:16px;height:16px;pointer-events:auto;}
-.explorer-slider-wrap:hover .explorer-slider-input{pointer-events:auto;}
-.explorer-thumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);transform:translate(-50%,-50%);pointer-events:none;}
+.explorer-input-row{display:flex;gap:6px;align-items:center;margin-top:4px;}
+.explorer-input-wrap{flex:1;display:flex;flex-direction:column;gap:2px;}
+.explorer-input-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.explorer-num-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:5px 8px;outline:none;transition:border-color .15s;}
+.explorer-num-input:focus{border-color:var(--accent);}
+.explorer-input-sep{color:var(--muted);font-size:12px;padding-top:16px;}
 .explorer-add-metric{margin:12px 16px;background:none;border:1px dashed var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:9px;border-radius:6px;cursor:pointer;width:calc(100% - 32px);transition:all .15s;text-align:center;}
 .explorer-add-metric:hover{border-color:var(--accent);color:var(--accent);}
 .explorer-metric-picker{position:fixed;z-index:300;background:var(--surface2);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);padding:8px;max-height:320px;overflow-y:auto;width:260px;}
@@ -472,9 +470,9 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn active" data-page="grades">Player Grades</button>
     <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
     <button class="nav-btn" data-page="comparison">Player Comparison</button>
+    <button class="nav-btn" data-page="explorer">Stat Explorer</button>
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
-    <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -485,6 +483,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <button class="nav-btn active" data-page="grades">Player Grades</button>
   <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
   <button class="nav-btn" data-page="comparison">Player Comparison</button>
+  <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
   <button class="nav-btn" data-page="glossary">Glossary</button>
 </div>
@@ -2586,48 +2585,31 @@ function renderExplorerFilters() {
   }).join('');
 }
 
-function explorerSliderFocus(i, side) {
-  // Raise clicked slider above the other
-  const lo = document.getElementById('eslo-'+i);
-  const hi = document.getElementById('eshi-'+i);
-  if(!lo || !hi) return;
-  if(side === 'lo') { lo.style.zIndex=4; hi.style.zIndex=2; }
-  else              { hi.style.zIndex=4; lo.style.zIndex=2; }
+// Convert stored value to display value for number input
+function explorerFmtRaw(v, fmt) {
+  if(v == null) return '';
+  if(fmt === 'pct') return parseFloat((v * 100).toFixed(4));
+  if(fmt === 'int') return Math.round(v);
+  return parseFloat(v.toFixed(4));
 }
 
-function explorerSliderSyncInput(i) {
-  // Keep input values in sync with f.lo/f.hi after clamping
-  const f = explorerFilters[i];
-  const lo = document.getElementById('eslo-'+i);
-  const hi = document.getElementById('eshi-'+i);
-  if(lo) lo.value = f.lo;
-  if(hi) hi.value = f.hi;
+// Convert display input value back to stored value
+function explorerParseRaw(v, fmt) {
+  const n = parseFloat(v);
+  if(isNaN(n)) return null;
+  if(fmt === 'pct') return n / 100;
+  return n;
 }
 
-function updateExplorerSlider(i, side, val) {
+function updateExplorerInput(i, side, val) {
   const f = explorerFilters[i];
-  val = parseFloat(val);
-  const step = (f.max - f.min) / 200;
+  const parsed = explorerParseRaw(val, f.fmt);
+  if(parsed === null) return;
   if(side === 'lo') {
-    f.lo = Math.min(val, f.hi - step);
-    f.lo = Math.max(f.lo, f.min);
+    f.lo = parsed;
   } else {
-    f.hi = Math.max(val, f.lo + step);
-    f.hi = Math.min(f.hi, f.max);
+    f.hi = parsed;
   }
-  explorerSliderSyncInput(i);
-  // Update visuals
-  const total = f.max - f.min;
-  const fillLeft = (f.lo - f.min) / total * 100;
-  const fillWidth = (f.hi - f.lo) / total * 100;
-  const fill = document.getElementById('efill-'+i);
-  const tlo  = document.getElementById('etlo-'+i);
-  const thi  = document.getElementById('ethi-'+i);
-  const vals = document.getElementById('evals-'+i);
-  if(fill) { fill.style.left=fillLeft+'%'; fill.style.width=fillWidth+'%'; }
-  if(tlo)  tlo.style.left = fillLeft+'%';
-  if(thi)  thi.style.left = (fillLeft+fillWidth)+'%';
-  if(vals) vals.textContent = explorerFmtVal(f.lo,f.fmt)+' – '+explorerFmtVal(f.hi,f.fmt);
   explorerRender();
 }
 
@@ -2724,6 +2706,17 @@ function explorerRender() {
         const tag = getTag(p);
         const hs = hshotSrc(p);
         const logo = logoSrc(p.school);
+        // Build active filter stats grid (exclude grade/markers/pff since those are shown elsewhere)
+        const filterStats = explorerFilters
+          .filter(f => !['grade','markers','pff','ath','prod'].includes(f.k))
+          .map(f => {
+            const v = p[f.k];
+            return `<div style="min-width:0">
+              <div style="font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.l}</div>
+              <div style="font-size:12px;font-weight:700;color:${col}">${explorerFmtDisplay(v,f.fmt)}</div>
+            </div>`;
+          }).join('');
+        const statsGrid = filterStats ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
         return `<div class="player-card" style="--pos-color:${col};cursor:pointer" onclick="openModalFromList(${i})">
           <div class="card-body">
             <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${p.year||2026}</div>
@@ -2749,6 +2742,7 @@ function explorerRender() {
               </div>
               <div class="grade-bar-track"><div class="grade-bar-fill" style="width:${Math.min(p.grade||0,100)}%;background:${lg.c}"></div></div>
             </div>
+            ${statsGrid}
           </div>
         </div>`;
       }).join('') + '</div>';
