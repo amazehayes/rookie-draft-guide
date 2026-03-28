@@ -75,6 +75,73 @@
 .glossary-placeholder{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;letter-spacing:1px;flex-direction:column;gap:8px;}
 .glossary-empty-index{padding:24px 16px;color:var(--muted);font-size:12px;text-align:center;}
 
+
+/* ---- STAT EXPLORER ---- */
+.explorer-layout{display:flex;height:calc(100vh - 56px);overflow:hidden;}
+.explorer-sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto;display:flex;flex-direction:column;}
+.explorer-sidebar::-webkit-scrollbar{width:4px;}
+.explorer-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.explorer-sidebar-section{padding:14px 16px;border-bottom:1px solid var(--border);}
+.explorer-sidebar-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.explorer-pos-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.explorer-pos-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:5px 14px;border-radius:5px;cursor:pointer;transition:all .15s;}
+.explorer-pos-btn:hover{color:var(--text);}
+.explorer-pos-btn.active[data-pos="QB"]{background:var(--pos-qb);color:var(--bg);border-color:var(--pos-qb);}
+.explorer-pos-btn.active[data-pos="RB"]{background:var(--pos-rb);color:var(--bg);border-color:var(--pos-rb);}
+.explorer-pos-btn.active[data-pos="WR"]{background:var(--pos-wr);color:var(--bg);border-color:var(--pos-wr);}
+.explorer-pos-btn.active[data-pos="TE"]{background:var(--pos-te);color:var(--bg);border-color:var(--pos-te);}
+.explorer-year-wrap{display:flex;flex-wrap:wrap;gap:4px;}
+.explorer-year-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.explorer-year-btn:hover{color:var(--text);}
+.explorer-year-btn.active{background:var(--surface2);color:var(--accent);border-color:var(--accent);}
+.explorer-metric-list{padding:0 16px 8px;}
+.explorer-metric-item{padding:10px 0;border-bottom:1px solid rgba(30,37,48,.5);}
+.explorer-metric-item:last-child{border-bottom:none;}
+.explorer-metric-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.explorer-metric-name{font-size:11px;font-weight:700;color:var(--text);}
+.explorer-metric-vals{font-size:10px;color:var(--accent);font-family:'IBM Plex Mono',monospace;}
+.explorer-metric-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px;line-height:1;}
+.explorer-metric-remove:hover{color:var(--red);}
+.explorer-slider-wrap{position:relative;height:20px;margin:4px 0;}
+.explorer-slider-track{position:absolute;top:50%;left:0;right:0;height:3px;background:var(--border);border-radius:2px;transform:translateY(-50%);}
+.explorer-slider-fill{position:absolute;top:50%;height:3px;background:var(--accent);border-radius:2px;transform:translateY(-50%);}
+.explorer-slider-input{position:absolute;width:100%;top:50%;transform:translateY(-50%);opacity:0;cursor:pointer;height:20px;margin:0;}
+.explorer-slider-input::-webkit-slider-thumb{width:16px;height:16px;}
+.explorer-thumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);transform:translate(-50%,-50%);pointer-events:none;}
+.explorer-add-metric{margin:12px 16px;background:none;border:1px dashed var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:9px;border-radius:6px;cursor:pointer;width:calc(100% - 32px);transition:all .15s;text-align:center;}
+.explorer-add-metric:hover{border-color:var(--accent);color:var(--accent);}
+.explorer-metric-picker{position:fixed;z-index:300;background:var(--surface2);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);padding:8px;max-height:320px;overflow-y:auto;width:260px;}
+.explorer-metric-picker::-webkit-scrollbar{width:4px;}
+.explorer-metric-picker::-webkit-scrollbar-thumb{background:var(--border);}
+.explorer-picker-item{padding:7px 10px;border-radius:5px;cursor:pointer;font-size:11px;transition:background .1s;}
+.explorer-picker-item:hover{background:var(--surface);}
+.explorer-picker-item.selected{color:var(--muted);cursor:default;}
+.explorer-picker-group{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:8px 10px 4px;}
+.explorer-results{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.explorer-results::-webkit-scrollbar{width:4px;}
+.explorer-results::-webkit-scrollbar-thumb{background:var(--border);}
+.explorer-results-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.explorer-results-count{font-size:11px;color:var(--muted);}
+.explorer-view-toggle{display:flex;gap:4px;}
+.explorer-view-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .15s;}
+.explorer-view-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.explorer-results-body{flex:1;overflow-y:auto;padding:16px 20px;}
+.explorer-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.explorer-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);gap:8px;}
+.explorer-empty-title{font-family:'Bebas Neue',cursive;font-size:28px;color:var(--border);}
+.explorer-table{width:100%;border-collapse:collapse;font-size:12px;}
+.explorer-table th{text-align:left;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap;}
+.explorer-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.explorer-table tr:hover td{background:var(--surface2);cursor:pointer;}
+.explorer-sidebar-actions{padding:12px 16px;border-top:1px solid var(--border);margin-top:auto;}
+.explorer-reset-btn{width:100%;background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:8px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.explorer-reset-btn:hover{border-color:var(--red);color:var(--red);}
+@media(max-width:768px){
+  .explorer-layout{flex-direction:column;height:auto;}
+  .explorer-sidebar{width:100%;max-height:360px;border-right:none;border-bottom:1px solid var(--border);}
+  .explorer-results{height:auto;}
+}
+
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
@@ -405,6 +472,7 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="comparison">Player Comparison</button>
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
+    <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -579,6 +647,56 @@ td{padding:10px 14px;white-space:nowrap;}
       <div class="glossary-placeholder" id="glossaryPlaceholder">
         <span style="font-family:'Bebas Neue',cursive;font-size:32px;color:var(--border)">GLOSSARY</span>
         <span>Select a term to read its definition</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 6: STAT EXPLORER -->
+<div class="page-section" id="page-explorer">
+  <div class="explorer-layout">
+    <!-- Sidebar -->
+    <div class="explorer-sidebar">
+      <!-- Position -->
+      <div class="explorer-sidebar-section">
+        <div class="explorer-sidebar-label">Position</div>
+        <div class="explorer-pos-btns">
+          <button class="explorer-pos-btn active" data-pos="QB">QB</button>
+          <button class="explorer-pos-btn" data-pos="RB">RB</button>
+          <button class="explorer-pos-btn" data-pos="WR">WR</button>
+          <button class="explorer-pos-btn" data-pos="TE">TE</button>
+        </div>
+      </div>
+      <!-- Years -->
+      <div class="explorer-sidebar-section">
+        <div class="explorer-sidebar-label">Draft Classes <span id="explorerYearCount" style="color:var(--accent)"></span></div>
+        <div class="explorer-year-wrap" id="explorerYearBtns"></div>
+      </div>
+      <!-- Active metric filters -->
+      <div class="explorer-metric-list" id="explorerMetricList"></div>
+      <!-- Add metric button -->
+      <button class="explorer-add-metric" id="explorerAddMetric">+ Add Stat Filter</button>
+      <!-- Metric picker (hidden) -->
+      <div class="explorer-metric-picker" id="explorerPicker" style="display:none"></div>
+      <!-- Reset -->
+      <div class="explorer-sidebar-actions">
+        <button class="explorer-reset-btn" id="explorerReset">Reset All Filters</button>
+      </div>
+    </div>
+    <!-- Results -->
+    <div class="explorer-results">
+      <div class="explorer-results-header">
+        <div class="explorer-results-count" id="explorerCount">Select a position to begin</div>
+        <div class="explorer-view-toggle">
+          <button class="explorer-view-btn active" data-view="cards">Cards</button>
+          <button class="explorer-view-btn" data-view="table">Table</button>
+        </div>
+      </div>
+      <div class="explorer-results-body" id="explorerResultsBody">
+        <div class="explorer-empty">
+          <div class="explorer-empty-title">STAT EXPLORER</div>
+          <span>Pick a position and add stat filters to find players</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1442,6 +1560,7 @@ function switchPage(page) {
   if(page === 'rankings') renderRankings();
   if(page === 'breakdown') loadAndRenderBreakdown();
   if(page === 'glossary') renderGlossary();
+  if(page === 'explorer') explorerRender();
 }
 
 document.querySelectorAll('.nav-btn').forEach(b => {
@@ -2150,6 +2269,490 @@ document.querySelectorAll('.format-btn[data-bksort]').forEach(b => {
 });
 
 // year switch re-renders handled inside switchYear directly
+
+// ============================================================
+// PAGE 6: STAT EXPLORER
+// ============================================================
+
+// All available metrics per position with display labels, data key, format, and range hints
+const EXPLORER_METRICS = {
+  QB: [
+    {group:'Grading', metrics:[
+      {k:'grade',    l:'Final Grade',         fmt:'dec', min:0,   max:100},
+      {k:'markers',  l:'Markers',             fmt:'int', min:0,   max:17},
+      {k:'pff',      l:'PFF Markers',         fmt:'int', min:0,   max:10},
+      {k:'ath',      l:'Athleticism %',       fmt:'pct', min:0,   max:1},
+      {k:'prod',     l:'Production %',        fmt:'pct', min:0,   max:1},
+    ]},
+    {group:'Passing', metrics:[
+      {k:'careerPYd',   l:'Career Pass Yds',   fmt:'int', min:0,   max:15000},
+      {k:'careerYPG',   l:'Career YPG',        fmt:'dec', min:0,   max:400},
+      {k:'careerYPA',   l:'Career YPA',        fmt:'dec', min:0,   max:12},
+      {k:'careerPA',    l:'Career Pass Att',   fmt:'int', min:0,   max:2000},
+      {k:'careerPAPG',  l:'Career PAPG',       fmt:'dec', min:0,   max:50},
+      {k:'careerPTD',   l:'Career Pass TD',    fmt:'int', min:0,   max:150},
+      {k:'careerTDPG',  l:'Career TDPG',       fmt:'dec', min:0,   max:4},
+      {k:'careerINT',   l:'Career INT',        fmt:'int', min:0,   max:60, low:true},
+      {k:'careerCMP',   l:'Career CMP%',       fmt:'pct', min:0,   max:1},
+      {k:'bestPYd',     l:'Best Pass Yds',     fmt:'int', min:0,   max:6000},
+      {k:'bestPTD',     l:'Best Pass TD',      fmt:'int', min:0,   max:60},
+      {k:'bestCMP',     l:'Best CMP%',         fmt:'pct', min:0,   max:1},
+    ]},
+    {group:'Rushing', metrics:[
+      {k:'careerRuYd',  l:'Career Rush Yds',   fmt:'int', min:0,   max:5000},
+      {k:'careerRuYPG', l:'Career RuYPG',      fmt:'dec', min:0,   max:80},
+      {k:'bestRuYd',    l:'Best Rush Yds',     fmt:'int', min:0,   max:2000},
+    ]},
+    {group:'PFF Quality', metrics:[
+      {k:'careerAcc',     l:'True Acc%',        fmt:'pct', min:0,   max:1},
+      {k:'careerBTT',     l:'BTT%',             fmt:'pct', min:0,   max:0.15},
+      {k:'careerTWP',     l:'TWP%',             fmt:'pct', min:0,   max:0.12, low:true},
+      {k:'careerSackPct', l:'Sack%',            fmt:'pct', min:0,   max:0.15, low:true},
+      {k:'bestAcc',       l:'Best True Acc%',   fmt:'pct', min:0,   max:1},
+      {k:'bestBTT',       l:'Best BTT%',        fmt:'pct', min:0,   max:0.15},
+    ]},
+    {group:'Fantasy', metrics:[
+      {k:'lastPPG', l:'Last PPG', fmt:'dec', min:0, max:40},
+      {k:'bestPPG', l:'Best PPG', fmt:'dec', min:0, max:40},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'age',  l:'Age',         fmt:'age', min:18,  max:28},
+      {k:'ht',   l:'Height (in)', fmt:'dec', min:68,  max:80},
+      {k:'wt',   l:'Weight',      fmt:'int', min:180, max:260},
+      {k:'bmi',  l:'BMI',         fmt:'dec', min:22,  max:36},
+      {k:'dash', l:'40 Dash',     fmt:'dec', min:4.2, max:5.2, low:true},
+      {k:'wass', l:'Speed Score', fmt:'dec', min:60,  max:140},
+    ]},
+  ],
+  RB: [
+    {group:'Grading', metrics:[
+      {k:'grade',   l:'Final Grade',   fmt:'dec', min:0, max:100},
+      {k:'markers', l:'Markers',       fmt:'int', min:0, max:12},
+      {k:'pff',     l:'PFF Markers',   fmt:'int', min:0, max:12},
+      {k:'ath',     l:'Athleticism %', fmt:'pct', min:0, max:1},
+      {k:'prod',    l:'Production %',  fmt:'pct', min:0, max:1},
+    ]},
+    {group:'Production', metrics:[
+      {k:'ypc',        l:'YPC',            fmt:'dec', min:0, max:10},
+      {k:'yptp',       l:'YPTP',           fmt:'dec', min:0, max:2.5},
+      {k:'bestRec',    l:'Best Receptions',fmt:'int', min:0, max:80},
+      {k:'bestTotalYds',l:'Best Total Yds',fmt:'int', min:0, max:2500},
+    ]},
+    {group:'PFF Efficiency', metrics:[
+      {k:'careerBA',   l:'Career BA/A',    fmt:'pct', min:0,   max:0.25},
+      {k:'careerMTF',  l:'Career MTF/A',   fmt:'pct', min:0,   max:0.6},
+      {k:'career1D',   l:'Career 1D/A',    fmt:'pct', min:0,   max:0.5},
+      {k:'careerYACO', l:'Career YACO/A',  fmt:'dec', min:0,   max:8},
+      {k:'careerYPRR', l:'Career YPRR',    fmt:'dec', min:0,   max:5},
+      {k:'careerTPRR', l:'Career TPRR',    fmt:'pct', min:0,   max:0.5},
+      {k:'bestBA',     l:'Best BA/A',      fmt:'pct', min:0,   max:0.3},
+      {k:'bestMTF',    l:'Best MTF/A',     fmt:'pct', min:0,   max:0.7},
+      {k:'bestYACO',   l:'Best YACO/A',    fmt:'dec', min:0,   max:10},
+      {k:'bestYPRR',   l:'Best YPRR',      fmt:'dec', min:0,   max:8},
+    ]},
+    {group:'Fantasy', metrics:[
+      {k:'lastPPG', l:'Last PPG', fmt:'dec', min:0, max:40},
+      {k:'bestPPG', l:'Best PPG', fmt:'dec', min:0, max:40},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'age',   l:'Age',         fmt:'age', min:18,  max:28},
+      {k:'ht',    l:'Height (in)', fmt:'dec', min:64,  max:76},
+      {k:'wt',    l:'Weight',      fmt:'int', min:170, max:250},
+      {k:'bmi',   l:'BMI',         fmt:'dec', min:22,  max:38},
+      {k:'dash',  l:'40 Dash',     fmt:'dec', min:4.2, max:4.8, low:true},
+      {k:'wass',  l:'Speed Score', fmt:'dec', min:60,  max:140},
+      {k:'burst', l:'Burst Score', fmt:'dec', min:80,  max:160},
+    ]},
+  ],
+  WR: [
+    {group:'Grading', metrics:[
+      {k:'grade',   l:'Final Grade',   fmt:'dec', min:0, max:100},
+      {k:'markers', l:'Markers',       fmt:'int', min:0, max:14},
+      {k:'pff',     l:'PFF Markers',   fmt:'int', min:0, max:15},
+      {k:'ath',     l:'Athleticism %', fmt:'pct', min:0, max:1},
+      {k:'prod',    l:'Production %',  fmt:'pct', min:0, max:1},
+    ]},
+    {group:'Breakout', metrics:[
+      {k:'boy20', l:'BOY20 (yr)',   fmt:'int', min:1, max:6, low:true},
+      {k:'boy30', l:'BOY30 (yr)',   fmt:'int', min:1, max:6, low:true},
+      {k:'boa20', l:'BOA20 (age)',  fmt:'dec', min:18, max:24, low:true},
+      {k:'boa30', l:'BOA30 (age)',  fmt:'dec', min:18, max:24, low:true},
+    ]},
+    {group:'Efficiency', metrics:[
+      {k:'careerYPRR',     l:'Career YPRR',       fmt:'dec', min:0, max:6},
+      {k:'careerYPRRzone', l:'Career YPRR Zone',  fmt:'dec', min:0, max:6},
+      {k:'careerTPRR',     l:'Career TPRR',       fmt:'pct', min:0, max:0.5},
+      {k:'career1DRR',     l:'Career 1DRR',       fmt:'pct', min:0, max:0.3},
+      {k:'careerYACR',     l:'Career YACR',       fmt:'dec', min:0, max:12},
+      {k:'careerMTF',      l:'Career MTF',        fmt:'pct', min:0, max:0.5},
+      {k:'careerSlot',     l:'Slot Rate',         fmt:'pct', min:0, max:1},
+      {k:'bestYPRR',       l:'Best YPRR',         fmt:'dec', min:0, max:8},
+      {k:'bestTPRR',       l:'Best TPRR',         fmt:'pct', min:0, max:0.6},
+    ]},
+    {group:'YPTPA / Market Share', metrics:[
+      {k:'lastYPTPA',    l:'Last YPTPA',       fmt:'dec', min:0, max:5},
+      {k:'bestYPTPA',    l:'Best YPTPA',       fmt:'dec', min:0, max:6},
+      {k:'firstYPTPA',   l:'First YPTPA',      fmt:'dec', min:0, max:5},
+      {k:'bestMSYards',  l:'Best MS Yards%',   fmt:'pct', min:0, max:1},
+      {k:'firstMSYards', l:'First MS Yards%',  fmt:'pct', min:0, max:1},
+    ]},
+    {group:'Fantasy', metrics:[
+      {k:'lastPPG',  l:'Last PPG',  fmt:'dec', min:0, max:40},
+      {k:'bestPPG',  l:'Best PPG',  fmt:'dec', min:0, max:40},
+      {k:'firstPPG', l:'First PPG', fmt:'dec', min:0, max:40},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'age',   l:'Age',         fmt:'age', min:18,  max:26},
+      {k:'ht',    l:'Height (in)', fmt:'dec', min:64,  max:78},
+      {k:'wt',    l:'Weight',      fmt:'int', min:160, max:230},
+      {k:'bmi',   l:'BMI',         fmt:'dec', min:20,  max:34},
+      {k:'dash',  l:'40 Dash',     fmt:'dec', min:4.2, max:4.7, low:true},
+      {k:'wass',  l:'Speed Score', fmt:'dec', min:60,  max:130},
+      {k:'burst', l:'Burst Score', fmt:'dec', min:80,  max:160},
+    ]},
+  ],
+  TE: [
+    {group:'Grading', metrics:[
+      {k:'grade',   l:'Final Grade',   fmt:'dec', min:0, max:100},
+      {k:'markers', l:'Markers',       fmt:'int', min:0, max:14},
+      {k:'pff',     l:'PFF Markers',   fmt:'int', min:0, max:12},
+      {k:'ath',     l:'Athleticism %', fmt:'pct', min:0, max:1},
+      {k:'prod',    l:'Production %',  fmt:'pct', min:0, max:1},
+    ]},
+    {group:'Breakout', metrics:[
+      {k:'boy15', l:'BOY15 (yr)',  fmt:'int', min:1, max:6, low:true},
+      {k:'boy20', l:'BOY20 (yr)',  fmt:'int', min:1, max:6, low:true},
+      {k:'boa20', l:'BOA20 (age)', fmt:'dec', min:18, max:24, low:true},
+    ]},
+    {group:'Efficiency', metrics:[
+      {k:'careerYPRR',  l:'Career YPRR',    fmt:'dec', min:0, max:5},
+      {k:'careerTPRR',  l:'Career TPRR',    fmt:'pct', min:0, max:0.4},
+      {k:'career1DRR',  l:'Career 1DRR',    fmt:'pct', min:0, max:0.25},
+      {k:'careerYACR',  l:'Career YACR',    fmt:'dec', min:0, max:12},
+      {k:'careerMTF',   l:'Career MTF',     fmt:'pct', min:0, max:0.4},
+      {k:'careerSlot',  l:'Slot Rate',      fmt:'pct', min:0, max:1},
+      {k:'careerYPG',   l:'Career YPG',     fmt:'dec', min:0, max:80},
+      {k:'bestYPRR',    l:'Best YPRR',      fmt:'dec', min:0, max:6},
+      {k:'avgPassBlock',l:'Avg Pass Block', fmt:'dec', min:40, max:90},
+      {k:'avgRunBlock', l:'Avg Run Block',  fmt:'dec', min:30, max:90},
+    ]},
+    {group:'YPTPA / Market Share', metrics:[
+      {k:'lastYPTPA',  l:'Last YPTPA',     fmt:'dec', min:0, max:3},
+      {k:'bestYPTPA',  l:'Best YPTPA',     fmt:'dec', min:0, max:4},
+      {k:'bestMSYards',l:'Best MS Yards%', fmt:'pct', min:0, max:0.5},
+    ]},
+    {group:'Fantasy', metrics:[
+      {k:'lastPPG', l:'Last PPG', fmt:'dec', min:0, max:35},
+      {k:'bestPPG', l:'Best PPG', fmt:'dec', min:0, max:35},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'age',   l:'Age',         fmt:'age', min:18,  max:27},
+      {k:'ht',    l:'Height (in)', fmt:'dec', min:72,  max:82},
+      {k:'wt',    l:'Weight',      fmt:'int', min:220, max:280},
+      {k:'bmi',   l:'BMI',         fmt:'dec', min:25,  max:38},
+      {k:'dash',  l:'40 Dash',     fmt:'dec', min:4.4, max:5.0, low:true},
+      {k:'wass',  l:'Speed Score', fmt:'dec', min:60,  max:130},
+      {k:'burst', l:'Burst Score', fmt:'dec', min:80,  max:155},
+    ]},
+  ],
+};
+
+// State
+let explorerPos = 'QB';
+let explorerYears = new Set([2026]);
+let explorerFilters = []; // [{k, l, fmt, min, max, lo, hi}]
+let explorerView = 'cards';
+const ALL_YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005];
+
+function explorerFmtVal(v, fmt) {
+  if(v == null) return '—';
+  if(fmt === 'int') return Math.round(v);
+  if(fmt === 'pct') return (v*100).toFixed(1)+'%';
+  if(fmt === 'age') return fmtAge(v);
+  return parseFloat(v).toFixed(2);
+}
+
+function explorerFmtDisplay(v, fmt) {
+  if(v == null) return '—';
+  if(fmt === 'int') return Math.round(v).toLocaleString();
+  if(fmt === 'pct') return (v*100).toFixed(1)+'%';
+  if(fmt === 'age') return fmtAge(v);
+  return parseFloat(v).toFixed(2);
+}
+
+// Build year buttons
+function buildExplorerYears() {
+  const wrap = document.getElementById('explorerYearBtns');
+  wrap.innerHTML = '';
+  ALL_YEARS.forEach(yr => {
+    const btn = document.createElement('button');
+    btn.className = 'explorer-year-btn' + (explorerYears.has(yr) ? ' active' : '');
+    btn.textContent = yr;
+    btn.addEventListener('click', async () => {
+      if(explorerYears.has(yr)) {
+        if(explorerYears.size === 1) return; // keep at least one
+        explorerYears.delete(yr);
+      } else {
+        explorerYears.add(yr);
+        if(!yearCache[yr]) {
+          try {
+            const res = await fetch('data/'+yr+'.json?v=3');
+            yearCache[yr] = await res.json();
+          } catch(e) { yearCache[yr] = []; }
+        }
+      }
+      btn.classList.toggle('active', explorerYears.has(yr));
+      document.getElementById('explorerYearCount').textContent = '('+explorerYears.size+')';
+      explorerRender();
+    });
+    wrap.appendChild(btn);
+  });
+  document.getElementById('explorerYearCount').textContent = '('+explorerYears.size+')';
+}
+
+// Position select
+document.querySelectorAll('.explorer-pos-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    explorerPos = btn.dataset.pos;
+    explorerFilters = [];
+    document.querySelectorAll('.explorer-pos-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderExplorerFilters();
+    explorerRender();
+  });
+});
+
+// Get all players for selected years + position
+function getExplorerPlayers() {
+  const players = [];
+  explorerYears.forEach(yr => {
+    const data = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
+    data.forEach(p => {
+      if(p.pos === explorerPos) players.push({...p, year: yr});
+    });
+  });
+  return players;
+}
+
+// Apply filters
+function applyExplorerFilters(players) {
+  return players.filter(p => {
+    return explorerFilters.every(f => {
+      const v = p[f.k];
+      if(v == null) return false;
+      return v >= f.lo && v <= f.hi;
+    });
+  });
+}
+
+// Render filter list
+function renderExplorerFilters() {
+  const list = document.getElementById('explorerMetricList');
+  if(!explorerFilters.length) {
+    list.innerHTML = '<div style="padding:10px 0;color:var(--muted);font-size:11px;text-align:center">No filters added yet</div>';
+    return;
+  }
+
+  list.innerHTML = explorerFilters.map((f, i) => {
+    const range = f.hi - f.lo;
+    const total = f.max - f.min;
+    const fillLeft = total > 0 ? ((f.lo - f.min) / total * 100) : 0;
+    const fillWidth = total > 0 ? (range / total * 100) : 100;
+    const loDisp = explorerFmtVal(f.lo, f.fmt);
+    const hiDisp = explorerFmtVal(f.hi, f.fmt);
+    return `<div class="explorer-metric-item">
+      <div class="explorer-metric-header">
+        <span class="explorer-metric-name">${f.l}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="explorer-metric-vals">${loDisp} – ${hiDisp}</span>
+          <button class="explorer-metric-remove" onclick="removeExplorerFilter(${i})">×</button>
+        </div>
+      </div>
+      <div class="explorer-slider-wrap">
+        <div class="explorer-slider-track"></div>
+        <div class="explorer-slider-fill" id="efill-${i}" style="left:${fillLeft}%;width:${fillWidth}%;"></div>
+        <div class="explorer-thumb" id="etlo-${i}" style="left:${fillLeft}%"></div>
+        <div class="explorer-thumb" id="ethi-${i}" style="left:${fillLeft+fillWidth}%;background:var(--accent2)"></div>
+        <input type="range" class="explorer-slider-input" id="eslo-${i}"
+          min="${f.min}" max="${f.max}" step="${(f.max-f.min)/200}"
+          value="${f.lo}" oninput="updateExplorerSlider(${i},'lo',this.value)">
+        <input type="range" class="explorer-slider-input" id="eshi-${i}"
+          min="${f.min}" max="${f.max}" step="${(f.max-f.min)/200}"
+          value="${f.hi}" oninput="updateExplorerSlider(${i},'hi',this.value)">
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateExplorerSlider(i, side, val) {
+  const f = explorerFilters[i];
+  val = parseFloat(val);
+  if(side === 'lo') {
+    f.lo = Math.min(val, f.hi - (f.max-f.min)/200);
+  } else {
+    f.hi = Math.max(val, f.lo + (f.max-f.min)/200);
+  }
+  // Update visuals
+  const total = f.max - f.min;
+  const fillLeft = (f.lo - f.min) / total * 100;
+  const fillWidth = (f.hi - f.lo) / total * 100;
+  const fill = document.getElementById('efill-'+i);
+  const tlo = document.getElementById('etlo-'+i);
+  const thi = document.getElementById('ethi-'+i);
+  if(fill) { fill.style.left=fillLeft+'%'; fill.style.width=fillWidth+'%'; }
+  if(tlo) tlo.style.left=fillLeft+'%';
+  if(thi) thi.style.left=(fillLeft+fillWidth)+'%';
+  // Update display val
+  const valEl = document.querySelector(`#explorerMetricList .explorer-metric-item:nth-child(${i+1}) .explorer-metric-vals`);
+  if(valEl) valEl.textContent = explorerFmtVal(f.lo,f.fmt)+' – '+explorerFmtVal(f.hi,f.fmt);
+  explorerRender();
+}
+
+function removeExplorerFilter(i) {
+  explorerFilters.splice(i, 1);
+  renderExplorerFilters();
+  explorerRender();
+}
+
+// Metric picker
+document.getElementById('explorerAddMetric').addEventListener('click', e => {
+  const picker = document.getElementById('explorerPicker');
+  if(picker.style.display !== 'none') { picker.style.display='none'; return; }
+  const metrics = EXPLORER_METRICS[explorerPos] || [];
+  const activeKeys = new Set(explorerFilters.map(f=>f.k));
+  picker.innerHTML = metrics.map(grp =>
+    `<div class="explorer-picker-group">${grp.group}</div>` +
+    grp.metrics.map(m =>
+      `<div class="explorer-picker-item${activeKeys.has(m.k)?' selected':''}" data-k="${m.k}">${m.l}${activeKeys.has(m.k)?' ✓':''}</div>`
+    ).join('')
+  ).join('');
+  picker.querySelectorAll('.explorer-picker-item:not(.selected)').forEach(item => {
+    item.addEventListener('click', () => {
+      const k = item.dataset.k;
+      const allM = [].concat(...(EXPLORER_METRICS[explorerPos]||[]).map(g=>g.metrics));
+      const meta = allM.find(m=>m.k===k);
+      if(!meta) return;
+      explorerFilters.push({...meta, lo: meta.min, hi: meta.max});
+      picker.style.display = 'none';
+      renderExplorerFilters();
+      explorerRender();
+    });
+  });
+  // Position picker near button
+  const rect = e.target.getBoundingClientRect();
+  picker.style.display = 'block';
+  picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  picker.style.left = rect.left + 'px';
+});
+
+document.addEventListener('click', e => {
+  const picker = document.getElementById('explorerPicker');
+  const addBtn = document.getElementById('explorerAddMetric');
+  if(picker && !picker.contains(e.target) && e.target !== addBtn) {
+    picker.style.display = 'none';
+  }
+});
+
+// Reset
+document.getElementById('explorerReset').addEventListener('click', () => {
+  explorerFilters = [];
+  explorerYears = new Set([2026]);
+  document.querySelectorAll('.explorer-year-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent == '2026');
+  });
+  document.getElementById('explorerYearCount').textContent = '(1)';
+  renderExplorerFilters();
+  explorerRender();
+});
+
+// View toggle
+document.querySelectorAll('.explorer-view-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    explorerView = btn.dataset.view;
+    document.querySelectorAll('.explorer-view-btn').forEach(b => b.classList.toggle('active', b.dataset.view===explorerView));
+    explorerRender();
+  });
+});
+
+// Main render
+function explorerRender() {
+  const all = getExplorerPlayers();
+  const filtered = applyExplorerFilters(all);
+  const col = posColor(explorerPos);
+
+  document.getElementById('explorerCount').textContent =
+    filtered.length + ' player' + (filtered.length!==1?'s':'') +
+    ' · ' + explorerPos + ' · ' + explorerYears.size + ' class' + (explorerYears.size!==1?'es':'');
+
+  const body = document.getElementById('explorerResultsBody');
+
+  if(!filtered.length) {
+    body.innerHTML = '<div class="explorer-empty"><div class="explorer-empty-title">NO RESULTS</div><span>Try widening your filters</span></div>';
+    return;
+  }
+
+  const sorted = [...filtered].sort((a,b) => (b.grade||0)-(a.grade||0));
+
+  if(explorerView === 'cards') {
+    _lastRenderedList = sorted;
+    body.innerHTML = '<div class="explorer-cards">' +
+      sorted.map((p, i) => {
+        const lg = letterGrade(p.grade||0);
+        const tag = getTag(p);
+        const hs = hshotSrc(p);
+        const logo = logoSrc(p.school);
+        return `<div class="player-card" style="--pos-color:${col};cursor:pointer" onclick="openModalFromList(${i})">
+          <div class="card-body">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${p.year||2026}</div>
+            <div class="card-name-row">
+              <div class="card-avatar" style="border-color:${col}">
+                ${hshotImg(p,'','')}
+                <div class="card-avatar-fallback" style="${hs?'display:none':''};color:${col}">${p.pos}</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div class="card-name">${p.name}</div>
+                <div class="card-school">${p.school||''}</div>
+              </div>
+              <img src="${logo}" class="school-logo" onerror="this.style.display=\'none\'">
+            </div>
+            ${tag?`<div class="player-tag" style="color:${tag.color};background:${tag.color}18;border-color:${tag.color}44">${tag.icon} ${tag.label}</div>`:'<div style="height:26px;margin-top:8px"></div>'}
+            <div class="grade-bar-wrap">
+              <div class="grade-bar-label">
+                <span class="grade-bar-lbl-text">Final Grade</span>
+                <div class="grade-val-row">
+                  <span class="grade-val" style="color:${lg.c}">${fmt(p.grade||0,1)}</span>
+                  <span class="grade-letter" style="color:${lg.c};background:${lg.c}22">${lg.l}</span>
+                </div>
+              </div>
+              <div class="grade-bar-track"><div class="grade-bar-fill" style="width:${Math.min(p.grade||0,100)}%;background:${lg.c}"></div></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('') + '</div>';
+  } else {
+    // Table view — dynamic columns from active filters
+    const filterCols = explorerFilters.map(f => ({k:f.k, l:f.l, fmt:f.fmt}));
+    _lastRenderedList = sorted;
+    const thead = '<tr><th>#</th><th>Player</th><th>Year</th><th>School</th><th>Grade</th>' +
+      filterCols.map(c=>`<th>${c.l}</th>`).join('') + '<th>Label</th></tr>';
+    const tbody = sorted.map((p,i) => {
+      const lg = letterGrade(p.grade||0);
+      const tag = getTag(p);
+      return `<tr onclick="openModalFromList(${i})">
+        <td style="color:var(--muted);font-family:'Bebas Neue',cursive;font-size:18px">${i+1}</td>
+        <td style="font-weight:700">${p.name}</td>
+        <td style="color:var(--muted)">${p.year||2026}</td>
+        <td>${p.school||''}</td>
+        <td style="color:${lg.c};font-weight:700">${fmt(p.grade||0,1)}</td>
+        ${filterCols.map(c=>`<td>${explorerFmtDisplay(p[c.k],c.fmt)}</td>`).join('')}
+        <td>${tag?`<span style="color:${tag.color};font-size:10px;font-weight:700">${tag.icon} ${tag.label}</span>`:'—'}</td>
+      </tr>`;
+    }).join('');
+    body.innerHTML = `<div style="overflow-x:auto"><table class="explorer-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+  }
+}
+
+buildExplorerYears();
 
 </script>
 </body>
