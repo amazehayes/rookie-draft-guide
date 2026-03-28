@@ -2555,31 +2555,29 @@ function renderExplorerFilters() {
   }
 
   list.innerHTML = explorerFilters.map((f, i) => {
-    const range = f.hi - f.lo;
-    const total = f.max - f.min;
-    const fillLeft = total > 0 ? ((f.lo - f.min) / total * 100) : 0;
-    const fillWidth = total > 0 ? (range / total * 100) : 100;
-    const loDisp = explorerFmtVal(f.lo, f.fmt);
-    const hiDisp = explorerFmtVal(f.hi, f.fmt);
+    const loDisp = explorerFmtRaw(f.lo, f.fmt);
+    const hiDisp = explorerFmtRaw(f.hi, f.fmt);
     return `<div class="explorer-metric-item">
       <div class="explorer-metric-header">
         <span class="explorer-metric-name">${f.l}</span>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="explorer-metric-vals">${loDisp} – ${hiDisp}</span>
-          <button class="explorer-metric-remove" onclick="removeExplorerFilter(${i})">×</button>
-        </div>
+        <button class="explorer-metric-remove" onclick="removeExplorerFilter(${i})">×</button>
       </div>
-      <div class="explorer-slider-wrap">
-        <div class="explorer-slider-track"></div>
-        <div class="explorer-slider-fill" id="efill-${i}" style="left:${fillLeft}%;width:${fillWidth}%;"></div>
-        <div class="explorer-thumb" id="etlo-${i}" style="left:${fillLeft}%"></div>
-        <div class="explorer-thumb" id="ethi-${i}" style="left:${fillLeft+fillWidth}%;background:var(--accent2)"></div>
-        <input type="range" class="explorer-slider-input" id="eslo-${i}"
-          min="${f.min}" max="${f.max}" step="${(f.max-f.min)/200}"
-          value="${f.lo}" oninput="updateExplorerSlider(${i},'lo',this.value)">
-        <input type="range" class="explorer-slider-input" id="eshi-${i}"
-          min="${f.min}" max="${f.max}" step="${(f.max-f.min)/200}"
-          value="${f.hi}" oninput="updateExplorerSlider(${i},'hi',this.value)">
+      <div class="explorer-input-row">
+        <div class="explorer-input-wrap">
+          <div class="explorer-input-label">Min</div>
+          <input type="number" class="explorer-num-input" id="eslo-${i}"
+            value="${loDisp}" step="any"
+            onchange="updateExplorerInput(${i},'lo',this.value)"
+            oninput="updateExplorerInput(${i},'lo',this.value)">
+        </div>
+        <div class="explorer-input-sep">–</div>
+        <div class="explorer-input-wrap">
+          <div class="explorer-input-label">Max</div>
+          <input type="number" class="explorer-num-input" id="eshi-${i}"
+            value="${hiDisp}" step="any"
+            onchange="updateExplorerInput(${i},'hi',this.value)"
+            oninput="updateExplorerInput(${i},'hi',this.value)">
+        </div>
       </div>
     </div>`;
   }).join('');
