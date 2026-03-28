@@ -2704,9 +2704,9 @@ function explorerRender() {
         const tag = getTag(p);
         const hs = hshotSrc(p);
         const logo = logoSrc(p.school);
-        // Build active filter stats grid (exclude grade/markers/pff since those are shown elsewhere)
-        const filterStats = explorerFilters
-          .filter(f => !['grade','markers','pff','ath','prod'].includes(f.k))
+        // Build active filter stats grid
+        const activeFilterStats = explorerFilters.slice(); // snapshot at render time
+        const filterStats = activeFilterStats
           .map(f => {
             const v = p[f.k];
             return `<div style="min-width:0">
@@ -2714,7 +2714,7 @@ function explorerRender() {
               <div style="font-size:12px;font-weight:700;color:${col}">${explorerFmtDisplay(v,f.fmt)}</div>
             </div>`;
           }).join('');
-        const statsGrid = filterStats ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
+        const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
         return `<div class="player-card" style="--pos-color:${col};cursor:pointer" onclick="openModalFromList(${i})">
           <div class="card-body">
             <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${p.year||2026}</div>
