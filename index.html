@@ -792,6 +792,7 @@ const PLAYERS=[{"pos":"QB","name":"Joey Aguilar","school":"Tennessee","conf":"SE
 
 // ---- HELPERS ----
 function posColor(pos){return POS_COLORS[pos]||'#e8ff47';}
+function safeStr(s){return s?String(s).replace(/'/g,'\u2019'):s;}
 function fmt(v,d=1){if(v==null||isNaN(v))return'—';return parseFloat(v).toFixed(d);}
 function fmtPct(v){if(v==null||isNaN(v))return'—';return(v*100).toFixed(1)+'%';}
 function fmtAge(v){if(!v||isNaN(v))return'—';const yr=Math.floor(v);const mo=Math.round((v-yr)*12);return yr+'y '+mo+'m';}
@@ -3103,15 +3104,14 @@ async function renderModalComps(player) {
     return;
   }
 
-  grid.innerHTML = comps.map(p => {
-    const col = posColor(p.pos);
+  window._modalComps = comps;
+  grid.innerHTML = comps.map((p, idx) => {
     const lg = letterGrade(p.grade||0);
-    const safeP = JSON.stringify(p).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    return '<div class="comp-mini-card" onclick=\'openModal(JSON.parse(this.dataset.p))\' data-p=\''+JSON.stringify(p).replace(/'/g,"\\'")+'\'>' +
+    return '<div class="comp-mini-card" onclick="openModal(window._modalComps['+idx+'])">' +
       '<div class="comp-mini-name">'+p.name+'</div>' +
       '<div class="comp-mini-meta">'+(p.school||'')+' \u00b7 '+p.year+'</div>' +
       '<div class="comp-mini-grade" style="color:'+lg.c+'">'+fmt(p.grade,1)+' <span style="font-size:10px;font-weight:400">'+lg.l+'</span></div>' +
-      '<div class="comp-mini-sim">'+Math.round(p._sim)+'% match</div>' +
+      '<div class="comp-mini-sim">'+p._sim+'% match</div>' +
     '</div>';
   }).join('');
 }
