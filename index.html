@@ -145,6 +145,72 @@
   .explorer-results{height:auto;}
 }
 
+
+/* ---- DARK / LIGHT MODE ---- */
+body.light-mode{
+  --bg:#f0f2f5;--surface:#ffffff;--surface2:#e8eaf0;--border:#d0d4de;
+  --text:#1a1d24;--muted:#7a8099;--accent:#0099cc;--accent2:#c8a000;
+  --green:#00a860;--red:#d63040;--orange:#cc6a20;--purple:#5a44cc;
+  --pos-qb:#5a44cc;--pos-rb:#00a860;--pos-wr:#0099cc;--pos-te:#cc6a20;
+}
+body.light-mode .site-nav{background:rgba(240,242,245,.97);}
+body.light-mode .player-card{background:var(--surface);}
+body.light-mode .modal{background:var(--surface);}
+body.light-mode .nav-drawer{background:var(--surface);}
+
+/* ---- THEME TOGGLE ---- */
+.theme-toggle{background:none;border:1px solid var(--border);color:var(--muted);font-size:14px;padding:5px 9px;border-radius:6px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.theme-toggle:hover{color:var(--text);border-color:var(--text);}
+
+/* ---- LAST UPDATED ---- */
+.nav-updated{font-size:10px;color:var(--muted);letter-spacing:.5px;white-space:nowrap;flex-shrink:0;}
+
+/* ---- GLOBAL SEARCH ---- */
+.global-search-wrap{position:relative;flex-shrink:0;}
+.global-search-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 10px 6px 28px;width:180px;outline:none;transition:all .15s;}
+.global-search-input:focus{border-color:var(--accent);width:240px;}
+.global-search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px;pointer-events:none;}
+.global-search-results{position:absolute;top:calc(100% + 6px);left:0;width:320px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:500;max-height:360px;overflow-y:auto;}
+.global-search-results::-webkit-scrollbar{width:4px;}
+.global-search-results::-webkit-scrollbar-thumb{background:var(--border);}
+.global-search-result-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border);}
+.global-search-result-item:last-child{border-bottom:none;}
+.global-search-result-item:hover{background:var(--surface);}
+.global-search-result-name{font-weight:700;font-size:12px;}
+.global-search-result-meta{font-size:10px;color:var(--muted);}
+.global-search-empty{padding:20px;text-align:center;color:var(--muted);font-size:11px;}
+
+/* ---- SHARE MODAL ---- */
+.share-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.share-modal.open{opacity:1;pointer-events:all;}
+.share-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:340px;max-width:90vw;}
+.share-modal-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;margin-bottom:16px;}
+.share-btn-row{display:flex;gap:10px;margin-top:12px;}
+.share-action-btn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:10px;border-radius:7px;cursor:pointer;transition:all .15s;text-align:center;}
+.share-action-btn:hover{border-color:var(--accent);color:var(--accent);}
+.share-action-btn.copied{border-color:var(--green);color:var(--green);}
+
+/* ---- COMP CARDS ---- */
+.modal-comps-section{padding:16px 26px 24px;}
+.modal-comps-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.modal-comps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.comp-mini-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;}
+.comp-mini-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.comp-mini-name{font-weight:700;font-size:12px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.comp-mini-meta{font-size:10px;color:var(--muted);margin-bottom:6px;}
+.comp-mini-grade{font-size:13px;font-weight:700;}
+.comp-mini-sim{font-size:9px;color:var(--muted);margin-top:4px;}
+
+/* ---- PDF EXPORT ---- */
+.pdf-export-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.pdf-export-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+@media(max-width:768px){
+  .global-search-wrap{display:none;}
+  .nav-updated{display:none;}
+  .global-search-results{width:280px;}
+}
+
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
@@ -469,6 +535,11 @@ td{padding:10px 14px;white-space:nowrap;}
     <div class="logo-title">The Marker System</div>
     <div class="logo-sub">Dynasty Draft Hub</div>
   </div>
+  <div class="global-search-wrap" id="globalSearchWrap">
+    <span class="global-search-icon">⌕</span>
+    <input class="global-search-input" id="globalSearchInput" placeholder="Search all players..." autocomplete="off">
+    <div class="global-search-results" id="globalSearchResults" style="display:none"></div>
+  </div>
   <div class="nav-links">
     <button class="nav-btn active" data-page="grades">Player Grades</button>
     <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
@@ -477,6 +548,8 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
+  <div class="nav-updated" id="navUpdated"></div>
+  <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">☀</button>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
@@ -1136,9 +1209,8 @@ function openModalFromList(i){
   openModal(p);
 }
 function openModal(p){
+  window._currentModalPlayer = p;
   if(!p)return;
-  const col=posColor(p.pos);
-  const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
   const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
   const markers=evalMarkers(p);
   const list=getFiltered();
@@ -1160,6 +1232,7 @@ function openModal(p){
 
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
+    '<button onclick="openShareModal()" style="position:absolute;top:16px;right:56px;background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit">Share</button>'+
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+'">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
@@ -1199,10 +1272,15 @@ function openModal(p){
           statSq(p.bmi!=null?fmt(p.bmi,2):'—','BMI')+
         '</div>'+
       '</div>'+
+    '</div>'+
+    '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">'+
+      '<div class="modal-comps-title">Historical Comps</div>'+
+      '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:11px">Loading comps...</div></div>'+
     '</div>';
 
   document.getElementById('modalOverlay').classList.add('open');
-}
+  // Render comps after modal opens
+  setTimeout(() => renderModalComps(p), 50);
 
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
 function render(){
@@ -2813,6 +2891,405 @@ function explorerRender() {
 
 buildExplorerYears();
 
+
+// ============================================================
+// DARK / LIGHT MODE
+// ============================================================
+const themeToggle = document.getElementById('themeToggle');
+let isDark = true;
+
+function applyTheme(dark) {
+  isDark = dark;
+  document.body.classList.toggle('light-mode', !dark);
+  themeToggle.textContent = dark ? '\u2600' : '\u263e';
+  try { localStorage.setItem('tms-theme', dark ? 'dark' : 'light'); } catch(e){}
+}
+
+try {
+  const saved = localStorage.getItem('tms-theme');
+  if(saved === 'light') applyTheme(false);
+} catch(e){}
+
+themeToggle.addEventListener('click', () => applyTheme(!isDark));
+
+// ============================================================
+// LAST UPDATED DATE
+// ============================================================
+const LAST_UPDATED = 'Mar 28, 2026';
+const navUpdated = document.getElementById('navUpdated');
+if(navUpdated) navUpdated.textContent = 'Updated ' + LAST_UPDATED;
+
+// ============================================================
+// GLOBAL SEARCH
+// ============================================================
+const globalInput = document.getElementById('globalSearchInput');
+const globalResults = document.getElementById('globalSearchResults');
+let globalSearchTimeout = null;
+
+async function globalSearchGetPlayers(query) {
+  const q = query.toLowerCase().trim();
+  if(q.length < 2) return [];
+  const results = [];
+  PLAYERS.forEach(p => {
+    if(p.name.toLowerCase().includes(q)) results.push({...p, year: 2026});
+  });
+  Object.entries(yearCache).forEach(([yr, players]) => {
+    if(Number(yr) === 2026) return;
+    players.forEach(p => {
+      if(p.name.toLowerCase().includes(q)) results.push({...p, year: Number(yr)});
+    });
+  });
+  if(q.length >= 3 && results.length < 5) {
+    const uncached = YEARS.filter(yr => yr !== 2026 && !yearCache[yr]);
+    await Promise.all(uncached.slice(0, 5).map(async yr => {
+      if(!yearCache[yr]) {
+        try {
+          const res = await fetch('data/'+yr+'.json?v=3');
+          yearCache[yr] = await res.json();
+          yearCache[yr].forEach(p => {
+            if(p.name.toLowerCase().includes(q)) results.push({...p, year: yr});
+          });
+        } catch(e) { yearCache[yr] = []; }
+      }
+    }));
+  }
+  const seen = new Set();
+  return results
+    .filter(p => { const k = p.name+p.year; if(seen.has(k)) return false; seen.add(k); return true; })
+    .sort((a,b) => (b.grade||0)-(a.grade||0))
+    .slice(0, 12);
+}
+
+globalInput.addEventListener('input', () => {
+  clearTimeout(globalSearchTimeout);
+  const q = globalInput.value.trim();
+  if(!q) { globalResults.style.display='none'; return; }
+  globalSearchTimeout = setTimeout(async () => {
+    const players = await globalSearchGetPlayers(q);
+    if(!players.length) {
+      globalResults.innerHTML = '<div class="global-search-empty">No players found</div>';
+    } else {
+      globalResults.innerHTML = players.map((p, i) => {
+        const col = posColor(p.pos);
+        const lg = letterGrade(p.grade||0);
+        return '<div class="global-search-result-item" onclick="globalSearchSelect('+i+')">' +
+          '<div style="width:28px;height:28px;border-radius:50%;background:'+col+'22;border:1px solid '+col+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:'+col+';flex-shrink:0">'+p.pos+'</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="global-search-result-name">'+p.name+'</div>' +
+            '<div class="global-search-result-meta">'+(p.school||'')+' \u00b7 '+p.year+' \u00b7 Grade: <span style="color:'+lg.c+';font-weight:700">'+(p.grade?fmt(p.grade,1):'--')+'</span></div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    globalResults._players = players;
+    globalResults.style.display = 'block';
+  }, 200);
+});
+
+function globalSearchSelect(i) {
+  const p = globalResults._players[i];
+  if(!p) return;
+  globalInput.value = '';
+  globalResults.style.display = 'none';
+  openModal(p);
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('globalSearchWrap');
+  if(wrap && !wrap.contains(e.target)) globalResults.style.display = 'none';
+});
+
+globalInput.addEventListener('keydown', e => {
+  if(e.key === 'Escape') { globalResults.style.display='none'; globalInput.blur(); }
+});
+
+// ============================================================
+// HISTORICAL COMPS
+// ============================================================
+function computeComps(player) {
+  const candidates = [];
+  Object.entries(yearCache).forEach(([yr, players]) => {
+    if(Number(yr) === 2026) return;
+    players.forEach(p => {
+      if(p.pos === player.pos && p.grade && p.name !== player.name) {
+        candidates.push({...p, year: Number(yr)});
+      }
+    });
+  });
+  if(!candidates.length) return [];
+
+  const keys = ['grade','markers','pff','ath','prod'];
+  const ranges = {};
+  keys.forEach(k => {
+    const vals = candidates.map(p => p[k]).filter(v => v != null);
+    if(vals.length) ranges[k] = {min: Math.min(...vals), max: Math.max(...vals)};
+  });
+
+  function norm(v, k) {
+    const r = ranges[k];
+    if(!r || r.max === r.min) return 0;
+    return (v - r.min) / (r.max - r.min);
+  }
+
+  const weights = {grade:3, markers:2, pff:2, ath:1, prod:1};
+  const totalW = Object.values(weights).reduce((s,v)=>s+v,0);
+
+  candidates.forEach(p => {
+    let dist = 0, wt = 0;
+    keys.forEach(k => {
+      if(player[k] != null && p[k] != null) {
+        const d = norm(player[k],k) - norm(p[k],k);
+        dist += weights[k] * d * d;
+        wt += weights[k];
+      }
+    });
+    p._sim = wt > 0 ? Math.max(0, 100 - Math.sqrt(dist/wt*totalW) * 100) : 0;
+  });
+
+  return candidates.sort((a,b)=>b._sim-a._sim).slice(0,3);
+}
+
+async function renderModalComps(player) {
+  const grid = document.getElementById('modalCompsGrid');
+  if(!grid) return;
+
+  const toLoad = YEARS.filter(yr => yr !== 2026 && !yearCache[yr]);
+  if(toLoad.length) {
+    await Promise.all(toLoad.map(async yr => {
+      try {
+        const res = await fetch('data/'+yr+'.json?v=3');
+        yearCache[yr] = await res.json();
+      } catch(e) { yearCache[yr] = []; }
+    }));
+  }
+
+  const comps = computeComps(player);
+  if(!comps.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:11px;grid-column:1/-1">No historical comps available.</div>';
+    return;
+  }
+
+  grid.innerHTML = comps.map(p => {
+    const col = posColor(p.pos);
+    const lg = letterGrade(p.grade||0);
+    const safeP = JSON.stringify(p).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return '<div class="comp-mini-card" onclick=\'openModal(JSON.parse(this.dataset.p))\' data-p=\''+JSON.stringify(p).replace(/'/g,"\\'")+'\'>' +
+      '<div class="comp-mini-name">'+p.name+'</div>' +
+      '<div class="comp-mini-meta">'+(p.school||'')+' \u00b7 '+p.year+'</div>' +
+      '<div class="comp-mini-grade" style="color:'+lg.c+'">'+fmt(p.grade,1)+' <span style="font-size:10px;font-weight:400">'+lg.l+'</span></div>' +
+      '<div class="comp-mini-sim">'+Math.round(p._sim)+'% match</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ============================================================
+// SHARE PLAYER CARD
+// ============================================================
+let _sharePlayer = null;
+
+function openShareModal() {
+  _sharePlayer = window._currentModalPlayer;
+  if(!_sharePlayer) return;
+  document.getElementById('sharePlayerName').textContent = _sharePlayer.name;
+  document.getElementById('sharePlayerMeta').textContent =
+    _sharePlayer.pos + ' \u00b7 ' + (_sharePlayer.school||'') + ' \u00b7 Grade: ' + fmt(_sharePlayer.grade||0,1);
+  document.getElementById('shareModal').classList.add('open');
+}
+
+document.getElementById('shareModal').addEventListener('click', e => {
+  if(e.target === document.getElementById('shareModal'))
+    document.getElementById('shareModal').classList.remove('open');
+});
+
+document.getElementById('shareCopyLink').addEventListener('click', () => {
+  if(!_sharePlayer) return;
+  const url = window.location.origin + window.location.pathname + '?player=' + encodeURIComponent(_sharePlayer.name);
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('shareCopyLink');
+    btn.textContent = '\u2713 Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '\ud83d\udd17 Copy Link'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    prompt('Copy this link:', url);
+  });
+});
+
+document.getElementById('shareDownloadImg').addEventListener('click', async () => {
+  if(!_sharePlayer) return;
+  const btn = document.getElementById('shareDownloadImg');
+  btn.textContent = 'Generating...';
+  await downloadPlayerCard(_sharePlayer);
+  btn.textContent = '\u2b07 Download Card';
+  document.getElementById('shareModal').classList.remove('open');
+});
+
+async function downloadPlayerCard(p) {
+  const col = posColor(p.pos);
+  const lg = letterGrade(p.grade||0);
+  const tag = getTag(p);
+
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;left:-9999px;top:0;width:380px;background:#111418;border:1px solid #1e2530;border-radius:12px;font-family:monospace;padding:0;overflow:hidden;';
+  div.innerHTML =
+    '<div style="height:3px;background:'+col+'"></div>' +
+    '<div style="padding:20px 22px 22px">' +
+      '<div style="font-size:9px;color:#5a6478;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">The Marker System \u00b7 '+(p.year||2026)+' Draft Class</div>' +
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">' +
+        '<div style="width:52px;height:52px;border-radius:50%;border:2px solid '+col+';background:'+col+'22;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:'+col+';flex-shrink:0">'+p.pos+'</div>' +
+        '<div>' +
+          '<div style="font-size:20px;font-weight:700;color:#e8edf3;line-height:1.1">'+p.name+'</div>' +
+          '<div style="font-size:11px;color:#5a6478;margin-top:3px">'+(p.school||'')+' \u00b7 '+(p.conf||'')+'</div>' +
+        '</div>' +
+      '</div>' +
+      (tag ? '<div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid '+tag.color+'44;background:'+tag.color+'18;color:'+tag.color+';margin-bottom:14px">'+tag.icon+' '+tag.label+'</div>' : '') +
+      '<div style="margin-bottom:6px">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+          '<span style="font-size:9px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Final Grade</span>' +
+          '<span style="font-size:14px;font-weight:700;color:'+lg.c+'">'+fmt(p.grade||0,1)+' <span style="font-size:11px">'+lg.l+'</span></span>' +
+        '</div>' +
+        '<div style="height:5px;background:#1e2530;border-radius:3px;overflow:hidden">' +
+          '<div style="height:100%;width:'+Math.min(p.grade||0,100)+'%;background:'+lg.c+';border-radius:3px"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">' +
+        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:'+col+'">'+(p.markers||0)+'</div><div style="font-size:8px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Markers</div></div>' +
+        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#7b61ff">'+(p.pff!=null?Math.round(p.pff):'--')+'</div><div style="font-size:8px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">PFF Mkrs</div></div>' +
+        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#f5c842">'+(p.round!=null?'Rd '+p.round:'--')+'</div><div style="font-size:8px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Round</div></div>' +
+      '</div>' +
+      '<div style="margin-top:14px;font-size:9px;color:#5a6478;text-align:right;letter-spacing:1px">themarkersystem.com</div>' +
+    '</div>';
+  document.body.appendChild(div);
+
+  try {
+    if(!window.html2canvas) {
+      await new Promise((res,rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    const canvas = await window.html2canvas(div, {scale:2, backgroundColor:'#111418', useCORS:true});
+    const a = document.createElement('a');
+    a.download = p.name.replace(/\s+/g,'-').toLowerCase()+'-marker-system.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  } catch(e) {
+    alert('Could not generate image. Try copying the link instead.');
+  } finally {
+    document.body.removeChild(div);
+  }
+}
+
+window.addEventListener('load', () => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const playerName = params.get('player');
+    if(playerName) {
+      const p = PLAYERS.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+      if(p) setTimeout(() => openModal(p), 300);
+    }
+  } catch(e){}
+});
+
+// ============================================================
+// PDF EXPORT
+// ============================================================
+async function exportRankingsPDF() {
+  const btn = document.getElementById('pdfExportBtn');
+  if(!btn) return;
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+
+  try {
+    if(!window.jspdf) {
+      await new Promise((res,rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    if(!window.jspdf.jsPDF.prototype.autoTable) {
+      await new Promise((res,rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+
+    doc.setFillColor(10, 12, 15);
+    doc.rect(0,0,297,210,'F');
+    doc.setTextColor(0, 194, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica','bold');
+    doc.text('THE MARKER SYSTEM', 14, 16);
+    doc.setTextColor(245, 200, 66);
+    doc.setFontSize(11);
+    doc.text('Dynasty Rankings \u00b7 ' + activeYear + ' Draft Class \u00b7 ' + currentFormat, 14, 23);
+    doc.setTextColor(90, 100, 120);
+    doc.setFontSize(8);
+    doc.text('themarkersystem.com \u00b7 Generated ' + new Date().toLocaleDateString(), 14, 29);
+
+    const players = getFiltered();
+    const head = [['#','Player','School','Pos','Age','Round','Grade','Markers','PFF','Label']];
+    const body = players.map((p,i) => {
+      const t = getTag(p);
+      return [
+        i+1, p.name, p.school||'', p.pos,
+        p.age ? fmtAge(p.age) : '--',
+        p.round ? 'Rd '+p.round : '--',
+        p.grade ? fmt(p.grade,1) : '--',
+        p.markers||0,
+        p.pff!=null ? Math.round(p.pff) : '--',
+        t ? t.label : ''
+      ];
+    });
+
+    doc.autoTable({
+      startY: 33, head, body,
+      theme: 'grid',
+      styles: { fontSize:7, cellPadding:2, fillColor:[17,20,24], textColor:[232,237,243], lineColor:[30,37,48], lineWidth:0.1 },
+      headStyles: { fillColor:[24,28,34], textColor:[90,100,120], fontSize:7, fontStyle:'bold' },
+      alternateRowStyles: { fillColor:[24,28,34] },
+      columnStyles: {
+        0:{cellWidth:8,halign:'center'},
+        3:{cellWidth:10,halign:'center'},
+        6:{cellWidth:16,halign:'center',fontStyle:'bold'},
+        7:{cellWidth:14,halign:'center'},
+        8:{cellWidth:12,halign:'center'},
+      }
+    });
+
+    doc.save('marker-system-rankings-'+activeYear+'.pdf');
+  } catch(e) {
+    console.error(e);
+    alert('PDF generation failed. Please try again.');
+  } finally {
+    btn.textContent = '\u2b07 Export PDF';
+    btn.disabled = false;
+  }
+}
+
 </script>
+
+<div class="share-modal" id="shareModal">
+  <div class="share-modal-box">
+    <div class="share-modal-title">Share Player</div>
+    <div id="sharePlayerName" style="font-size:14px;font-weight:700;margin-bottom:4px"></div>
+    <div id="sharePlayerMeta" style="font-size:11px;color:var(--muted);margin-bottom:16px"></div>
+    <div class="share-btn-row">
+      <button class="share-action-btn" id="shareCopyLink">🔗 Copy Link</button>
+      <button class="share-action-btn" id="shareDownloadImg">⬇ Download Card</button>
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="share-action-btn" style="flex:none;padding:6px 14px" onclick="document.getElementById('shareModal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
