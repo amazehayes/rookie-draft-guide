@@ -1615,6 +1615,23 @@ buildYearTabs();
 renderHeroStats();
 render();
 
+// Silently prefetch all historical years in the background
+// so comp algorithm and year switching are instant
+(async function prefetchHistoricalYears() {
+  const toFetch = YEARS.filter(yr => yr !== 2026);
+  // Stagger fetches slightly to avoid hammering the server
+  for(const yr of toFetch) {
+    if(!yearCache[yr]) {
+      try {
+        const res = await fetch('data/'+yr+'.json?v=3');
+        yearCache[yr] = await res.json();
+      } catch(e) { yearCache[yr] = []; }
+    }
+    // Small delay between fetches so it doesn't block the main thread
+    await new Promise(r => setTimeout(r, 50));
+  }
+})();
+
 // ============================================================
 // MOBILE — HAMBURGER DRAWER
 // ============================================================
