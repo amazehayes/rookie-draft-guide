@@ -1450,6 +1450,7 @@ async function switchYear(yr) {
   render();
   if(activePage === 'rankings') renderRankings();
   allPlayersCache = null;
+  if(NFL_LOOKUP && yearCache[yr]) enrichPlayersWithNFL(yearCache[yr], yr);
 }
 
 // Override getFiltered to use activeYear data
@@ -3244,12 +3245,6 @@ function enrichPlayersWithNFL(players, year) {
 }
 
 // Also hook into switchYear so newly loaded years get enriched
-const _origSwitchYear = switchYear;
-async function switchYear(yr) {
-  await _origSwitchYear(yr);
-  if(NFL_LOOKUP && yearCache[yr]) enrichPlayersWithNFL(yearCache[yr], yr);
-}
-
 // Load NFL lookup in background after page loads
 setTimeout(loadNFLLookup, 500);
 
