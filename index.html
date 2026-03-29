@@ -1202,7 +1202,7 @@ async function downloadModalPDF() {
   const _mx = POS_MAX[p.pos]||14; const mk = p.markers||0;
   const _pmx = PFF_MAX[p.pos]||10; const pmk = p.pff!=null?Math.round(p.pff):0;
   const mx = _mx; const pmx = _pmx;
-  const btn = document.querySelector('[onclick="downloadModalPDF()"]');
+  const btn = document.getElementById('modalPdfBtn');
   if(btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
   try {
     if(!window.jspdf) {
@@ -1516,8 +1516,6 @@ function openModal(p){
 
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
-    '<button onclick="openShareModal()" style="position:absolute;top:16px;right:56px;background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit">Share</button>'+
-    '<button onclick="downloadModalPDF()" style="position:absolute;top:16px;right:130px;background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit">⬇ PDF</button>'+
     // ── Header ──
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+'">'+
@@ -1532,6 +1530,10 @@ function openModal(p){
           '<div class="modal-school">'+p.school+' · '+(p.conf||'')+(p.age?' · '+fmtAge(p.age):'')+'</div>'+
         '</div>'+
         tagHTML(p)+
+      '</div>'+
+      '<div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0">'+
+        '<button id="modalPdfBtn" onclick="downloadModalPDF()" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:5px 12px;border-radius:5px;cursor:pointer;font-family:inherit;white-space:nowrap">⬇ PDF</button>'+
+        '<button id="modalShareBtn" onclick="openShareModal()" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:5px 12px;border-radius:5px;cursor:pointer;font-family:inherit">Share</button>'+
       '</div>'+
     '</div>'+
     // ── Grade row ──
@@ -3807,11 +3809,13 @@ async function exportRankingsPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
 
+    // Draw dark background on first page
     doc.setFillColor(10, 12, 15);
     doc.rect(0,0,297,210,'F');
+
+    // Header
     doc.setTextColor(0, 194, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica','bold');
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
     doc.text('THE MARKER SYSTEM', 14, 16);
     doc.setTextColor(245, 200, 66);
     doc.setFontSize(11);
@@ -3836,7 +3840,7 @@ async function exportRankingsPDF() {
     });
 
     doc.autoTable({
-      startY: 33, head, body,
+      startY: 26, head, body,
       theme: 'grid',
       styles: { fontSize:7, cellPadding:2, fillColor:[17,20,24], textColor:[232,237,243], lineColor:[30,37,48], lineWidth:0.1 },
       headStyles: { fillColor:[24,28,34], textColor:[90,100,120], fontSize:7, fontStyle:'bold' },
@@ -3849,26 +3853,20 @@ async function exportRankingsPDF() {
         8:{cellWidth:12,halign:'center'},
       },
       didDrawPage: (data) => {
-        // Dark background on every page
+        // Note: didDrawPage fires after content - use it for page numbers only
+        const pageNum = data.pageNumber;
+        doc.setFontSize(6); doc.setTextColor(90,100,120);
+        doc.text('Page ' + pageNum + '  |  themarkersystem.com', 283, 207, {align:'right'});
+      },
+      willDrawPage: (data) => {
+        // Fill background before table draws on this page
         doc.setFillColor(10,12,15);
         doc.rect(0,0,297,210,'F');
-        // Re-draw header on continuation pages
         if(data.pageNumber > 1) {
-          doc.setFillColor(10,12,15);
-          doc.rect(0,0,297,210,'F');
-          doc.setTextColor(0,194,255);
-          doc.setFontSize(10);
-          doc.setFont('helvetica','bold');
-          doc.text('THE MARKER SYSTEM — continued', 14, 10);
-          doc.setTextColor(90,100,120);
-          doc.setFontSize(7);
-          doc.text('themarkersystem.com', 14, 15);
-        }
-      },
-      willDrawCell: (data) => {
-        // Ensure cell backgrounds are dark
-        if(data.row.section === 'body') {
-          doc.setFillColor(data.row.index % 2 === 0 ? 17 : 24, data.row.index % 2 === 0 ? 20 : 28, data.row.index % 2 === 0 ? 24 : 34);
+          doc.setTextColor(0,194,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+          doc.text('THE MARKER SYSTEM', 14, 8);
+          doc.setTextColor(245,200,66); doc.setFontSize(7); doc.setFont('helvetica','normal');
+          doc.text('Dynasty Rankings \u00b7 ' + activeYear + ' \u00b7 ' + currentFormat, 60, 8);
         }
       }
     });
