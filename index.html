@@ -305,7 +305,7 @@ function renderHeroStats() {
 // YEAR TABS
 // ============================================================
 function buildYearTabs() {
-  [document.getElementById('yearBar'), document.getElementById('rankingsYearBar')].forEach(bar => {
+  [document.getElementById('gradesYearBar'), document.getElementById('rankingsYearBar')].forEach(bar => {
     if (!bar) return;
     bar.innerHTML = (bar.innerHTML || '');
     YEARS.forEach(yr => {
@@ -505,7 +505,7 @@ async function getAllPlayers() {
 }
 
 function renderComparison() {
-  const container = document.getElementById('compGrid');
+  const container = document.getElementById('compCards');
   if (!container) return;
   const slots = [1, 2, 3, 4];
   let html = '';
@@ -687,7 +687,7 @@ function buildExplorerYears() {
 }
 
 function renderExplorerFilters() {
-  const container = document.getElementById('explorerActiveFilters');
+  const container = document.getElementById('explorerMetricList');
   if (!container) return;
   container.innerHTML = explorerFilters.map((f, i) =>
     '<div class="explorer-filter-pill">' +
@@ -725,7 +725,7 @@ async function explorerRender() {
 
   players.sort((a, b) => (b.grade || 0) - (a.grade || 0));
 
-  const container = document.getElementById('explorerResults');
+  const container = document.getElementById('explorerResultsBody');
   if (!container) return;
   if (!players.length) {
     container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No players match these filters.</div>';
@@ -840,7 +840,7 @@ function renderBreakdown(players, yr) {
   const avgGrade = p => p.length ? p.reduce((s, x) => s + x.grade, 0) / p.length : 0;
 
   // Position chart
-  const posCtx = document.getElementById('posBreakdownChart');
+  const posCtx = document.getElementById('breakdownPosChart');
   if (posCtx) {
     if (posCtx._chartInstance) posCtx._chartInstance.destroy();
     posCtx._chartInstance = new Chart(posCtx, {
@@ -865,7 +865,7 @@ function renderBreakdown(players, yr) {
   }
 
   // Table
-  const tbody = document.getElementById('breakdownBody');
+  const tbody = document.getElementById('bkBody');
   if (!tbody) return;
   const allGraded = players.filter(p => p.grade).sort((a, b) => b.grade - a.grade);
   let html = '';
@@ -923,7 +923,7 @@ function renderGlossary() {
     if (glossarySearch && !t.term.toLowerCase().includes(glossarySearch.toLowerCase()) && !t.def.toLowerCase().includes(glossarySearch.toLowerCase())) return false;
     return true;
   });
-  const container = document.getElementById('glossaryTerms');
+  const container = document.getElementById('glossaryPanel');
   if (!container) return;
   container.innerHTML = terms.map(t =>
     '<div class="glossary-term">' +
