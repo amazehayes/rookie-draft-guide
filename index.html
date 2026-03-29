@@ -1315,7 +1315,6 @@ function openModal(p){
 
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
-    '<button onclick="openShareModal()" style="position:absolute;top:16px;right:56px;background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit">Share</button>'+
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+'">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
@@ -1791,8 +1790,8 @@ function classifyPlayer(p, format) {
   const label = tag ? tag.label : null;
   const adjScore = dynastySortForFormat(p, format);
 
-  // Never highlight undrafted (round 8) players
-  if(rd === 8 || rd == null) return null;
+  // Never highlight UDFA (round 8) players
+  if(rd === 8) return null;
 
   // ── FADE checks (run first — fades override targets) ──────────────────────
   // Negative label
