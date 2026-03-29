@@ -82,7 +82,7 @@
 
 
 /* ---- STAT EXPLORER ---- */
-.explorer-layout{display:flex;height:calc(100vh - 56px);overflow:hidden;}
+.explorer-layout{display:flex;height:calc(100vh - 56px);overflow:hidden;position:relative;}
 .explorer-sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto;display:flex;flex-direction:column;}
 .explorer-sidebar::-webkit-scrollbar{width:4px;}
 .explorer-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
@@ -794,8 +794,6 @@ td{padding:10px 14px;white-space:nowrap;}
       <div class="explorer-metric-list" id="explorerMetricList"></div>
       <!-- Add metric button -->
       <button class="explorer-add-metric" id="explorerAddMetric">+ Add Stat Filter</button>
-      <!-- Metric picker (hidden) -->
-      <div class="explorer-metric-picker" id="explorerPicker" style="display:none"></div>
       <!-- Reset -->
       <div class="explorer-sidebar-actions">
         <button class="explorer-reset-btn" id="explorerReset">Reset All Filters</button>
@@ -3685,5 +3683,6 @@ async function exportRankingsPDF() {
 }
 
 </script>
+<div class="explorer-metric-picker" id="explorerPicker" style="display:none"></div>
 </body>
 </html>
