@@ -216,6 +216,34 @@ body.light-mode .nav-drawer{background:var(--surface);}
   .global-search-results{width:280px;}
 }
 
+
+/* ---- NFL OUTCOMES ---- */
+.outcomes-controls{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;}
+.outcomes-range-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.outcomes-year-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 8px;border-radius:5px;outline:none;}
+.outcomes-year-select:focus{border-color:var(--accent);}
+.outcomes-stat{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.outcomes-table-wrap{overflow-x:auto;padding:0 0 40px;}
+.outcomes-table{width:100%;border-collapse:collapse;font-size:12px;}
+.outcomes-table th{text-align:left;padding:9px 12px;font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;background:var(--surface);}
+.outcomes-table th:hover{color:var(--accent);}
+.outcomes-table th.sorted{color:var(--accent);}
+.outcomes-table td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+.outcomes-table tr:hover td{background:var(--surface2);cursor:pointer;}
+.outcomes-table tr.no-nfl td{opacity:.45;}
+.nfl-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;border-radius:4px;font-size:10px;font-weight:700;padding:0 5px;}
+.nfl-badge.gold{background:rgba(245,200,66,.2);color:var(--accent2);border:1px solid rgba(245,200,66,.3);}
+.nfl-badge.silver{background:rgba(90,100,120,.2);color:var(--muted);border:1px solid rgba(90,100,120,.2);}
+.nfl-badge.zero{background:transparent;color:var(--muted);font-size:9px;}
+.outcomes-summary{display:flex;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.outcomes-summary-item{display:flex;flex-direction:column;gap:2px;}
+.outcomes-summary-val{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);}
+.outcomes-summary-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+@media(max-width:768px){
+  .outcomes-controls{padding:10px 12px;gap:8px;}
+  .outcomes-table th,.outcomes-table td{padding:7px 8px;font-size:10px;}
+}
+
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
@@ -802,6 +830,33 @@ td{padding:10px 14px;white-space:nowrap;}
     <div style="margin-top:12px;text-align:right">
       <button class="share-action-btn" style="flex:none;padding:6px 14px" onclick="document.getElementById('shareModal').classList.remove('open')">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- PAGE: NFL OUTCOMES -->
+<div class="page-section" id="page-outcomes">
+  <div class="outcomes-controls">
+    <span class="outcomes-range-label">Draft Classes:</span>
+    <select class="outcomes-year-select" id="outcomesYearFrom"></select>
+    <span style="color:var(--muted);font-size:12px">→</span>
+    <select class="outcomes-year-select" id="outcomesYearTo"></select>
+    <div class="filter-group" style="margin-left:8px">
+      <button class="filter-btn active" data-opos="ALL">All</button>
+      <button class="filter-btn" data-opos="QB" style="color:var(--pos-qb)">QB</button>
+      <button class="filter-btn" data-opos="RB" style="color:var(--pos-rb)">RB</button>
+      <button class="filter-btn" data-opos="WR" style="color:var(--pos-wr)">WR</button>
+      <button class="filter-btn" data-opos="TE" style="color:var(--pos-te)">TE</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-left:8px;cursor:pointer">
+      <input type="checkbox" id="outcomesGradedOnly" checked style="accent-color:var(--accent)"> Graded only
+    </label>
+  </div>
+  <div class="outcomes-summary" id="outcomesSummary"></div>
+  <div class="outcomes-table-wrap">
+    <table class="outcomes-table">
+      <thead id="outcomesHead"></thead>
+      <tbody id="outcomesBody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -2937,6 +2992,184 @@ function explorerRender() {
 
 buildExplorerYears();
 
+
+// ============================================================
+// NFL OUTCOMES PAGE
+// ============================================================
+let NFL_OUTCOMES = null;
+let outcomesSort = 'grade';
+let outcomesSortDir = 'desc';
+let outcomesPos = 'ALL';
+let outcomesYearFrom = 2010;
+let outcomesYearTo = 2025;
+let outcomesGradedOnly = true;
+
+async function loadNFLOutcomes() {
+  if(NFL_OUTCOMES) return NFL_OUTCOMES;
+  try {
+    const res = await fetch('nfl_outcomes.json');
+    NFL_OUTCOMES = await res.json();
+  } catch(e) {
+    NFL_OUTCOMES = [];
+  }
+  return NFL_OUTCOMES;
+}
+
+function buildOutcomesYearSelects() {
+  const years = Array.from({length:16}, (_,i) => 2010+i);
+  const fromSel = document.getElementById('outcomesYearFrom');
+  const toSel = document.getElementById('outcomesYearTo');
+  if(!fromSel || !toSel) return;
+  years.forEach(yr => {
+    fromSel.innerHTML += `<option value="${yr}" ${yr===2010?'selected':''}>${yr}</option>`;
+    toSel.innerHTML += `<option value="${yr}" ${yr===2025?'selected':''}>${yr}</option>`;
+  });
+  fromSel.addEventListener('change', () => { outcomesYearFrom = Number(fromSel.value); renderOutcomes(); });
+  toSel.addEventListener('change', () => { outcomesYearTo = Number(toSel.value); renderOutcomes(); });
+}
+
+function setOutcomesSort(key) {
+  if(outcomesSort === key) {
+    outcomesSortDir = outcomesSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    outcomesSort = key;
+    outcomesSortDir = 'desc';
+  }
+  renderOutcomes();
+}
+
+function renderOutcomes() {
+  if(!NFL_OUTCOMES) return;
+
+  const data = NFL_OUTCOMES.filter(p => {
+    if(p.year < outcomesYearFrom || p.year > outcomesYearTo) return false;
+    if(outcomesPos !== 'ALL' && p.pos !== outcomesPos) return false;
+    if(outcomesGradedOnly && !p.grade) return false;
+    return true;
+  });
+
+  // Sort
+  const sortVal = p => {
+    const v = p[outcomesSort];
+    return v == null ? -999 : v;
+  };
+  const sorted = [...data].sort((a,b) => {
+    const diff = sortVal(b) - sortVal(a);
+    return outcomesSortDir === 'desc' ? diff : -diff;
+  });
+
+  // Summary stats
+  const withNFL = data.filter(p => p.has_nfl);
+  const top12 = data.filter(p => p.nfl_top12 > 0);
+  const top24 = data.filter(p => p.nfl_top24 > 0);
+  const avgGrade = data.length ? (data.reduce((s,p)=>s+(p.grade||0),0)/data.length).toFixed(1) : '—';
+
+  document.getElementById('outcomesSummary').innerHTML =
+    sumItem(data.length, 'Players') +
+    sumItem(withNFL.length, 'With NFL Data') +
+    sumItem(top12.length, 'Top-12 Seasons') +
+    sumItem(top24.length, 'Top-24 Seasons') +
+    sumItem(avgGrade, 'Avg Grade');
+
+  // Table header
+  const arr = k => k === outcomesSort ? (outcomesSortDir === 'desc' ? ' ↓' : ' ↑') : '';
+  const th = (k, label, col='') =>
+    `<th class="${outcomesSort===k?'sorted':''}" style="cursor:pointer;${col?'color:'+col:''}" onclick="setOutcomesSort('${k}')">${label}${arr(k)}</th>`;
+
+  document.getElementById('outcomesHead').innerHTML =
+    '<tr>' +
+    th('year','Year') +
+    th('name','Player') +
+    '<th>School</th>' +
+    th('pos','Pos') +
+    th('round','Round') +
+    th('grade','Grade') +
+    th('markers','Markers') +
+    th('pff','PFF Mkrs') +
+    th('nfl_seasons','NFL Seasons') +
+    th('nfl_career_ppg','Career PPG') +
+    th('nfl_best_ppg','Best PPG') +
+    th('nfl_top12','Top-12') +
+    th('nfl_top24','Top-24') +
+    th('nfl_top36','Top-36') +
+    '</tr>';
+
+  // Table rows
+  let html = '';
+  sorted.forEach(p => {
+    const col = posColor(p.pos);
+    const lg = p.grade ? letterGrade(p.grade) : {l:'—',c:'var(--muted)'};
+    const noNfl = !p.has_nfl;
+
+    html += `<tr class="${noNfl?'no-nfl':''}" onclick="openOutcomeModal('${(p.pfr_id||'').replace(/'/g,'\\u2019')}','${p.name.replace(/'/g,'\\u2019')}',${p.year})">`;
+    html += `<td style="color:var(--muted);font-family:'Bebas Neue',cursive;font-size:16px">${p.year}</td>`;
+    html += `<td style="font-weight:700">${p.name}</td>`;
+    html += `<td style="color:var(--muted);font-size:11px">${p.school||'—'}</td>`;
+    html += `<td style="color:${col};font-weight:700;font-size:11px">${p.pos}</td>`;
+    html += `<td style="color:var(--muted)">${p.round!=null?'Rd '+p.round:'—'}</td>`;
+    html += `<td style="color:${lg.c};font-weight:700">${p.grade?fmt(p.grade,1):'—'}</td>`;
+    html += `<td style="color:${col}">${p.markers!=null?p.markers:'—'}</td>`;
+    html += `<td style="color:var(--accent3)">${p.pff!=null?Math.round(p.pff):'—'}</td>`;
+    html += `<td style="color:${noNfl?'var(--muted)':'var(--text)'}">${p.nfl_seasons||'—'}</td>`;
+    html += `<td style="font-weight:700;color:${noNfl?'var(--muted)':'var(--accent)'}">${p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—'}</td>`;
+    html += `<td style="color:${noNfl?'var(--muted)':'var(--accent2)'}">${p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—'}</td>`;
+    html += `<td>${nflBadge(p.nfl_top12)}</td>`;
+    html += `<td>${nflBadge(p.nfl_top24)}</td>`;
+    html += `<td>${nflBadge(p.nfl_top36)}</td>`;
+    html += '</tr>';
+  });
+  document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
+}
+
+function sumItem(val, label) {
+  return `<div class="outcomes-summary-item"><div class="outcomes-summary-val">${val}</div><div class="outcomes-summary-lbl">${label}</div></div>`;
+}
+
+function nflBadge(n) {
+  if(!n) return '<span class="nfl-badge zero">—</span>';
+  if(n >= 3) return `<span class="nfl-badge gold">${n}</span>`;
+  return `<span class="nfl-badge silver">${n}</span>`;
+}
+
+function openOutcomeModal(pfrId, name, year) {
+  // Find player in historical cache and open modal
+  const yr = Number(year);
+  const data = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
+  const p = data.find(x => x.name === name || x.pfr_id === pfrId);
+  if(p) openModal({...p, year: yr});
+}
+
+// Wire position filters
+document.querySelectorAll('.filter-btn[data-opos]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-opos]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    outcomesPos = btn.dataset.opos;
+    renderOutcomes();
+  });
+});
+
+document.getElementById('outcomesGradedOnly').addEventListener('change', e => {
+  outcomesGradedOnly = e.target.checked;
+  renderOutcomes();
+});
+
+// Hook into switchPage
+const _origSwitchPageOutcomes = switchPage;
+async function switchPage(page) {
+  _origSwitchPageOutcomes(page);
+  if(page === 'outcomes') {
+    if(!NFL_OUTCOMES) {
+      document.getElementById('outcomesBody').innerHTML =
+        '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">Loading NFL data...</td></tr>';
+      await loadNFLOutcomes();
+      buildOutcomesYearSelects();
+    }
+    renderOutcomes();
+  }
+}
+
+buildOutcomesYearSelects();
 
 // ============================================================
 // DARK / LIGHT MODE
