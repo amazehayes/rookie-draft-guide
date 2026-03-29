@@ -244,10 +244,6 @@ body.light-mode .nav-drawer{background:var(--surface);}
   .outcomes-table th,.outcomes-table td{padding:7px 8px;font-size:13px;}
 }
 
-.modal-two-col{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border);}
-.modal-two-col .modal-section{border-top:none;border-right:1px solid var(--border);}
-.modal-two-col .modal-section:last-child{border-right:none;}
-@media(max-width:768px){.modal-two-col{grid-template-columns:1fr;}}
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
@@ -512,7 +508,7 @@ td{padding:10px 14px;white-space:nowrap;}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:1100px;max-height:92vh;overflow-y:auto;transform:scale(.96);transition:transform .2s;position:relative;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:740px;max-height:92vh;overflow-y:auto;transform:scale(.96);transition:transform .2s;position:relative;}
 .modal-overlay.open .modal{transform:scale(1);}
 .close-btn{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;z-index:20;}
 .close-btn:hover{color:var(--text);border-color:var(--text);}
@@ -671,15 +667,12 @@ td{padding:10px 14px;white-space:nowrap;}
 <!-- PAGE 2: DYNASTY RANKINGS -->
 <div class="page-section" id="page-rankings">
   <div class="year-bar" id="rankingsYearBar"><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
-  <div class="format-bar" style="justify-content:space-between">
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <span class="format-label">Format:</span>
-      <button class="format-btn active" data-format="superflex">Superflex / 2QB</button>
-      <button class="format-btn" data-format="1qb">1QB</button>
-      <button class="format-btn" data-format="superflex-tep">Superflex + TEP</button>
-      <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
-    </div>
-    <button class="pdf-export-btn" id="pdfExportBtn" onclick="exportRankingsPDF()">⬇ Export PDF</button>
+  <div class="format-bar">
+    <span class="format-label">Format:</span>
+    <button class="format-btn active" data-format="superflex">Superflex / 2QB</button>
+    <button class="format-btn" data-format="1qb">1QB</button>
+    <button class="format-btn" data-format="superflex-tep">Superflex + TEP</button>
+    <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
   </div>
   <div class="tf-section">
     <button class="tf-toggle open" id="tfToggle">
@@ -1150,200 +1143,6 @@ function evalMarkers(p){
   return r;
 }
 
-function posStats(p, col) {
-  const f = (v, d) => v != null ? fmt(v, d) : '—';
-  const fp = (v) => v != null ? fmtPct(v) : '—';
-  if(p.pos === 'QB') return (
-    statSq(f(p.careerPYd,0),'Career Pass Yds') +
-    statSq(f(p.careerYPG,1),'Pass YPG') +
-    statSq(f(p.careerPAPG,1),'Pass Att/G') +
-    statSq(fp(p.careerCMP),'CMP%') +
-    statSq(f(p.careerPTD,0),'Career TDs') +
-    statSq(f(p.careerINT,0),'Career INTs') +
-    statSq(f(p.careerRuYd,0),'Career Rush Yds') +
-    statSq(f(p.bestPPG,1),'Best PPG')
-  );
-  if(p.pos === 'RB') return (
-    statSq(f(p.ypc,2),'YPC') +
-    statSq(f(p.yptp,3),'YPTP') +
-    statSq(f(p.bestTotalYds,0),'Best Total Yds') +
-    statSq(f(p.bestRec,0),'Best Receptions') +
-    statSq(fp(p.careerBA),'Career BA/A') +
-    statSq(f(p.careerYACO,2),'Career YACO') +
-    statSq(f(p.careerYPRR,2),'Career YPRR') +
-    statSq(f(p.bestPPG,1),'Best PPG')
-  );
-  if(p.pos === 'WR') return (
-    statSq(f(p.bestYPTPA,3),'Best YPTPA') +
-    statSq(fp(p.bestMSYards),'Best MS Yards') +
-    statSq(f(p.careerYPRR,2),'Career YPRR') +
-    statSq(f(p.careerYPRRzone,2),'YPRR Zone') +
-    statSq(fp(p.careerTPRR),'Career TPRR') +
-    statSq(f(p.careerYACR,2),'Career YACR') +
-    statSq(p.boy20!=null?'Yr '+p.boy20:'—','BOY20') +
-    statSq(f(p.bestPPG,1),'Best PPG')
-  );
-  if(p.pos === 'TE') return (
-    statSq(f(p.bestYPTPA,3),'Best YPTPA') +
-    statSq(fp(p.bestMSYards),'Best MS Yards') +
-    statSq(f(p.careerYPG,1),'Career YPG') +
-    statSq(f(p.careerYPRR,2),'Career YPRR') +
-    statSq(fp(p.careerTPRR),'Career TPRR') +
-    statSq(f(p.avgPassBlock,1),'Pass Block') +
-    statSq(p.boy15!=null?'Yr '+p.boy15:'—','BOY15') +
-    statSq(f(p.bestPPG,1),'Best PPG')
-  );
-  return '';
-}
-
-async function downloadModalPDF() {
-  const p = window._currentModalPlayer;
-  if(!p) return;
-  const _mx = POS_MAX[p.pos]||14; const mk = p.markers||0;
-  const _pmx = PFF_MAX[p.pos]||10; const pmk = p.pff!=null?Math.round(p.pff):0;
-  const mx = _mx; const pmx = _pmx;
-  const btn = document.querySelector('[onclick="downloadModalPDF()"]');
-  if(btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
-  try {
-    if(!window.jspdf) {
-      await new Promise((res,rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
-    }
-    if(!window.jspdf.jsPDF.prototype.autoTable) {
-      await new Promise((res,rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
-    }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({unit:'mm', format:'a4'});
-    const col = posColor(p.pos);
-    const lg = letterGrade(p.grade||0);
-    const tag = getTag(p);
-
-    // Dark background
-    doc.setFillColor(10,12,15); doc.rect(0,0,210,297,'F');
-
-    // Header band
-    doc.setFillColor(17,20,24); doc.rect(0,0,210,42,'F');
-
-    // Accent bar
-    const c = col.replace('var(--pos-qb)','#7b61ff').replace('var(--pos-rb)','#00e88a').replace('var(--pos-wr)','#00c2ff').replace('var(--pos-te)','#ff8c42');
-    doc.setFillColor(0,194,255); doc.rect(0,0,3,42,'F');
-
-    // Name + meta
-    doc.setTextColor(232,237,243); doc.setFontSize(22); doc.setFont('helvetica','bold');
-    doc.text(p.name, 12, 16);
-    doc.setFontSize(11); doc.setFont('helvetica','normal');
-    doc.setTextColor(90,100,120);
-    doc.text((p.pos||'') + ' · ' + (p.school||'') + ' · ' + (p.conf||'') + (p.age?' · '+fmtAge(p.age):''), 12, 24);
-    if(tag) { doc.setTextColor(245,200,66); doc.text(tag.icon + ' ' + tag.label, 12, 32); }
-
-    // Grade box
-    doc.setFillColor(24,28,34); doc.roundedRect(148,6,56,30,3,3,'F');
-    doc.setFontSize(28); doc.setFont('helvetica','bold');
-    doc.setTextColor(p.grade ? 232 : 90, p.grade ? 237 : 100, p.grade ? 243 : 120);
-    doc.text(p.grade ? fmt(p.grade,1) : '—', 176, 22, {align:'center'});
-    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120);
-    doc.text('FINAL GRADE · ' + lg.l, 176, 30, {align:'center'});
-
-    // Watermark
-    doc.setFontSize(8); doc.setTextColor(50,60,70);
-    doc.text('themarkersystem.com · ' + (p.year||activeYear) + ' Draft Class', 105, 38, {align:'center'});
-
-    // Stats sections
-    let y = 50;
-    const sections = [
-      { title: 'KEY METRICS', data: [
-        ['Markers Hit', mk+'/'+mx], ['PFF Markers', pmk+'/'+pmx],
-        ['Draft Round', p.round!=null?'Rd '+p.round:'—'],
-        ['Age', p.age?fmtAge(p.age):'—'],
-      ]},
-    ];
-
-    // Build position-specific stats
-    const statRows = [];
-    const f2 = (v,d) => v!=null?fmt(v,d):'—';
-    const fp2 = v => v!=null?fmtPct(v):'—';
-    if(p.pos==='QB') {
-      statRows.push(['Career Pass Yds', f2(p.careerPYd,0)], ['Pass YPG', f2(p.careerYPG,1)],
-        ['CMP%', fp2(p.careerCMP)], ['Pass Att/G', f2(p.careerPAPG,1)],
-        ['Career TDs', f2(p.careerPTD,0)], ['Career INTs', f2(p.careerINT,0)],
-        ['Career Rush Yds', f2(p.careerRuYd,0)], ['Best PPG', f2(p.bestPPG,1)]);
-    } else if(p.pos==='RB') {
-      statRows.push(['YPC', f2(p.ypc,2)], ['YPTP', f2(p.yptp,3)],
-        ['Best Total Yds', f2(p.bestTotalYds,0)], ['Best Receptions', f2(p.bestRec,0)],
-        ['Career BA/A', fp2(p.careerBA)], ['Career YACO', f2(p.careerYACO,2)],
-        ['Career YPRR', f2(p.careerYPRR,2)], ['Best PPG', f2(p.bestPPG,1)]);
-    } else if(p.pos==='WR') {
-      statRows.push(['Best YPTPA', f2(p.bestYPTPA,3)], ['Best MS Yards', fp2(p.bestMSYards)],
-        ['Career YPRR', f2(p.careerYPRR,2)], ['YPRR Zone', f2(p.careerYPRRzone,2)],
-        ['Career TPRR', fp2(p.careerTPRR)], ['Career YACR', f2(p.careerYACR,2)],
-        ['BOY20', p.boy20!=null?'Yr '+p.boy20:'—'], ['Best PPG', f2(p.bestPPG,1)]);
-    } else if(p.pos==='TE') {
-      statRows.push(['Best YPTPA', f2(p.bestYPTPA,3)], ['Best MS Yards', fp2(p.bestMSYards)],
-        ['Career YPG', f2(p.careerYPG,1)], ['Career YPRR', f2(p.careerYPRR,2)],
-        ['Career TPRR', fp2(p.careerTPRR)], ['Pass Block', f2(p.avgPassBlock,1)],
-        ['BOY15', p.boy15!=null?'Yr '+p.boy15:'—'], ['Best PPG', f2(p.bestPPG,1)]);
-    }
-
-    // Combine section
-    const combineRows = [
-      ['Height', p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—'],
-      ['Weight', p.wt!=null?p.wt+' lbs':'—'],
-      ['40-Yard Dash', p.dash!=null?p.dash+'s':'—'],
-      ['Speed Score', p.wass!=null?fmt(p.wass,1):'—'],
-      ['Burst Score', p.burst!=null?fmt(p.burst,1):'—'],
-      ['BMI', p.bmi!=null?fmt(p.bmi,2):'—'],
-    ];
-
-    const nflRows = (p.nfl_seasons||p.nfl_top5||p.nfl_top12) ? [
-      ['NFL Seasons', p.nfl_seasons||0], ['Career PPG', p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—'],
-      ['Best PPG', p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—'],
-      ['Top-5 Szns', p.nfl_top5||0], ['Top-12 Szns', p.nfl_top12||0],
-      ['Top-24 Szns', p.nfl_top24||0], ['Top-36 Szns', p.nfl_top36||0],
-    ] : null;
-
-    // Two-column layout: left=production, right=combine+NFL
-    const leftRows = statRows;
-    const rightRows = [...combineRows, ...(nflRows||[])];
-    const maxRows = Math.max(leftRows.length, rightRows.length);
-
-    // Section headers
-    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(90,100,120);
-    doc.text('PRODUCTION', 14, y); doc.text('ATHLETICISM & OUTCOMES', 110, y); y+=4;
-    doc.setDrawColor(30,37,48); doc.line(14,y,95,y); doc.line(110,y,196,y); y+=4;
-
-    for(let i=0;i<maxRows;i++) {
-      const l = leftRows[i]; const r = rightRows[i];
-      doc.setFontSize(9); doc.setFont('helvetica','normal');
-      if(l) {
-        doc.setTextColor(90,100,120); doc.text(l[0], 14, y);
-        doc.setTextColor(232,237,243); doc.setFont('helvetica','bold'); doc.text(String(l[1]), 75, y, {align:'right'});
-      }
-      if(r) {
-        doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120); doc.text(r[0], 110, y);
-        doc.setTextColor(232,237,243); doc.setFont('helvetica','bold'); doc.text(String(r[1]), 196, y, {align:'right'});
-      }
-      doc.setFont('helvetica','normal');
-      y += 8;
-      if(i < maxRows-1) { doc.setDrawColor(24,28,34); doc.line(14,y-4,95,y-4); doc.line(110,y-4,196,y-4); }
-    }
-
-    doc.save(p.name.replace(/\s+/g,'-').toLowerCase()+'-marker-system.pdf');
-  } catch(e) {
-    console.error(e); alert('PDF generation failed.');
-  } finally {
-    if(btn) { btn.textContent = '\u2b07 PDF'; btn.disabled = false; }
-  }
-}
-
 function statSq(val,lbl,col){
   return '<div class="modal-stat-item"><div class="modal-stat-val"'+(col?' style="color:'+col+'"':'')+'>'+val+'</div><div class="modal-stat-lbl">'+lbl+'</div></div>';
 }
@@ -1517,8 +1316,6 @@ function openModal(p){
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
     '<button onclick="openShareModal()" style="position:absolute;top:16px;right:56px;background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit">Share</button>'+
-    '<button onclick="downloadModalPDF()" style="position:absolute;top:16px;right:130px;background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit">⬇ PDF</button>'+
-    // ── Header ──
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+'">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
@@ -1534,7 +1331,6 @@ function openModal(p){
         tagHTML(p)+
       '</div>'+
     '</div>'+
-    // ── Grade row ──
     '<div class="modal-grade-row">'+
       '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Final Grade</div></div>'+
       '<div class="modal-grade-item"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter Grade</div></div>'+
@@ -1542,48 +1338,38 @@ function openModal(p){
       '<div class="modal-grade-item"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Markers</div></div>'+
       '<div class="modal-grade-item"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'—')+'</div><div class="lbl">Draft Round</div></div>'+
     '</div>'+
-    // ── Two-column body ──
-    '<div class="modal-two-col">'+
-      // Left: Position stats + Athleticism + NFL
-      '<div>'+
-        '<div class="modal-section"><div class="modal-section-title">Athleticism & Combine</div>'+
-          '<div class="modal-stats-grid">'+
-            statSq(p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—','Height')+
-            statSq(p.wt!=null?p.wt+' lbs':'—','Weight')+
-            statSq(p.dash!=null?p.dash+'s':'—','40-Yard Dash',p.dash&&p.dash<=4.4?'var(--green)':null)+
-            statSq(p.wass!=null?fmt(p.wass,1):'—','Speed Score',p.wass&&p.wass>=100?'var(--green)':null)+
-            statSq(p.burst!=null?fmt(p.burst,1):'—','Burst Score',p.burst&&p.burst>=120?'var(--green)':null)+
-            statSq(p.bmi!=null?fmt(p.bmi,2):'—','BMI')+
-          '</div>'+
-        '</div>'+
-        '<div class="modal-section"><div class="modal-section-title">Production</div>'+
-          '<div class="modal-stats-grid">'+posStats(p,col)+'</div>'+
-        '</div>'+
-        (p.nfl_seasons||p.nfl_top5||p.nfl_top12 ?
-          '<div class="modal-section"><div class="modal-section-title">NFL Career Outcomes</div>'+
-            '<div class="modal-stats-grid">'+
-              statSq(p.nfl_seasons||0,'NFL Seasons')+
-              statSq(p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—','Career PPG')+
-              statSq(p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—','Best PPG')+
-              statSq(p.nfl_top5||0,'Top-5 Szns','#00c2ff')+
-              statSq(p.nfl_top12||0,'Top-12 Szns','var(--pos-rb)')+
-              statSq(p.nfl_top24||0,'Top-24 Szns','var(--accent2)')+
-              statSq(p.nfl_top36||0,'Top-36 Szns','var(--orange)')+
-            '</div>'+
-          '</div>'
-        : '')+
+    '<div class="modal-body">'+
+      '<div class="modal-section"><div class="modal-section-title">Markers — '+mx+' Total ('+mk+' Hit)</div>'+checkHtml+'</div>'+
+      '<div class="modal-section"><div class="modal-section-title">PFF Markers — '+pmx+' Total ('+pmk+' Hit)</div>'+
+        '<div style="margin-bottom:10px"><div class="marker-section-label" style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px">'+pmk+'/'+pmx+' markers</div>'+
+        '<div class="marker-dots">'+pdots+'</div></div>'+
+        '<div class="modal-stats-grid">'+pffStats(p,col)+'</div>'+
       '</div>'+
-      // Right: Markers + PFF
-      '<div>'+
-        '<div class="modal-section"><div class="modal-section-title">Markers — '+mx+' Total ('+mk+' Hit)</div>'+checkHtml+'</div>'+
-        '<div class="modal-section"><div class="modal-section-title">PFF Markers — '+pmx+' Total ('+pmk+' Hit)</div>'+
-          '<div style="margin-bottom:10px"><div class="marker-section-label" style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px">'+pmk+'/'+pmx+' markers</div>'+
-          '<div class="marker-dots">'+pdots+'</div></div>'+
-          '<div class="modal-stats-grid">'+pffStats(p,col)+'</div>'+
+      '<div class="modal-section"><div class="modal-section-title">Athleticism & Combine</div>'+
+        '<div class="modal-stats-grid">'+
+          statSq(p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—','Height')+
+          statSq(p.wt!=null?p.wt+' lbs':'—','Weight')+
+          statSq(p.dash!=null?p.dash+'s':'—','40-Yard Dash',p.dash&&p.dash<=4.4?'var(--green)':null)+
+          statSq(p.wass!=null?fmt(p.wass,1):'—','Speed Score',p.wass&&p.wass>=100?'var(--green)':null)+
+          statSq(p.burst!=null?fmt(p.burst,1):'—','Burst Score',p.burst&&p.burst>=120?'var(--green)':null)+
+          statSq(p.bmi!=null?fmt(p.bmi,2):'—','BMI')+
         '</div>'+
       '</div>'+
     '</div>'+
-    // ── Historical Comps ──
+        (p.nfl_seasons||p.nfl_top5||p.nfl_top12 ?
+      '<div class="modal-section" style="border-top:1px solid var(--border);padding:16px 26px">'+
+        '<div class="modal-section-title">NFL Career Outcomes</div>'+
+        '<div class="modal-stats-grid">'+
+          statSq(p.nfl_seasons||0,'NFL Seasons')+
+          statSq(p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—','Career PPG')+
+          statSq(p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—','Best PPG')+
+          statSq(p.nfl_top5||0,'Top-5 Szns','#00c2ff')+
+          statSq(p.nfl_top12||0,'Top-12 Szns','var(--pos-rb)')+
+          statSq(p.nfl_top24||0,'Top-24 Szns','var(--accent2)')+
+          statSq(p.nfl_top36||0,'Top-36 Szns','var(--orange)')+
+        '</div>'+
+      '</div>'
+    : '')+
     '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">'+
       '<div class="modal-comps-title">Historical Comps</div>'+
       '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>'+
@@ -2005,8 +1791,8 @@ function classifyPlayer(p, format) {
   const label = tag ? tag.label : null;
   const adjScore = dynastySortForFormat(p, format);
 
-  // Never highlight UDFA (round 8) players
-  if(rd === 8) return null;
+  // Never highlight undrafted (round 8) players
+  if(rd === 8 || rd == null) return null;
 
   // ── FADE checks (run first — fades override targets) ──────────────────────
   // Negative label
@@ -3847,29 +3633,6 @@ async function exportRankingsPDF() {
         6:{cellWidth:16,halign:'center',fontStyle:'bold'},
         7:{cellWidth:14,halign:'center'},
         8:{cellWidth:12,halign:'center'},
-      },
-      didDrawPage: (data) => {
-        // Dark background on every page
-        doc.setFillColor(10,12,15);
-        doc.rect(0,0,297,210,'F');
-        // Re-draw header on continuation pages
-        if(data.pageNumber > 1) {
-          doc.setFillColor(10,12,15);
-          doc.rect(0,0,297,210,'F');
-          doc.setTextColor(0,194,255);
-          doc.setFontSize(10);
-          doc.setFont('helvetica','bold');
-          doc.text('THE MARKER SYSTEM — continued', 14, 10);
-          doc.setTextColor(90,100,120);
-          doc.setFontSize(7);
-          doc.text('themarkersystem.com', 14, 15);
-        }
-      },
-      willDrawCell: (data) => {
-        // Ensure cell backgrounds are dark
-        if(data.row.section === 'body') {
-          doc.setFillColor(data.row.index % 2 === 0 ? 17 : 24, data.row.index % 2 === 0 ? 20 : 28, data.row.index % 2 === 0 ? 24 : 34);
-        }
       }
     });
 
