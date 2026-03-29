@@ -10,1312 +10,7 @@
 <link rel="manifest" href="site.webmanifest">
 <link rel="shortcut icon" href="favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
-// ============================================================
-// STATE
-// ============================================================
-const YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
-const ALL_CLASS_AVGS = {2010:54.31,2011:54.32,2012:60.4,2013:53.48,2014:60.42,2015:58.53,2016:52.01,2017:63.05,2018:58.61,2019:56.61,2020:62.01,2021:58.65,2022:57.19,2023:56.89,2024:55.6,2025:57.99,2026:43.91};
-const LAST_UPDATED = 'Mar 28, 2026';
 
-PLAYERS.forEach(p => { if(!p.year) p.year = 2026; });
-let yearCache = {2026: PLAYERS};
-let activeYear = 2026;
-let allPlayersCache = null;
-let currentFormat = 'superflex';
-let _lastRenderedList = [];
-
-// ============================================================
-// MODAL HELPERS
-// ============================================================
-function statSq(val, lbl, col) {
-  return '<div class="modal-stat-sq">' +
-    '<div class="modal-stat-val"' + (col ? ' style="color:' + col + '"' : '') + '>' + val + '</div>' +
-    '<div class="modal-stat-lbl">' + lbl + '</div>' +
-    '</div>';
-}
-
-function pffStats(p, col) {
-  const f = (v, d) => v != null ? fmt(v, d) : '—';
-  const fp = v => v != null ? fmtPct(v) : '—';
-  if (p.pos === 'QB') return (
-    statSq(f(p.pffPassGrade, 1), 'Pass Grade') +
-    statSq(f(p.pffRunGrade, 1), 'Rush Grade') +
-    statSq(fp(p.pffBTT), 'Big Time Throw%') +
-    statSq(fp(p.pffTT), 'Turnover Worthy%')
-  );
-  if (p.pos === 'RB') return (
-    statSq(f(p.pffRunGrade, 1), 'Run Grade') +
-    statSq(f(p.pffRecGrade, 1), 'Rec Grade') +
-    statSq(fp(p.pffMissed), 'Missed Tackle%') +
-    statSq(fp(p.pffBA), 'Breakaway%')
-  );
-  if (p.pos === 'WR') return (
-    statSq(f(p.pffRecGrade, 1), 'Rec Grade') +
-    statSq(f(p.pffRouteGrade, 1), 'Route Grade') +
-    statSq(fp(p.pffDrop), 'Drop%') +
-    statSq(fp(p.pffSep), 'Sep%')
-  );
-  if (p.pos === 'TE') return (
-    statSq(f(p.pffRecGrade, 1), 'Rec Grade') +
-    statSq(f(p.pffBlockGrade, 1), 'Block Grade') +
-    statSq(fp(p.pffDrop), 'Drop%') +
-    statSq(fp(p.pffSep), 'Sep%')
-  );
-  return '';
-}
-
-// ============================================================
-// MODAL
-// ============================================================
-function openModalFromList(i) {
-  const p = _lastRenderedList[i];
-  if (!p) return;
-  openModal(p);
-}
-
-function openModal(p) {
-  window._currentModalPlayer = p;
-  if (!p) return;
-  const col = posColor(p.pos);
-  const mx = POS_MAX[p.pos] || 14; const mk = p.markers || 0;
-  const pmx = PFF_MAX[p.pos] || 10; const pmk = p.pff != null ? Math.round(p.pff) : 0;
-  const markers = evalMarkers(p);
-  const list = getFiltered();
-  const rl = rankLabel(p, list);
-  const lg = letterGrade(p.grade);
-
-  let checkHtml = '<div class="marker-checklist">';
-  markers.forEach(m => {
-    checkHtml += '<div class="marker-item ' + (m.hit ? 'hit' : 'miss') + '">';
-    checkHtml += '<div class="marker-icon" style="color:' + (m.hit ? 'var(--green)' : 'var(--red)') + '">' + (m.hit ? '✓' : '✗') + '</div>';
-    checkHtml += '<div style="min-width:0"><div class="marker-text">' + m.label + '</div>';
-    checkHtml += '<div class="marker-actual" style="color:' + (m.hit ? col : 'var(--muted)') + '">' + m.val + '</div></div>';
-    checkHtml += '</div>';
-  });
-  checkHtml += '</div>';
-
-  let pdots = '';
-  for (let i = 0; i < pmx; i++) pdots += '<div class="marker-dot ' + (i < pmk ? 'hit' : 'miss') + '" style="background:' + (i < pmk ? 'var(--accent3)' : '') + '"></div>';
-
-  document.getElementById('modalContent').innerHTML =
-    '<button class="close-btn" onclick="closeModal()">✕</button>' +
-    '<div class="modal-header" style="--pos-color:' + col + '">' +
-      '<div class="modal-avatar" style="border-color:' + col + '">' +
-        hshotImg(p, '', 'width:100%;height:100%;object-fit:cover;object-position:center 20%') +
-        '<div class="modal-avatar-fallback" style="' + (hshotSrc(p) ? 'display:none' : '') + ';color:' + col + '">' + p.pos + '</div>' +
-      '</div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="modal-pos-badge bg-' + p.pos.toLowerCase() + '">' + p.pos + ' · ' + rl + '</div>' +
-        '<div class="modal-name">' + p.name + '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          '<img src="' + logoSrc(p.school) + '" class="school-logo-modal" alt="" onerror="this.style.display=\'none\'">' +
-          '<div class="modal-school">' + p.school + ' · ' + (p.conf || '') + (p.age ? ' · ' + fmtAge(p.age) : '') + '</div>' +
-        '</div>' +
-        tagHTML(p) +
-      '</div>' +
-      '<div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0">' +
-        '<button id="modalShareBtn" onclick="shareModalAsPNG()" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:5px 12px;border-radius:5px;cursor:pointer;font-family:inherit">Share / Save</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="modal-grade-row">' +
-      '<div class="modal-grade-item"><div class="val" style="color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</div><div class="lbl">Final Grade</div></div>' +
-      '<div class="modal-grade-item"><div class="val" style="color:' + lg.c + ';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">' + lg.l + '</div><div class="lbl">Letter Grade</div></div>' +
-      '<div class="modal-grade-item"><div class="val" style="color:' + col + '">' + mk + '/' + mx + '</div><div class="lbl">Markers Hit</div></div>' +
-      '<div class="modal-grade-item"><div class="val" style="color:var(--accent3)">' + pmk + '/' + pmx + '</div><div class="lbl">PFF Markers</div></div>' +
-      '<div class="modal-grade-item"><div class="val" style="color:var(--accent2)">' + (p.round != null ? 'Rd ' + p.round : '—') + '</div><div class="lbl">Draft Round</div></div>' +
-    '</div>' +
-    '<div class="modal-two-col">' +
-      '<div>' +
-        '<div class="modal-section"><div class="modal-section-title">Athleticism & Combine</div>' +
-          '<div class="modal-stats-grid">' +
-            statSq(p.ht != null ? Math.floor(p.ht / 12) + "\'" + (p.ht % 12) + '"' : '—', 'Height') +
-            statSq(p.wt != null ? p.wt + ' lbs' : '—', 'Weight') +
-            statSq(p.dash != null ? p.dash + 's' : '—', '40-Yard Dash', p.dash && p.dash <= 4.4 ? 'var(--green)' : null) +
-            statSq(p.wass != null ? fmt(p.wass, 1) : '—', 'Speed Score', p.wass && p.wass >= 100 ? 'var(--green)' : null) +
-            statSq(p.burst != null ? fmt(p.burst, 1) : '—', 'Burst Score', p.burst && p.burst >= 120 ? 'var(--green)' : null) +
-            statSq(p.bmi != null ? fmt(p.bmi, 2) : '—', 'BMI') +
-          '</div>' +
-        '</div>' +
-        '<div class="modal-section"><div class="modal-section-title">Production</div>' +
-          '<div class="modal-stats-grid">' + posStats(p, col) + '</div>' +
-        '</div>' +
-        (p.nfl_seasons || p.nfl_top5 || p.nfl_top12 ?
-          '<div class="modal-section"><div class="modal-section-title">NFL Career Outcomes</div>' +
-            '<div class="modal-stats-grid">' +
-              statSq(p.nfl_seasons || 0, 'NFL Seasons') +
-              statSq(p.nfl_career_ppg != null ? fmt(p.nfl_career_ppg, 1) : '—', 'Career PPG') +
-              statSq(p.nfl_best_ppg != null ? fmt(p.nfl_best_ppg, 1) : '—', 'Best PPG') +
-              statSq(p.nfl_top5 || 0, 'Top-5 Szns', '#00c2ff') +
-              statSq(p.nfl_top12 || 0, 'Top-12 Szns', 'var(--pos-rb)') +
-              statSq(p.nfl_top24 || 0, 'Top-24 Szns', 'var(--accent2)') +
-              statSq(p.nfl_top36 || 0, 'Top-36 Szns', 'var(--orange)') +
-            '</div>' +
-          '</div>'
-        : '') +
-      '</div>' +
-      '<div>' +
-        '<div class="modal-section"><div class="modal-section-title">Markers — ' + mx + ' Total (' + mk + ' Hit)</div>' + checkHtml + '</div>' +
-        '<div class="modal-section"><div class="modal-section-title">PFF Markers — ' + pmx + ' Total (' + pmk + ' Hit)</div>' +
-          '<div style="margin-bottom:10px"><div class="marker-section-label" style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px">' + pmk + '/' + pmx + ' markers</div>' +
-          '<div class="marker-dots">' + pdots + '</div></div>' +
-          '<div class="modal-stats-grid">' + pffStats(p, col) + '</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">' +
-      '<div class="modal-comps-title">Historical Comps</div>' +
-      '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>' +
-    '</div>';
-
-  document.getElementById('modalOverlay').classList.add('open');
-  setTimeout(() => renderModalComps(p), 50);
-}
-
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
-
-// ============================================================
-// PLAYER GRADES — RENDER
-// ============================================================
-function render() {
-  if (viewMode === 'cards') {
-    renderCards();
-    document.getElementById('cardsContainer').style.display = 'grid';
-    document.getElementById('tableContainer').style.display = 'none';
-  } else {
-    renderTable();
-    document.getElementById('cardsContainer').style.display = 'none';
-    document.getElementById('tableContainer').style.display = 'block';
-  }
-}
-
-function getFiltered() {
-  const data = activeYear === 2026 ? PLAYERS : (yearCache[activeYear] || PLAYERS);
-  return data.filter(p => {
-    if (currentPos !== 'ALL' && p.pos !== currentPos) return false;
-    if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (currentLabel !== 'ALL') {
-      const tag = getTag(p);
-      if (!tag || tag.label !== currentLabel) return false;
-    }
-    if (currentSchool !== 'ALL' && p.school !== currentSchool) return false;
-    return true;
-  }).sort((a, b) => {
-    if (currentSort === 'grade')   return (b.grade || 0) - (a.grade || 0);
-    if (currentSort === 'markers') return (b.markers || 0) - (a.markers || 0);
-    if (currentSort === 'age')     return (a.age || 99) - (b.age || 99);
-    if (currentSort === 'name')    return a.name.localeCompare(b.name);
-    if (currentSort === 'draft')   return (a.overall || 999) - (b.overall || 999);
-    return dynastySort(b) - dynastySort(a);
-  });
-}
-
-function renderCards() {
-  const list = getFiltered();
-  _lastRenderedList = list;
-  const container = document.getElementById('cardsContainer');
-  if (!list.length) {
-    document.getElementById('emptyState').style.display = 'block';
-    container.innerHTML = '';
-    return;
-  }
-  document.getElementById('emptyState').style.display = 'none';
-  let html = '';
-  list.forEach((p, i) => {
-    const col = posColor(p.pos);
-    const mx = POS_MAX[p.pos] || 14; const mk = p.markers || 0;
-    const pmx = PFF_MAX[p.pos] || 10; const pmk = p.pff != null ? Math.round(p.pff) : 0;
-    const g = p.grade || 0;
-    const lg = letterGrade(g);
-    let dots = ''; for (let d = 0; d < mx; d++) dots += '<div class="marker-dot ' + (d < mk ? 'hit' : 'miss') + '" style="background:' + (d < mk ? col : '') + '"></div>';
-    let pdots = ''; for (let d = 0; d < pmx; d++) pdots += '<div class="marker-dot ' + (d < pmk ? 'hit' : 'miss') + '" style="background:' + (d < pmk ? 'var(--accent3)' : '') + '"></div>';
-    const metrics =
-      statSq(p.dash != null ? p.dash + 's' : '—', '40 Dash') +
-      statSq(p.wass != null ? fmt(p.wass, 1) : '—', 'Speed Sc') +
-      statSq(fmt(p.bestPPG, 1), 'Best PPG');
-    html += '<div class="player-card" style="--pos-color:' + col + ';animation-delay:' + (i * 0.03) + 's" onclick="openModalFromList(' + i + ')">';
-    html += '<div class="card-header">';
-    html += '<div class="card-headshot">' + hshotImg(p, 'card-headshot-img', '') + '<div class="card-headshot-fallback" style="' + (hshotSrc(p) ? 'display:none' : '') + ';color:' + col + '">' + p.pos + '</div></div>';
-    html += '<div class="card-info">';
-    html += '<div class="card-pos-badge bg-' + p.pos.toLowerCase() + '">' + p.pos + '</div>';
-    html += '<div class="card-name">' + p.name + '</div>';
-    html += '<div class="card-school">' + (p.school || '') + '</div>';
-    html += '</div>';
-    html += '<div class="card-grade" style="color:' + lg.c + '">' + lg.l + '</div>';
-    html += '</div>';
-    html += '<div class="card-body">';
-    html += '<div class="grade-label">Final Grade</div>';
-    html += '<div class="grade-value" style="color:' + gradeColor(g) + '">' + (g ? fmt(g, 1) : '—') + '</div>';
-    html += '<div class="grade-bar-track"><div class="grade-bar-fill" style="width:' + Math.min(g, 100) + '%;background:' + lg.c + '"></div></div>';
-    html += '</div>';
-    html += '<div class="marker-section"><div class="marker-section-label">Markers ' + mk + '/' + mx + '</div><div class="marker-dots">' + dots + '</div></div>';
-    html += '<div class="marker-section" style="margin-top:8px"><div class="marker-section-label">PFF Markers ' + pmk + '/' + pmx + '</div><div class="marker-dots">' + pdots + '</div></div>';
-    const tag = tagHTML(p);
-    html += tag || '<div style="height:38px"></div>';
-    html += '<div class="card-metrics">' + metrics + '</div>';
-    html += '</div></div>';
-  });
-  container.innerHTML = html;
-}
-
-function renderTable() {
-  const list = getFiltered();
-  _lastRenderedList = list;
-  if (!list.length) { document.getElementById('tableBody').innerHTML = ''; document.getElementById('emptyState').style.display = 'block'; return; }
-  document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('tableHead').innerHTML = '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Markers</th><th>PFF Mkrs</th><th>Grade</th><th>Ltr</th><th>Label</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
-  let html = '';
-  list.forEach((p, i) => {
-    const col = posColor(p.pos);
-    const lg = letterGrade(p.grade);
-    const rowTag = getTag(p);
-    html += '<tr onclick="openModalFromList(' + i + ')">';
-    html += '<td style="color:var(--muted)">' + (i + 1) + '</td>';
-    html += '<td class="table-name-cell" style="font-weight:700">' + p.name + '</td>';
-    html += '<td style="color:var(--muted)">' + (p.school || '—') + '</td>';
-    html += '<td style="color:' + col + ';font-weight:700;font-size:13px">' + p.pos + '</td>';
-    html += '<td>' + fmtAge(p.age) + '</td>';
-    html += '<td style="font-weight:700;color:' + col + '">' + (p.markers || '—') + '</td>';
-    html += '<td style="font-weight:700;color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</td>';
-    html += '<td style="font-weight:700;color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</td>';
-    html += '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:13px;color:' + lg.c + '">' + lg.l + '</td>';
-    html += '<td>' + (rowTag ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:13px;font-weight:700;letter-spacing:.5px;white-space:nowrap;color:' + rowTag.color + ';background:' + rowTag.color + '18;border:1px solid ' + rowTag.color + '44">' + rowTag.icon + ' ' + rowTag.label + '</span>' : '<span style="color:var(--muted);font-size:13px">—</span>') + '</td>';
-    html += '<td style="color:var(--muted)">' + (p.overall != null ? '#' + p.overall : '—') + '</td>';
-    html += '<td>' + (p.ht != null ? Math.floor(p.ht / 12) + "\'" + (p.ht % 12) + '"' : '—') + '</td>';
-    html += '<td>' + (p.dash != null ? p.dash + 's' : '—') + '</td>';
-    html += '<td style="color:var(--accent2)">' + (p.wass != null ? fmt(p.wass, 1) : '—') + '</td>';
-    html += '<td style="color:var(--accent2)">' + fmt(p.bestPPG, 1) + '</td>';
-    html += '</tr>';
-  });
-  document.getElementById('tableBody').innerHTML = html;
-}
-
-function renderHeroStats() {
-  const avg = ALL_CLASS_AVGS[activeYear] || 0;
-  const data = activeYear === 2026 ? PLAYERS : (yearCache[activeYear] || []);
-  const graded = data.filter(p => p.grade).length;
-  document.getElementById('heroTitle').innerHTML = activeYear + ' <span>ROOKIE DRAFT CLASS</span>';
-  const el = document.getElementById('heroStats');
-  if (el) el.innerHTML =
-    '<div class="hero-stat"><div class="hero-stat-val">' + graded + '</div><div class="hero-stat-lbl">Graded</div></div>' +
-    '<div class="hero-stat"><div class="hero-stat-val">' + fmt(avg, 1) + '</div><div class="hero-stat-lbl">Top-50 Avg</div></div>';
-}
-
-// ============================================================
-// YEAR TABS
-// ============================================================
-function buildYearTabs() {
-  [document.getElementById('gradesYearBar'), document.getElementById('rankingsYearBar')].forEach(bar => {
-    if (!bar) return;
-    bar.innerHTML = (bar.innerHTML || '');
-    YEARS.forEach(yr => {
-      const btn = document.createElement('button');
-      btn.className = 'year-tab' + (yr === activeYear ? ' active' : '');
-      btn.dataset.yr = yr;
-      btn.textContent = yr;
-      btn.addEventListener('click', () => switchYear(yr));
-      bar.appendChild(btn);
-    });
-  });
-}
-
-async function switchYear(yr) {
-  if (yr === activeYear) return;
-  activeYear = yr;
-  document.querySelectorAll('.year-tab').forEach(b => b.classList.toggle('active', parseInt(b.dataset.yr) === yr));
-  document.getElementById('heroTitle').innerHTML = yr + ' <span>ROOKIE DRAFT CLASS</span>';
-  currentPos = 'ALL'; currentSort = 'rank'; searchQuery = ''; currentLabel = 'ALL'; currentSchool = 'ALL';
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === 'ALL'));
-  document.getElementById('searchBox').value = '';
-  document.getElementById('sortSelect').value = 'rank';
-  document.getElementById('labelFilter').value = 'ALL';
-  document.getElementById('schoolFilter').value = 'ALL';
-
-  if (!yearCache[yr]) {
-    try {
-      const res = await fetch('data/' + yr + '.json?v=3');
-      const _d = await res.json();
-      _d.forEach(p => { if (!p.year) p.year = yr; });
-      yearCache[yr] = _d;
-    } catch (e) { return; }
-  }
-
-  const schools = [...new Set(yearCache[yr].map(p => p.school).filter(Boolean))].sort();
-  const sel = document.getElementById('schoolFilter');
-  sel.innerHTML = '<option value="ALL">All Schools</option>';
-  schools.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
-
-  renderHeroStats();
-  render();
-  if (activePage === 'rankings') renderRankings();
-  allPlayersCache = null;
-  if (NFL_LOOKUP && yearCache[yr]) enrichPlayersWithNFL(yearCache[yr], yr);
-}
-
-// ============================================================
-// EVENT LISTENERS — PLAYER GRADES
-// ============================================================
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentPos = btn.dataset.pos;
-    render();
-  });
-});
-document.getElementById('searchBox').addEventListener('input', e => { searchQuery = e.target.value.trim(); render(); });
-document.getElementById('schoolFilter').addEventListener('change', e => { currentSchool = e.target.value; render(); });
-document.getElementById('labelFilter').addEventListener('change', e => { currentLabel = e.target.value; render(); });
-document.getElementById('sortSelect').addEventListener('change', e => { currentSort = e.target.value; render(); });
-document.getElementById('cardViewBtn').addEventListener('click', () => { viewMode = 'cards'; document.getElementById('cardViewBtn').classList.add('active'); document.getElementById('tableViewBtn').classList.remove('active'); render(); });
-document.getElementById('tableViewBtn').addEventListener('click', () => { viewMode = 'table'; document.getElementById('tableViewBtn').classList.add('active'); document.getElementById('cardViewBtn').classList.remove('active'); render(); });
-document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-// ============================================================
-// DYNASTY RANKINGS
-// ============================================================
-const POSITIVE_LABELS = new Set([
-  'Greatest Prospect Since...', 'Late-Round Target',
-  "Fine, I'll Do It Myself", 'Try To Tackle Me', 'The McConkey List',
-  'Zone Crusher', 'The Bowers List', 'Analytical Darling', 'You Have My Attention',
-  'The Overlooked', 'Breakout Waiting', 'Stealth Weapon', 'Late Bloomer',
-  'High Floor', 'Athletic Freak', 'The Sleeper'
-]);
-const FADE_LABELS = new Set([
-  'ADP Trap', 'Overvalued', 'The Hype Train', 'One-Year Wonder',
-  'System Product', 'Injury Risk', 'Red Flag', 'Scheme Dependent',
-  'Age Concern', 'Developmental Project', 'Pass Catcher Only'
-]);
-const REACH_THRESHOLDS = {1: 30, 2: 50, 3: 65};
-
-function classifyPlayer(p, format) {
-  const grade = p.grade || 0;
-  const rd = p.round;
-  const tag = getTag(p);
-  const label = tag ? tag.label : null;
-  if (rd === 8) return null;
-  if (label && FADE_LABELS.has(label)) return { type: 'fade', reason: tag.icon + ' ' + label };
-  if (rd && REACH_THRESHOLDS[rd] && grade < REACH_THRESHOLDS[rd]) return { type: 'fade', reason: 'Rd ' + rd + ' reach (' + grade.toFixed(1) + ' grade)' };
-  if (rd && rd <= 2 && grade < 50 && (!label || !POSITIVE_LABELS.has(label))) return { type: 'fade', reason: 'Rd ' + rd + ' pick, grade only ' + grade.toFixed(1) };
-  if (grade >= 80) return { type: 'target', reason: 'Elite grade (' + grade.toFixed(1) + ')' };
-  if (grade >= 70 && label && POSITIVE_LABELS.has(label)) return { type: 'target', reason: (tag ? tag.icon + ' ' : '') + label };
-  if (label && POSITIVE_LABELS.has(label)) return { type: 'target', reason: (tag ? tag.icon + ' ' : '') + label };
-  return null;
-}
-
-function renderTargetsFades(players, format) {
-  const targets = [], fades = [];
-  players.forEach(p => {
-    const c = classifyPlayer(p, format);
-    if (!c) return;
-    const score = dynastySortForFormat(p, format);
-    if (c.type === 'target') targets.push({ p, reason: c.reason, score });
-    else fades.push({ p, reason: c.reason, score });
-  });
-  targets.sort((a, b) => b.score - a.score);
-  fades.sort((a, b) => a.score - b.score);
-
-  const chip = (item) => {
-    const col = posColor(item.p.pos);
-    return '<div class="tf-chip" onclick="openModal(' + JSON.stringify(item.p).replace(/"/g, '&quot;') + ')" style="border-color:' + col + '44">' +
-      '<span class="tf-chip-name" style="color:' + col + '">' + item.p.name + '</span>' +
-      '<span class="tf-chip-reason">' + item.reason + '</span>' +
-      '</div>';
-  };
-
-  document.getElementById('tfTargets').innerHTML = targets.map(chip).join('') || '<span style="color:var(--muted);font-size:13px">None</span>';
-  document.getElementById('tfFades').innerHTML = fades.map(chip).join('') || '<span style="color:var(--muted);font-size:13px">None</span>';
-  const el = document.getElementById('tfCounts');
-  if (el) el.textContent = '(' + targets.length + ' targets · ' + fades.length + ' fades)';
-}
-
-function renderRankings() {
-  const data = activeYear === 2026 ? PLAYERS : (yearCache[activeYear] || []);
-  const filtered = data.filter(p => p.grade && p.grade > 0);
-  const sorted = filtered.sort((a, b) => dynastySortForFormat(b, currentFormat) - dynastySortForFormat(a, currentFormat));
-
-  const posColors = { QB: 'var(--pos-qb)', RB: 'var(--pos-rb)', WR: 'var(--pos-wr)', TE: 'var(--pos-te)' };
-  document.getElementById('rankingsHead').innerHTML =
-    '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
-
-  let html = '', rank = 0, lastPos = null;
-  sorted.forEach(p => {
-    rank++;
-    const col = posColors[p.pos] || 'var(--accent)';
-    const lg = letterGrade(p.grade);
-    const tag = getTag(p);
-    const logo = logoSrc(p.school) || '';
-    html += '<tr onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
-    html += '<td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">' + rank + '</td>';
-    html += '<td style="font-weight:700">' + p.name + '</td>';
-    html += '<td><img src="' + logo + '" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">' + (p.school || '') + '</td>';
-    html += '<td style="color:' + col + ';font-weight:700;font-size:13px">' + p.pos + '</td>';
-    html += '<td>' + (p.age ? fmtAge(p.age) : '—') + '</td>';
-    html += '<td>' + (p.round ? 'Rd ' + p.round : '—') + '</td>';
-    html += '<td style="color:' + lg.c + ';font-weight:700">' + fmt(p.grade, 1) + '</td>';
-    html += '<td style="color:' + col + '">' + (p.markers || 0) + '</td>';
-    html += '<td style="color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</td>';
-    html += '<td>' + (tag ? '<span style="color:' + tag.color + ';font-size:13px;font-weight:700">' + tag.icon + ' ' + tag.label + '</span>' : '—') + '</td>';
-    html += '</tr>';
-  });
-  document.getElementById('rankingsBody').innerHTML = html;
-  renderTargetsFades(sorted, currentFormat);
-}
-
-document.getElementById('tfToggle').addEventListener('click', () => {
-  const btn = document.getElementById('tfToggle');
-  const body = document.getElementById('tfBody');
-  btn.classList.toggle('open');
-  body.classList.toggle('open');
-  const icon = btn.querySelector('.tf-toggle-icon');
-  if (icon) icon.textContent = btn.classList.contains('open') ? '▼' : '▶';
-});
-
-document.querySelectorAll('.format-btn[data-format]').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.format-btn[data-format]').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    currentFormat = b.dataset.format;
-    if (activePage === 'rankings') renderRankings();
-  });
-});
-
-// ============================================================
-// PLAYER COMPARISON
-// ============================================================
-let compPlayers = [null, null, null, null];
-
-async function getAllPlayers() {
-  if (allPlayersCache) return allPlayersCache;
-  let all = [...PLAYERS];
-  for (const yr of YEARS.filter(y => y !== 2026)) {
-    if (!yearCache[yr]) {
-      try {
-        const res = await fetch('data/' + yr + '.json?v=3');
-        const _d = await res.json();
-        _d.forEach(p => { if (!p.year) p.year = yr; });
-        yearCache[yr] = _d;
-      } catch (e) { yearCache[yr] = []; }
-    }
-    all = all.concat(yearCache[yr].map(p => ({ ...p, year: yr })));
-  }
-  allPlayersCache = all;
-  return all;
-}
-
-function renderComparison() {
-  const container = document.getElementById('compCards');
-  if (!container) return;
-  const slots = [1, 2, 3, 4];
-  let html = '';
-  slots.forEach((s, i) => {
-    const p = compPlayers[i];
-    html += '<div class="comp-slot" id="compSlot' + s + '">';
-    if (p) {
-      const col = posColor(p.pos);
-      const lg = letterGrade(p.grade);
-      html += '<div class="comp-card" style="--pos-color:' + col + '" onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
-      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
-      html += hshotImg(p, 'comp-headshot', '');
-      html += '<div><div style="font-size:13px;font-weight:700;color:' + col + '">' + p.pos + ' · ' + (p.year || activeYear) + '</div>';
-      html += '<div style="font-size:16px;font-weight:700">' + p.name + '</div>';
-      html += '<div style="font-size:11px;color:var(--muted)">' + (p.school || '') + '</div></div>';
-      html += '<div style="margin-left:auto;text-align:right"><div style="font-size:24px;font-weight:700;color:' + lg.c + '">' + lg.l + '</div>';
-      html += '<div style="font-size:13px;color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</div></div></div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">';
-      html += '<div style="color:var(--muted)">Markers</div><div style="font-weight:700;color:' + col + '">' + (p.markers || 0) + '/' + (POS_MAX[p.pos] || 14) + '</div>';
-      html += '<div style="color:var(--muted)">PFF</div><div style="font-weight:700;color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</div>';
-      html += '<div style="color:var(--muted)">40-Yd</div><div>' + (p.dash ? p.dash + 's' : '—') + '</div>';
-      html += '<div style="color:var(--muted)">Speed Sc</div><div>' + (p.wass ? fmt(p.wass, 1) : '—') + '</div>';
-      html += '</div>';
-      html += '<button onclick="event.stopPropagation();compPlayers[' + i + ']=null;renderComparison()" style="margin-top:10px;width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:4px;border-radius:4px;cursor:pointer;font-size:11px">Remove</button>';
-      html += '</div>';
-    } else {
-      html += '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:8px;padding:20px;min-height:120px">+ Add Player ' + s + '</div>';
-    }
-    html += '</div>';
-  });
-  container.innerHTML = html;
-}
-
-[1, 2, 3, 4].forEach(s => {
-  const input = document.getElementById('compSearch' + s);
-  const dropdown = document.getElementById('compDropdown' + s);
-  if (!input || !dropdown) return;
-  input.addEventListener('input', async () => {
-    const q = input.value.trim().toLowerCase();
-    if (q.length < 2) { dropdown.classList.remove('open'); return; }
-    const all = await getAllPlayers();
-    const results = all.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
-    dropdown.innerHTML = results.map(p =>
-      '<div class="comp-dropdown-item" style="cursor:pointer;padding:8px 12px;font-size:13px" ' +
-      'onclick="compPlayers[' + (s - 1) + ']=' + JSON.stringify(p).replace(/"/g, '&quot;') + ';document.getElementById(\'compSearch' + s + '\').value=\'' + p.name.replace(/'/g, "\\'") + ' (' + (p.year || activeYear) + ')\';document.getElementById(\'compDropdown' + s + '\').classList.remove(\'open\');renderComparison()">' +
-      '<span style="color:' + posColor(p.pos) + ';font-weight:700">' + p.pos + '</span> ' + p.name +
-      ' <span style="color:var(--muted)">' + (p.school || '') + ' · ' + (p.year || activeYear) + '</span>' +
-      '</div>'
-    ).join('');
-    dropdown.classList.toggle('open', results.length > 0);
-  });
-});
-
-// ============================================================
-// STAT EXPLORER
-// ============================================================
-const EXPLORER_METRICS = {
-  QB: [
-    {group:'Passing', metrics:[
-      {k:'careerPYd',  l:'Career Pass Yds',  fmt:'int', min:0, max:15000},
-      {k:'careerYPG',  l:'Pass YPG',         fmt:'dec', min:0, max:350},
-      {k:'careerPAPG', l:'Pass Att/G',       fmt:'dec', min:0, max:45},
-      {k:'careerCMP',  l:'Career CMP%',      fmt:'pct', min:0.5, max:0.8},
-      {k:'careerPTD',  l:'Career Pass TDs',  fmt:'int', min:0, max:120},
-      {k:'careerINT',  l:'Career INTs',      fmt:'int', min:0, max:40},
-      {k:'careerYPA',  l:'Career YPA',       fmt:'dec', min:6, max:12},
-      {k:'bestPYd',    l:'Best Season PYds', fmt:'int', min:0, max:5500},
-      {k:'bestPPG',    l:'Best PPG',         fmt:'dec', min:0, max:40},
-    ]},
-    {group:'Rushing', metrics:[
-      {k:'careerRuYd', l:'Career Rush Yds',  fmt:'int', min:0, max:3000},
-      {k:'careerRuYPG',l:'Rush YPG',         fmt:'dec', min:0, max:60},
-    ]},
-    {group:'Measurables', metrics:[
-      {k:'ht',   l:'Height (in)',  fmt:'int', min:68, max:80},
-      {k:'wt',   l:'Weight (lbs)', fmt:'int', min:190, max:260},
-      {k:'dash', l:'40-Yd Dash',  fmt:'dec', min:4.4, max:5.2},
-      {k:'grade',l:'Final Grade',  fmt:'dec', min:0, max:100},
-      {k:'pff',  l:'PFF Markers', fmt:'int', min:0, max:10},
-    ]},
-  ],
-  RB: [
-    {group:'Production', metrics:[
-      {k:'ypc',         l:'YPC',              fmt:'dec', min:3, max:8},
-      {k:'yptp',        l:'YPTP',             fmt:'dec', min:0, max:0.5},
-      {k:'bestTotalYds',l:'Best Total Yds',   fmt:'int', min:0, max:2500},
-      {k:'bestRec',     l:'Best Receptions',  fmt:'int', min:0, max:80},
-      {k:'careerYACO',  l:'Career YACO',      fmt:'dec', min:0, max:5},
-      {k:'careerYPRR',  l:'Career YPRR',      fmt:'dec', min:0, max:3},
-      {k:'bestPPG',     l:'Best PPG',         fmt:'dec', min:0, max:40},
-    ]},
-    {group:'Measurables', metrics:[
-      {k:'ht',    l:'Height (in)',  fmt:'int', min:64, max:76},
-      {k:'wt',    l:'Weight (lbs)', fmt:'int', min:180, max:240},
-      {k:'dash',  l:'40-Yd Dash',  fmt:'dec', min:4.2, max:4.8},
-      {k:'wass',  l:'Speed Score', fmt:'dec', min:80, max:140},
-      {k:'burst', l:'Burst Score', fmt:'dec', min:90, max:150},
-      {k:'grade', l:'Final Grade', fmt:'dec', min:0, max:100},
-      {k:'pff',   l:'PFF Markers', fmt:'int', min:0, max:12},
-    ]},
-  ],
-  WR: [
-    {group:'Production', metrics:[
-      {k:'bestYPTPA',     l:'Best YPTPA',     fmt:'dec', min:0, max:6},
-      {k:'bestMSYards',   l:'Best MS Yards',  fmt:'pct', min:0.1, max:0.6},
-      {k:'careerYPRR',    l:'Career YPRR',    fmt:'dec', min:0, max:4},
-      {k:'careerYPRRzone',l:'YPRR Zone',      fmt:'dec', min:0, max:4},
-      {k:'careerTPRR',    l:'Career TPRR',    fmt:'pct', min:0.1, max:0.5},
-      {k:'careerYACR',    l:'Career YACR',    fmt:'dec', min:0, max:5},
-      {k:'boy20',         l:'BOY20 Year',     fmt:'int', min:1, max:5},
-      {k:'boy30',         l:'BOY30 Year',     fmt:'int', min:1, max:5},
-      {k:'bestPPG',       l:'Best PPG',       fmt:'dec', min:0, max:40},
-    ]},
-    {group:'Measurables', metrics:[
-      {k:'ht',    l:'Height (in)',  fmt:'int', min:66, max:79},
-      {k:'wt',    l:'Weight (lbs)', fmt:'int', min:170, max:230},
-      {k:'dash',  l:'40-Yd Dash',  fmt:'dec', min:4.2, max:4.7},
-      {k:'wass',  l:'Speed Score', fmt:'dec', min:85, max:140},
-      {k:'burst', l:'Burst Score', fmt:'dec', min:90, max:150},
-      {k:'grade', l:'Final Grade', fmt:'dec', min:0, max:100},
-      {k:'pff',   l:'PFF Markers', fmt:'int', min:0, max:17},
-    ]},
-  ],
-  TE: [
-    {group:'Production', metrics:[
-      {k:'bestYPTPA',   l:'Best YPTPA',    fmt:'dec', min:0, max:5},
-      {k:'bestMSYards', l:'Best MS Yards', fmt:'pct', min:0.05, max:0.4},
-      {k:'careerYPG',   l:'Career YPG',   fmt:'dec', min:0, max:100},
-      {k:'careerYPRR',  l:'Career YPRR',  fmt:'dec', min:0, max:3},
-      {k:'careerTPRR',  l:'Career TPRR',  fmt:'pct', min:0.05, max:0.4},
-      {k:'avgPassBlock',l:'Pass Block',   fmt:'dec', min:50, max:90},
-      {k:'boy15',       l:'BOY15 Year',   fmt:'int', min:1, max:5},
-      {k:'boy20',       l:'BOY20 Year',   fmt:'int', min:1, max:5},
-      {k:'bestPPG',     l:'Best PPG',     fmt:'dec', min:0, max:30},
-    ]},
-    {group:'Measurables', metrics:[
-      {k:'ht',    l:'Height (in)',  fmt:'int', min:72, max:82},
-      {k:'wt',    l:'Weight (lbs)', fmt:'int', min:230, max:280},
-      {k:'dash',  l:'40-Yd Dash',  fmt:'dec', min:4.4, max:5.0},
-      {k:'wass',  l:'Speed Score', fmt:'dec', min:80, max:130},
-      {k:'burst', l:'Burst Score', fmt:'dec', min:85, max:140},
-      {k:'grade', l:'Final Grade', fmt:'dec', min:0, max:100},
-      {k:'pff',   l:'PFF Markers', fmt:'int', min:0, max:10},
-    ]},
-  ],
-};
-
-let explorerPos = 'WR';
-let explorerFilters = [];
-let explorerYears = new Set([2026]);
-const ALL_YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
-
-function buildExplorerYears() {
-  const wrap = document.getElementById('explorerYearBtns');
-  if (!wrap) return;
-  wrap.innerHTML = '';
-  ALL_YEARS.forEach(yr => {
-    const btn = document.createElement('button');
-    btn.className = 'explorer-year-btn' + (explorerYears.has(yr) ? ' active' : '');
-    btn.textContent = yr;
-    btn.addEventListener('click', async () => {
-      if (explorerYears.has(yr)) { if (explorerYears.size > 1) { explorerYears.delete(yr); btn.classList.remove('active'); } }
-      else {
-        explorerYears.add(yr);
-        btn.classList.add('active');
-        if (!yearCache[yr]) {
-          try {
-            const res = await fetch('data/' + yr + '.json?v=3');
-            const _d = await res.json();
-            _d.forEach(p => { if (!p.year) p.year = yr; });
-            yearCache[yr] = _d;
-          } catch (e) { yearCache[yr] = []; }
-        }
-      }
-      explorerRender();
-    });
-    wrap.appendChild(btn);
-  });
-}
-
-function renderExplorerFilters() {
-  const container = document.getElementById('explorerMetricList');
-  if (!container) return;
-  container.innerHTML = explorerFilters.map((f, i) =>
-    '<div class="explorer-filter-pill">' +
-      '<span>' + f.l + '</span>' +
-      '<input type="number" class="explorer-num-input" value="' + f.lo + '" step="' + (f.fmt === 'pct' ? '0.01' : f.fmt === 'dec' ? '0.1' : '1') + '" onchange="explorerFilters[' + i + '].lo=+this.value;explorerRender()">' +
-      '<span style="color:var(--muted)">–</span>' +
-      '<input type="number" class="explorer-num-input" value="' + f.hi + '" step="' + (f.fmt === 'pct' ? '0.01' : f.fmt === 'dec' ? '0.1' : '1') + '" onchange="explorerFilters[' + i + '].hi=+this.value;explorerRender()">' +
-      '<button class="explorer-filter-remove" onclick="explorerFilters.splice(' + i + ',1);renderExplorerFilters();explorerRender()">✕</button>' +
-    '</div>'
-  ).join('');
-}
-
-async function explorerRender() {
-  let players = [];
-  for (const yr of explorerYears) {
-    let data = yr === 2026 ? PLAYERS : yearCache[yr];
-    if (!data) {
-      try {
-        const res = await fetch('data/' + yr + '.json?v=3');
-        const _d = await res.json();
-        _d.forEach(p => { if (!p.year) p.year = yr; });
-        yearCache[yr] = _d; data = _d;
-      } catch (e) { data = []; }
-    }
-    players = players.concat(data.filter(p => p.pos === explorerPos).map(p => ({ ...p, year: yr })));
-  }
-
-  explorerFilters.forEach(f => {
-    players = players.filter(p => {
-      const v = p[f.k];
-      if (v == null) return false;
-      return v >= f.lo && v <= f.hi;
-    });
-  });
-
-  players.sort((a, b) => (b.grade || 0) - (a.grade || 0));
-
-  const container = document.getElementById('explorerResultsBody');
-  if (!container) return;
-  if (!players.length) {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No players match these filters.</div>';
-    return;
-  }
-
-  let html = '';
-  players.forEach((p, i) => {
-    const col = posColor(p.pos);
-    const lg = letterGrade(p.grade);
-    html += '<div class="explorer-result-card" onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
-    html += '<div style="display:flex;align-items:center;gap:10px">';
-    html += hshotImg(p, 'explorer-headshot', '');
-    html += '<div style="flex:1;min-width:0">';
-    html += '<div style="font-size:11px;color:' + col + ';font-weight:700">' + p.pos + ' · ' + (p.year || activeYear) + '</div>';
-    html += '<div style="font-size:15px;font-weight:700">' + p.name + '</div>';
-    html += '<div style="font-size:11px;color:var(--muted)">' + (p.school || '') + '</div>';
-    html += '</div>';
-    html += '<div style="text-align:right">';
-    html += '<div style="font-size:22px;font-weight:700;color:' + lg.c + '">' + lg.l + '</div>';
-    html += '<div style="font-size:13px;color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</div>';
-    html += '</div></div>';
-    explorerFilters.forEach(f => {
-      const v = p[f.k];
-      html += '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px">' +
-        '<span style="color:var(--muted)">' + f.l + '</span>' +
-        '<span style="font-weight:700">' + (v != null ? (f.fmt === 'pct' ? fmtPct(v) : fmt(v, f.fmt === 'int' ? 0 : 1)) : '—') + '</span>' +
-        '</div>';
-    });
-    html += '</div>';
-  });
-  container.innerHTML = html;
-}
-
-// Explorer position buttons
-document.querySelectorAll('.explorer-pos-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.explorer-pos-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    explorerPos = btn.dataset.pos;
-    explorerFilters = [];
-    renderExplorerFilters();
-    explorerRender();
-  });
-});
-
-// Explorer metric picker — event delegation
-document.getElementById('explorerAddMetric').addEventListener('click', () => {
-  const picker = document.getElementById('explorerPicker');
-  if (picker.style.display !== 'none') { picker.style.display = 'none'; return; }
-  const metrics = EXPLORER_METRICS[explorerPos] || [];
-  const activeKeys = new Set(explorerFilters.map(f => f.k));
-  picker.innerHTML = metrics.map(grp =>
-    '<div class="explorer-picker-group">' + grp.group + '</div>' +
-    grp.metrics.map(m =>
-      '<div class="explorer-picker-item' + (activeKeys.has(m.k) ? ' selected' : '') + '" data-k="' + m.k + '">' + m.l + (activeKeys.has(m.k) ? ' ✓' : '') + '</div>'
-    ).join('')
-  ).join('');
-  picker.style.display = 'block';
-});
-
-document.getElementById('explorerPicker').addEventListener('click', e => {
-  const item = e.target.closest('.explorer-picker-item');
-  if (!item || item.classList.contains('selected')) return;
-  const k = item.dataset.k;
-  const allM = [].concat(...(EXPLORER_METRICS[explorerPos] || []).map(g => g.metrics));
-  const meta = allM.find(m => m.k === k);
-  if (!meta) return;
-  explorerFilters.push({ ...meta, lo: meta.min, hi: meta.max });
-  document.getElementById('explorerPicker').style.display = 'none';
-  renderExplorerFilters();
-  explorerRender();
-});
-
-document.addEventListener('click', e => {
-  const picker = document.getElementById('explorerPicker');
-  const addBtn = document.getElementById('explorerAddMetric');
-  if (picker && !picker.contains(e.target) && e.target !== addBtn) picker.style.display = 'none';
-});
-
-document.getElementById('explorerReset').addEventListener('click', () => {
-  explorerFilters = [];
-  explorerYears = new Set([2026]);
-  document.querySelectorAll('.explorer-year-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === 2026));
-  renderExplorerFilters();
-  explorerRender();
-});
-
-// ============================================================
-// CLASS BREAKDOWN
-// ============================================================
-async function loadAndRenderBreakdown() {
-  const yr = activeYear;
-  if (!yearCache[yr]) {
-    try {
-      const res = await fetch('data/' + yr + '.json?v=3');
-      const _d = await res.json();
-      _d.forEach(p => { if (!p.year) p.year = yr; });
-      yearCache[yr] = _d;
-    } catch (e) { return; }
-  }
-  renderBreakdown(yearCache[yr], yr);
-}
-
-function renderBreakdown(players, yr) {
-  const byPos = { QB: [], RB: [], WR: [], TE: [] };
-  players.filter(p => p.grade).forEach(p => {
-    if (byPos[p.pos]) byPos[p.pos].push(p);
-  });
-
-  const posColors = { QB: '#7b61ff', RB: '#00e88a', WR: '#00c2ff', TE: '#ff8c42' };
-  const avgGrade = p => p.length ? p.reduce((s, x) => s + x.grade, 0) / p.length : 0;
-
-  // Position chart
-  const posCtx = document.getElementById('breakdownPosChart');
-  if (posCtx) {
-    if (posCtx._chartInstance) posCtx._chartInstance.destroy();
-    posCtx._chartInstance = new Chart(posCtx, {
-      type: 'bar',
-      data: {
-        labels: ['QB', 'RB', 'WR', 'TE'],
-        datasets: [{
-          label: 'Avg Grade',
-          data: ['QB','RB','WR','TE'].map(pos => parseFloat(avgGrade(byPos[pos]).toFixed(1))),
-          backgroundColor: ['#7b61ff','#00e88a','#00c2ff','#ff8c42'],
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: '#5a6478' }, grid: { color: '#1e2530' } },
-          y: { ticks: { color: '#5a6478' }, grid: { color: '#1e2530' }, min: 0, max: 100 }
-        }
-      }
-    });
-  }
-
-  // Table
-  const tbody = document.getElementById('bkBody');
-  if (!tbody) return;
-  const allGraded = players.filter(p => p.grade).sort((a, b) => b.grade - a.grade);
-  let html = '';
-  allGraded.forEach((p, i) => {
-    const col = posColors[p.pos] || '#e8edf3';
-    const lg = letterGrade(p.grade);
-    html += '<tr onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
-    html += '<td style="color:var(--muted)">' + (i + 1) + '</td>';
-    html += '<td style="font-weight:700">' + p.name + '</td>';
-    html += '<td style="color:' + col + ';font-weight:700">' + p.pos + '</td>';
-    html += '<td style="color:' + gradeColor(p.grade) + ';font-weight:700">' + fmt(p.grade, 1) + '</td>';
-    html += '<td style="color:' + lg.c + '">' + lg.l + '</td>';
-    html += '<td>' + (p.markers || 0) + '</td>';
-    html += '</tr>';
-  });
-  tbody.innerHTML = html;
-}
-
-// ============================================================
-// GLOSSARY
-// ============================================================
-const GLOSSARY_TERMS = [
-  {term:'BOY15',cat:'TE',def:'Best Output Year with 15+ receptions — earliest year a TE exceeded 15 catches.'},
-  {term:'BOY20',cat:'WR/TE',def:'Best Output Year with 20+ receptions.'},
-  {term:'BOY30',cat:'WR',def:'Best Output Year with 30+ receptions.'},
-  {term:'YPTPA',cat:'WR/TE',def:'Yards Per Target Per Attempt — efficiency metric combining receiving yards, targets, and attempts.'},
-  {term:'YPRR',cat:'WR/TE',def:'Yards Per Route Run — receiving yards divided by total routes run.'},
-  {term:'TPRR',cat:'WR/TE',def:'Targets Per Route Run — target share per route.'},
-  {term:'YACR',cat:'WR',def:'Yards After Contact per Reception.'},
-  {term:'MS Yards',cat:'WR/TE',def:'Market Share of team receiving yards — measures target opportunity quality.'},
-  {term:'YPC',cat:'RB',def:'Yards Per Carry — rushing efficiency.'},
-  {term:'YPTP',cat:'RB',def:'Yards Per Touch Per Pound — efficiency weighted by body weight.'},
-  {term:'YACO',cat:'RB',def:'Yards After Contact per Opportunity — contact balance.'},
-  {term:'BA%',cat:'RB',def:'Breakaway percentage — portion of rushes going for 15+ yards.'},
-  {term:'CMP%',cat:'QB',def:'Completion percentage.'},
-  {term:'YPA',cat:'QB',def:'Yards Per Attempt.'},
-  {term:'PAPG',cat:'QB',def:'Pass Attempts Per Game.'},
-  {term:'Speed Score',cat:'All',def:'Adjusted speed metric accounting for weight: (Weight × 200) / (40 time^4).'},
-  {term:'Burst Score',cat:'All',def:'Composite of vertical jump and broad jump divided by height.'},
-  {term:'BMI',cat:'All',def:'Body Mass Index — weight relative to height.'},
-  {term:'Markers',cat:'All',def:'Position-specific threshold criteria. See individual position breakdowns.'},
-  {term:'PFF Markers',cat:'All',def:'PFF grade-based thresholds unique to each position.'},
-  {term:'Final Grade',cat:'All',def:'Composite score (0–100) from Markers and PFF, calibrated against historical NFL success at each position.'},
-  {term:'Superflex',cat:'Format',def:'Two-QB format where QB is the most valuable position.'},
-  {term:'TEP',cat:'Format',def:'Tight End Premium — extra points for TE receptions or targets.'},
-  {term:'ADP',cat:'Draft',def:'Average Draft Position — typical draft slot in community mock drafts.'},
-  {term:'UDFA',cat:'Draft',def:'Undrafted Free Agent — player not selected in the NFL Draft.'},
-];
-let glossaryFilter = 'All';
-let glossarySearch = '';
-
-function renderGlossary() {
-  const terms = GLOSSARY_TERMS.filter(t => {
-    if (glossaryFilter !== 'All' && !t.cat.includes(glossaryFilter)) return false;
-    if (glossarySearch && !t.term.toLowerCase().includes(glossarySearch.toLowerCase()) && !t.def.toLowerCase().includes(glossarySearch.toLowerCase())) return false;
-    return true;
-  });
-  const container = document.getElementById('glossaryPanel');
-  if (!container) return;
-  container.innerHTML = terms.map(t =>
-    '<div class="glossary-term">' +
-    '<div class="glossary-term-header"><span class="glossary-term-name">' + t.term + '</span><span class="glossary-term-cat">' + t.cat + '</span></div>' +
-    '<div class="glossary-term-def">' + t.def + '</div>' +
-    '</div>'
-  ).join('') || '<div style="padding:40px;text-align:center;color:var(--muted)">No terms found.</div>';
-}
-
-document.querySelectorAll('.glossary-cat-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.glossary-cat-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    glossaryFilter = btn.dataset.cat || 'All';
-    renderGlossary();
-  });
-});
-const glossarySearchEl = document.getElementById('glossarySearch');
-if (glossarySearchEl) glossarySearchEl.addEventListener('input', e => { glossarySearch = e.target.value; renderGlossary(); });
-
-// ============================================================
-// NFL OUTCOMES PAGE
-// ============================================================
-let NFL_OUTCOMES = null;
-let outcomesSort = 'grade';
-let outcomesSortDir = 'desc';
-let outcomesPos = 'ALL';
-let outcomesYearFrom = 2010;
-let outcomesYearTo = 2025;
-let outcomesGradedOnly = true;
-
-async function loadNFLOutcomes() {
-  if (NFL_OUTCOMES) return;
-  try {
-    const res = await fetch('nfl_outcomes.json');
-    NFL_OUTCOMES = await res.json();
-  } catch (e) { NFL_OUTCOMES = []; }
-}
-
-async function loadAndRenderOutcomes() {
-  if (!NFL_OUTCOMES) {
-    document.getElementById('outcomesBody').innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted)">Loading NFL data...</td></tr>';
-    await loadNFLOutcomes();
-    buildOutcomesYearSelects();
-  }
-  renderOutcomes();
-}
-
-function buildOutcomesYearSelects() {
-  const years = Array.from({length: 16}, (_, i) => 2010 + i);
-  const fromSel = document.getElementById('outcomesYearFrom');
-  const toSel = document.getElementById('outcomesYearTo');
-  if (!fromSel || !toSel) return;
-  fromSel.innerHTML = ''; toSel.innerHTML = '';
-  years.forEach(yr => {
-    fromSel.innerHTML += '<option value="' + yr + '"' + (yr === 2010 ? ' selected' : '') + '>' + yr + '</option>';
-    toSel.innerHTML += '<option value="' + yr + '"' + (yr === 2025 ? ' selected' : '') + '>' + yr + '</option>';
-  });
-  fromSel.addEventListener('change', () => { outcomesYearFrom = Number(fromSel.value); renderOutcomes(); });
-  toSel.addEventListener('change', () => { outcomesYearTo = Number(toSel.value); renderOutcomes(); });
-}
-
-function setOutcomesSort(key) {
-  if (outcomesSort === key) outcomesSortDir = outcomesSortDir === 'desc' ? 'asc' : 'desc';
-  else { outcomesSort = key; outcomesSortDir = 'desc'; }
-  renderOutcomes();
-}
-
-function nflBadge(n, col) {
-  if (!n) return '<span style="color:var(--muted);font-size:11px">—</span>';
-  return '<span style="font-weight:700;color:' + col + '">' + n + '</span>';
-}
-
-function renderOutcomes() {
-  if (!NFL_OUTCOMES) return;
-  const data = NFL_OUTCOMES.filter(p => {
-    if (p.year < outcomesYearFrom || p.year > outcomesYearTo) return false;
-    if (outcomesPos !== 'ALL' && p.pos !== outcomesPos) return false;
-    if (outcomesGradedOnly && !p.grade) return false;
-    return true;
-  });
-  const sortVal = p => { const v = p[outcomesSort]; return v == null ? -999 : v; };
-  const sorted = [...data].sort((a, b) => { const d = sortVal(b) - sortVal(a); return outcomesSortDir === 'desc' ? d : -d; });
-
-  const arr = k => k === outcomesSort ? (outcomesSortDir === 'desc' ? ' ↓' : ' ↑') : '';
-  const th = (k, label, col) => '<th class="' + (outcomesSort === k ? 'sorted' : '') + '" style="cursor:pointer;' + (col ? 'color:' + col : '') + '" onclick="setOutcomesSort(\'' + k + '\')">' + label + arr(k) + '</th>';
-
-  document.getElementById('outcomesHead').innerHTML =
-    '<tr>' + th('year','Year') + th('name','Player') + '<th>School</th>' + th('pos','Pos') + th('round','Round') +
-    th('grade','Grade') + th('markers','Markers') + th('pff','PFF Mkrs') + '<th>Label</th>' +
-    th('nfl_seasons','NFL Seasons') + th('nfl_career_ppg','Career PPG') + th('nfl_best_ppg','Best PPG') +
-    th('nfl_top5','Top-5','#00c2ff') + th('nfl_top12','Top-12','var(--pos-rb)') +
-    th('nfl_top24','Top-24','var(--accent2)') + th('nfl_top36','Top-36','var(--orange)') + '</tr>';
-
-  let html = '';
-  sorted.forEach(p => {
-    const col = posColor(p.pos);
-    const lg = p.grade ? letterGrade(p.grade) : { l: '—', c: 'var(--muted)' };
-    const noNfl = !p.has_nfl;
-    html += '<tr class="' + (noNfl ? 'no-nfl' : '') + '" onclick="openOutcomeModal(\'' + (p.pfr_id || '').replace(/'/g, '\u2019') + '\',\'' + p.name.replace(/'/g, '\u2019') + '\',' + p.year + ')">';
-    html += '<td style="color:var(--muted);font-family:\'Bebas Neue\',cursive;font-size:16px">' + p.year + '</td>';
-    html += '<td style="font-weight:700">' + p.name + '</td>';
-    html += '<td style="color:var(--muted);font-size:11px">' + (p.school || '—') + '</td>';
-    html += '<td style="color:' + col + ';font-weight:700;font-size:11px">' + p.pos + '</td>';
-    html += '<td style="color:var(--muted)">' + (p.round != null ? 'Rd ' + p.round : '—') + '</td>';
-    html += '<td style="color:' + lg.c + ';font-weight:700">' + (p.grade ? fmt(p.grade, 1) : '—') + '</td>';
-    html += '<td style="color:' + col + '">' + (p.markers != null ? p.markers : '—') + '</td>';
-    html += '<td style="color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</td>';
-    {
-      const yr = p.year;
-      const cdata = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
-      const cp = cdata.find(x => x.name === p.name);
-      const tag = cp ? getTag(cp) : null;
-      html += '<td>' + (tag ? '<span style="color:' + tag.color + ';font-size:12px;font-weight:700">' + tag.icon + ' ' + tag.label + '</span>' : '—') + '</td>';
-    }
-    html += '<td style="color:' + (noNfl ? 'var(--muted)' : 'var(--text)') + '">' + (p.nfl_seasons || '—') + '</td>';
-    html += '<td style="font-weight:700;color:' + (noNfl ? 'var(--muted)' : 'var(--accent)') + '">' + (p.nfl_career_ppg != null ? fmt(p.nfl_career_ppg, 1) : '—') + '</td>';
-    html += '<td style="color:' + (noNfl ? 'var(--muted)' : 'var(--accent2)') + '">' + (p.nfl_best_ppg != null ? fmt(p.nfl_best_ppg, 1) : '—') + '</td>';
-    html += '<td>' + nflBadge(p.nfl_top5, '#00c2ff') + '</td>';
-    html += '<td>' + nflBadge(p.nfl_top12, 'var(--pos-rb)') + '</td>';
-    html += '<td>' + nflBadge(p.nfl_top24, 'var(--accent2)') + '</td>';
-    html += '<td>' + nflBadge(p.nfl_top36, 'var(--orange)') + '</td>';
-    html += '</tr>';
-  });
-  document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="16" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
-}
-
-document.querySelectorAll('.filter-btn[data-opos]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn[data-opos]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    outcomesPos = btn.dataset.opos;
-    renderOutcomes();
-  });
-});
-
-const outcomesGradedEl = document.getElementById('outcomesGradedOnly');
-if (outcomesGradedEl) outcomesGradedEl.addEventListener('change', e => { outcomesGradedOnly = e.target.checked; renderOutcomes(); });
-
-function openOutcomeModal(pfrId, name, year) {
-  const yr = Number(year);
-  const data = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
-  const p = data.find(x => x.name === name || x.pfr_id === pfrId);
-  if (p) openModal({ ...p, year: yr });
-}
-
-// ============================================================
-// NFL ENRICHMENT
-// ============================================================
-let NFL_LOOKUP = null;
-
-async function loadNFLLookup() {
-  if (NFL_LOOKUP) return;
-  try {
-    const res = await fetch('nfl_lookup.json');
-    NFL_LOOKUP = await res.json();
-    enrichPlayersWithNFL(PLAYERS, 2026);
-    Object.entries(yearCache).forEach(([yr, players]) => {
-      if (Number(yr) !== 2026) enrichPlayersWithNFL(players, Number(yr));
-    });
-  } catch (e) { NFL_LOOKUP = {}; }
-}
-
-function enrichPlayersWithNFL(players, year) {
-  if (!NFL_LOOKUP || !players) return;
-  players.forEach(p => {
-    const key = p.name + '|' + year;
-    const nfl = NFL_LOOKUP[key];
-    if (nfl) {
-      p.nfl_top5 = nfl.nfl_top5 || 0;
-      p.nfl_top12 = nfl.nfl_top12 || 0;
-      p.nfl_top24 = nfl.nfl_top24 || 0;
-      p.nfl_top36 = nfl.nfl_top36 || 0;
-      p.nfl_career_ppg = nfl.nfl_career_ppg;
-      p.nfl_best_ppg = nfl.nfl_best_ppg;
-      p.nfl_seasons = nfl.nfl_seasons || 0;
-    }
-  });
-}
-
-// ============================================================
-// HISTORICAL COMPS
-// ============================================================
-const COMP_VARS = {
-  QB: ['ht','wt','grade','markers','pff','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
-  RB: ['ht','wt','grade','markers','bestTotalYds','bestRec','bestPPG','burst','dash'],
-  WR: ['ht','wt','grade','markers','pff','boy20','boy30','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
-  TE: ['ht','wt','grade','markers','pff','boy15','boy20','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
-};
-
-function computeComps(player) {
-  const pos = player.pos;
-  const vars = COMP_VARS[pos];
-  if (!vars) return [];
-  const targetYear = player.year || 2026;
-
-  const candidates = [];
-  Object.entries(yearCache).forEach(([yr, players]) => {
-    if (Number(yr) >= targetYear) return;
-    players.forEach(p => {
-      if (p.pos !== pos) return;
-      if (!p.grade) return;
-      candidates.push({ ...p, year: Number(yr) });
-    });
-  });
-  if (!candidates.length) return [];
-
-  // Compute means and stds
-  const means = {}, stds = {};
-  vars.forEach(v => {
-    const vals = candidates.map(p => p[v]).filter(x => x != null);
-    if (!vals.length) { means[v] = 0; stds[v] = 1; return; }
-    const mean = vals.reduce((s, x) => s + x, 0) / vals.length;
-    const std = Math.sqrt(vals.reduce((s, x) => s + (x - mean) ** 2, 0) / vals.length) || 1;
-    means[v] = mean; stds[v] = std;
-  });
-
-  const zScore = (val, v) => val != null ? (val - means[v]) / stds[v] : 0;
-  const playerZ = vars.map(v => zScore(player[v], v));
-
-  const dists = candidates.map(c => {
-    const dist = Math.sqrt(vars.reduce((s, v, i) => s + (zScore(c[v], v) - playerZ[i]) ** 2, 0));
-    return { p: c, dist };
-  });
-
-  dists.sort((a, b) => a.dist - b.dist);
-  return dists.slice(0, 3).map(d => d.p);
-}
-
-async function renderModalComps(player) {
-  const grid = document.getElementById('modalCompsGrid');
-  if (!grid) return;
-
-  // Ensure all historical years are loaded
-  for (const yr of YEARS.filter(y => y !== 2026)) {
-    if (!yearCache[yr]) {
-      try {
-        const res = await fetch('data/' + yr + '.json?v=3');
-        const _d = await res.json();
-        _d.forEach(p => { if (!p.year) p.year = yr; });
-        yearCache[yr] = _d;
-      } catch (e) { yearCache[yr] = []; }
-    }
-  }
-
-  const comps = computeComps(player);
-  if (!comps.length) {
-    grid.innerHTML = '<div style="color:var(--muted);font-size:13px">No comps available.</div>';
-    return;
-  }
-
-  grid.innerHTML = comps.map(c => {
-    const col = posColor(c.pos);
-    const lg = letterGrade(c.grade);
-    return '<div class="comp-mini-card" onclick="openModal(' + JSON.stringify(c).replace(/"/g, '&quot;') + ')">' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
-      hshotImg(c, 'comp-mini-headshot', '') +
-      '<div><div style="font-size:11px;color:' + col + ';font-weight:700">' + c.pos + ' · ' + c.year + '</div>' +
-      '<div style="font-size:14px;font-weight:700">' + c.name + '</div>' +
-      '<div style="font-size:11px;color:var(--muted)">' + (c.school || '') + '</div></div>' +
-      '</div>' +
-      '<div style="display:flex;gap:8px;font-size:11px">' +
-      '<div><span style="color:var(--muted)">Grade </span><span style="font-weight:700;color:' + gradeColor(c.grade) + '">' + (c.grade ? fmt(c.grade, 1) : '—') + '</span></div>' +
-      '<div><span style="color:var(--muted)">Ltr </span><span style="font-weight:700;color:' + lg.c + '">' + lg.l + '</span></div>' +
-      (c.nfl_top12 ? '<div><span style="color:var(--muted)">T12 </span><span style="font-weight:700;color:var(--pos-rb)">' + c.nfl_top12 + '</span></div>' : '') +
-      '</div></div>';
-  }).join('');
-}
-
-// ============================================================
-// GLOBAL SEARCH
-// ============================================================
-async function globalSearchGetPlayers(q) {
-  const all = await getAllPlayers();
-  return all.filter(p => p.name.toLowerCase().includes(q.toLowerCase())).slice(0, 15);
-}
-
-function globalSearchSelect(p) {
-  document.getElementById('globalSearchInput').value = '';
-  document.getElementById('globalSearchResults').style.display = 'none';
-  switchPage('grades');
-  setTimeout(() => openModal(p), 100);
-}
-
-const globalInput = document.getElementById('globalSearchInput');
-const globalResults = document.getElementById('globalSearchResults');
-if (globalInput) {
-  globalInput.addEventListener('input', async () => {
-    const q = globalInput.value.trim();
-    if (q.length < 2) { globalResults.style.display = 'none'; return; }
-    const players = await globalSearchGetPlayers(q);
-    globalResults.innerHTML = players.map(p =>
-      '<div class="global-search-item" onclick="globalSearchSelect(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">' +
-      '<span style="color:' + posColor(p.pos) + ';font-weight:700;margin-right:6px">' + p.pos + '</span>' +
-      p.name + ' <span style="color:var(--muted);font-size:11px">' + (p.school || '') + ' · ' + (p.year || activeYear) + '</span>' +
-      '</div>'
-    ).join('');
-    globalResults.style.display = players.length ? 'block' : 'none';
-  });
-  document.addEventListener('click', e => {
-    if (!globalInput.contains(e.target) && !globalResults.contains(e.target))
-      globalResults.style.display = 'none';
-  });
-}
-
-// ============================================================
-// DARK / LIGHT MODE
-// ============================================================
-function applyTheme(dark) {
-  document.body.classList.toggle('light-mode', !dark);
-  localStorage.setItem('theme', dark ? 'dark' : 'light');
-  const btn = document.getElementById('themeToggle');
-  if (btn) btn.textContent = dark ? '☀' : '☾';
-}
-
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) themeToggle.addEventListener('click', () => {
-  applyTheme(document.body.classList.contains('light-mode'));
-});
-applyTheme(localStorage.getItem('theme') !== 'light');
-
-// ============================================================
-// SWITCH PAGE
-// ============================================================
-let activePage = 'grades';
-
-function switchPage(page) {
-  activePage = page;
-  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-  const pageEl = document.getElementById('page-' + page);
-  if (pageEl) pageEl.classList.add('active');
-  if (page === 'rankings') renderRankings();
-  if (page === 'breakdown') loadAndRenderBreakdown();
-  if (page === 'glossary') renderGlossary();
-  if (page === 'explorer') explorerRender();
-  if (page === 'outcomes') loadAndRenderOutcomes();
-  if (navDrawer) navDrawer.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-}
-
-document.querySelectorAll('.nav-btn').forEach(b => {
-  b.addEventListener('click', () => switchPage(b.dataset.page));
-});
-
-// ============================================================
-// MOBILE — HAMBURGER DRAWER
-// ============================================================
-const hamburger = document.getElementById('hamburger');
-const navDrawer = document.getElementById('navDrawer');
-const drawerOverlay = document.getElementById('drawerOverlay');
-
-function openDrawer() { hamburger.classList.add('open'); navDrawer.classList.add('open'); drawerOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeDrawer() { hamburger.classList.remove('open'); navDrawer.classList.remove('open'); drawerOverlay.classList.remove('open'); document.body.style.overflow = ''; }
-hamburger.addEventListener('click', () => navDrawer.classList.contains('open') ? closeDrawer() : openDrawer());
-drawerOverlay.addEventListener('click', closeDrawer);
-navDrawer.querySelectorAll('.nav-btn').forEach(b => { b.addEventListener('click', () => { switchPage(b.dataset.page); closeDrawer(); }); });
-
-// ============================================================
-// LAST UPDATED
-// ============================================================
-const navUpdatedEl = document.getElementById('navUpdated');
-if (navUpdatedEl) navUpdatedEl.textContent = 'Updated ' + LAST_UPDATED;
-
-// ============================================================
-// INIT
-// ============================================================
-buildYearTabs();
-renderHeroStats();
-render();
-
-// Prefetch historical years in background
-(async function prefetchHistoricalYears() {
-  const toFetch = YEARS.filter(yr => yr !== 2026);
-  for (const yr of toFetch) {
-    if (!yearCache[yr]) {
-      try {
-        const res = await fetch('data/' + yr + '.json?v=3');
-        const _d = await res.json();
-        _d.forEach(p => { if (!p.year) p.year = yr; });
-        yearCache[yr] = _d;
-      } catch (e) { yearCache[yr] = []; }
-    }
-    await new Promise(r => setTimeout(r, 50));
-  }
-})();
-
-// Load NFL lookup 500ms after page load
-setTimeout(loadNFLLookup, 500);
-
-buildExplorerYears();
-
-</script>
 <style>
 :root {
   --bg:#0a0c0f;--surface:#111418;--surface2:#181c22;--border:#1e2530;
@@ -2740,6 +1435,1315 @@ async function exportRankingsPDF() {
     btn.disabled = false;
   }
 }
+
+
+// ============================================================
+// STATE
+// ============================================================
+const YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
+const ALL_CLASS_AVGS = {2010:54.31,2011:54.32,2012:60.4,2013:53.48,2014:60.42,2015:58.53,2016:52.01,2017:63.05,2018:58.61,2019:56.61,2020:62.01,2021:58.65,2022:57.19,2023:56.89,2024:55.6,2025:57.99,2026:43.91};
+const LAST_UPDATED = 'Mar 28, 2026';
+
+PLAYERS.forEach(p => { if(!p.year) p.year = 2026; });
+let yearCache = {2026: PLAYERS};
+let activeYear = 2026;
+let allPlayersCache = null;
+let currentFormat = 'superflex';
+let _lastRenderedList = [];
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function statSq(val, lbl, col) {
+  return '<div class="modal-stat-sq">' +
+    '<div class="modal-stat-val"' + (col ? ' style="color:' + col + '"' : '') + '>' + val + '</div>' +
+    '<div class="modal-stat-lbl">' + lbl + '</div>' +
+    '</div>';
+}
+
+function pffStats(p, col) {
+  const f = (v, d) => v != null ? fmt(v, d) : '—';
+  const fp = v => v != null ? fmtPct(v) : '—';
+  if (p.pos === 'QB') return (
+    statSq(f(p.pffPassGrade, 1), 'Pass Grade') +
+    statSq(f(p.pffRunGrade, 1), 'Rush Grade') +
+    statSq(fp(p.pffBTT), 'Big Time Throw%') +
+    statSq(fp(p.pffTT), 'Turnover Worthy%')
+  );
+  if (p.pos === 'RB') return (
+    statSq(f(p.pffRunGrade, 1), 'Run Grade') +
+    statSq(f(p.pffRecGrade, 1), 'Rec Grade') +
+    statSq(fp(p.pffMissed), 'Missed Tackle%') +
+    statSq(fp(p.pffBA), 'Breakaway%')
+  );
+  if (p.pos === 'WR') return (
+    statSq(f(p.pffRecGrade, 1), 'Rec Grade') +
+    statSq(f(p.pffRouteGrade, 1), 'Route Grade') +
+    statSq(fp(p.pffDrop), 'Drop%') +
+    statSq(fp(p.pffSep), 'Sep%')
+  );
+  if (p.pos === 'TE') return (
+    statSq(f(p.pffRecGrade, 1), 'Rec Grade') +
+    statSq(f(p.pffBlockGrade, 1), 'Block Grade') +
+    statSq(fp(p.pffDrop), 'Drop%') +
+    statSq(fp(p.pffSep), 'Sep%')
+  );
+  return '';
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModalFromList(i) {
+  const p = _lastRenderedList[i];
+  if (!p) return;
+  openModal(p);
+}
+
+function openModal(p) {
+  window._currentModalPlayer = p;
+  if (!p) return;
+  const col = posColor(p.pos);
+  const mx = POS_MAX[p.pos] || 14; const mk = p.markers || 0;
+  const pmx = PFF_MAX[p.pos] || 10; const pmk = p.pff != null ? Math.round(p.pff) : 0;
+  const markers = evalMarkers(p);
+  const list = getFiltered();
+  const rl = rankLabel(p, list);
+  const lg = letterGrade(p.grade);
+
+  let checkHtml = '<div class="marker-checklist">';
+  markers.forEach(m => {
+    checkHtml += '<div class="marker-item ' + (m.hit ? 'hit' : 'miss') + '">';
+    checkHtml += '<div class="marker-icon" style="color:' + (m.hit ? 'var(--green)' : 'var(--red)') + '">' + (m.hit ? '✓' : '✗') + '</div>';
+    checkHtml += '<div style="min-width:0"><div class="marker-text">' + m.label + '</div>';
+    checkHtml += '<div class="marker-actual" style="color:' + (m.hit ? col : 'var(--muted)') + '">' + m.val + '</div></div>';
+    checkHtml += '</div>';
+  });
+  checkHtml += '</div>';
+
+  let pdots = '';
+  for (let i = 0; i < pmx; i++) pdots += '<div class="marker-dot ' + (i < pmk ? 'hit' : 'miss') + '" style="background:' + (i < pmk ? 'var(--accent3)' : '') + '"></div>';
+
+  document.getElementById('modalContent').innerHTML =
+    '<button class="close-btn" onclick="closeModal()">✕</button>' +
+    '<div class="modal-header" style="--pos-color:' + col + '">' +
+      '<div class="modal-avatar" style="border-color:' + col + '">' +
+        hshotImg(p, '', 'width:100%;height:100%;object-fit:cover;object-position:center 20%') +
+        '<div class="modal-avatar-fallback" style="' + (hshotSrc(p) ? 'display:none' : '') + ';color:' + col + '">' + p.pos + '</div>' +
+      '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="modal-pos-badge bg-' + p.pos.toLowerCase() + '">' + p.pos + ' · ' + rl + '</div>' +
+        '<div class="modal-name">' + p.name + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<img src="' + logoSrc(p.school) + '" class="school-logo-modal" alt="" onerror="this.style.display=\'none\'">' +
+          '<div class="modal-school">' + p.school + ' · ' + (p.conf || '') + (p.age ? ' · ' + fmtAge(p.age) : '') + '</div>' +
+        '</div>' +
+        tagHTML(p) +
+      '</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0">' +
+        '<button id="modalShareBtn" onclick="shareModalAsPNG()" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:5px 12px;border-radius:5px;cursor:pointer;font-family:inherit">Share / Save</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-grade-row">' +
+      '<div class="modal-grade-item"><div class="val" style="color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</div><div class="lbl">Final Grade</div></div>' +
+      '<div class="modal-grade-item"><div class="val" style="color:' + lg.c + ';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">' + lg.l + '</div><div class="lbl">Letter Grade</div></div>' +
+      '<div class="modal-grade-item"><div class="val" style="color:' + col + '">' + mk + '/' + mx + '</div><div class="lbl">Markers Hit</div></div>' +
+      '<div class="modal-grade-item"><div class="val" style="color:var(--accent3)">' + pmk + '/' + pmx + '</div><div class="lbl">PFF Markers</div></div>' +
+      '<div class="modal-grade-item"><div class="val" style="color:var(--accent2)">' + (p.round != null ? 'Rd ' + p.round : '—') + '</div><div class="lbl">Draft Round</div></div>' +
+    '</div>' +
+    '<div class="modal-two-col">' +
+      '<div>' +
+        '<div class="modal-section"><div class="modal-section-title">Athleticism & Combine</div>' +
+          '<div class="modal-stats-grid">' +
+            statSq(p.ht != null ? Math.floor(p.ht / 12) + "\'" + (p.ht % 12) + '"' : '—', 'Height') +
+            statSq(p.wt != null ? p.wt + ' lbs' : '—', 'Weight') +
+            statSq(p.dash != null ? p.dash + 's' : '—', '40-Yard Dash', p.dash && p.dash <= 4.4 ? 'var(--green)' : null) +
+            statSq(p.wass != null ? fmt(p.wass, 1) : '—', 'Speed Score', p.wass && p.wass >= 100 ? 'var(--green)' : null) +
+            statSq(p.burst != null ? fmt(p.burst, 1) : '—', 'Burst Score', p.burst && p.burst >= 120 ? 'var(--green)' : null) +
+            statSq(p.bmi != null ? fmt(p.bmi, 2) : '—', 'BMI') +
+          '</div>' +
+        '</div>' +
+        '<div class="modal-section"><div class="modal-section-title">Production</div>' +
+          '<div class="modal-stats-grid">' + posStats(p, col) + '</div>' +
+        '</div>' +
+        (p.nfl_seasons || p.nfl_top5 || p.nfl_top12 ?
+          '<div class="modal-section"><div class="modal-section-title">NFL Career Outcomes</div>' +
+            '<div class="modal-stats-grid">' +
+              statSq(p.nfl_seasons || 0, 'NFL Seasons') +
+              statSq(p.nfl_career_ppg != null ? fmt(p.nfl_career_ppg, 1) : '—', 'Career PPG') +
+              statSq(p.nfl_best_ppg != null ? fmt(p.nfl_best_ppg, 1) : '—', 'Best PPG') +
+              statSq(p.nfl_top5 || 0, 'Top-5 Szns', '#00c2ff') +
+              statSq(p.nfl_top12 || 0, 'Top-12 Szns', 'var(--pos-rb)') +
+              statSq(p.nfl_top24 || 0, 'Top-24 Szns', 'var(--accent2)') +
+              statSq(p.nfl_top36 || 0, 'Top-36 Szns', 'var(--orange)') +
+            '</div>' +
+          '</div>'
+        : '') +
+      '</div>' +
+      '<div>' +
+        '<div class="modal-section"><div class="modal-section-title">Markers — ' + mx + ' Total (' + mk + ' Hit)</div>' + checkHtml + '</div>' +
+        '<div class="modal-section"><div class="modal-section-title">PFF Markers — ' + pmx + ' Total (' + pmk + ' Hit)</div>' +
+          '<div style="margin-bottom:10px"><div class="marker-section-label" style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px">' + pmk + '/' + pmx + ' markers</div>' +
+          '<div class="marker-dots">' + pdots + '</div></div>' +
+          '<div class="modal-stats-grid">' + pffStats(p, col) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">' +
+      '<div class="modal-comps-title">Historical Comps</div>' +
+      '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>' +
+    '</div>';
+
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => renderModalComps(p), 50);
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ============================================================
+// PLAYER GRADES — RENDER
+// ============================================================
+function render() {
+  if (viewMode === 'cards') {
+    renderCards();
+    document.getElementById('cardsContainer').style.display = 'grid';
+    document.getElementById('tableContainer').style.display = 'none';
+  } else {
+    renderTable();
+    document.getElementById('cardsContainer').style.display = 'none';
+    document.getElementById('tableContainer').style.display = 'block';
+  }
+}
+
+function getFiltered() {
+  const data = activeYear === 2026 ? PLAYERS : (yearCache[activeYear] || PLAYERS);
+  return data.filter(p => {
+    if (currentPos !== 'ALL' && p.pos !== currentPos) return false;
+    if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (currentLabel !== 'ALL') {
+      const tag = getTag(p);
+      if (!tag || tag.label !== currentLabel) return false;
+    }
+    if (currentSchool !== 'ALL' && p.school !== currentSchool) return false;
+    return true;
+  }).sort((a, b) => {
+    if (currentSort === 'grade')   return (b.grade || 0) - (a.grade || 0);
+    if (currentSort === 'markers') return (b.markers || 0) - (a.markers || 0);
+    if (currentSort === 'age')     return (a.age || 99) - (b.age || 99);
+    if (currentSort === 'name')    return a.name.localeCompare(b.name);
+    if (currentSort === 'draft')   return (a.overall || 999) - (b.overall || 999);
+    return dynastySort(b) - dynastySort(a);
+  });
+}
+
+function renderCards() {
+  const list = getFiltered();
+  _lastRenderedList = list;
+  const container = document.getElementById('cardsContainer');
+  if (!list.length) {
+    document.getElementById('emptyState').style.display = 'block';
+    container.innerHTML = '';
+    return;
+  }
+  document.getElementById('emptyState').style.display = 'none';
+  let html = '';
+  list.forEach((p, i) => {
+    const col = posColor(p.pos);
+    const mx = POS_MAX[p.pos] || 14; const mk = p.markers || 0;
+    const pmx = PFF_MAX[p.pos] || 10; const pmk = p.pff != null ? Math.round(p.pff) : 0;
+    const g = p.grade || 0;
+    const lg = letterGrade(g);
+    let dots = ''; for (let d = 0; d < mx; d++) dots += '<div class="marker-dot ' + (d < mk ? 'hit' : 'miss') + '" style="background:' + (d < mk ? col : '') + '"></div>';
+    let pdots = ''; for (let d = 0; d < pmx; d++) pdots += '<div class="marker-dot ' + (d < pmk ? 'hit' : 'miss') + '" style="background:' + (d < pmk ? 'var(--accent3)' : '') + '"></div>';
+    const metrics =
+      statSq(p.dash != null ? p.dash + 's' : '—', '40 Dash') +
+      statSq(p.wass != null ? fmt(p.wass, 1) : '—', 'Speed Sc') +
+      statSq(fmt(p.bestPPG, 1), 'Best PPG');
+    html += '<div class="player-card" style="--pos-color:' + col + ';animation-delay:' + (i * 0.03) + 's" onclick="openModalFromList(' + i + ')">';
+    html += '<div class="card-header">';
+    html += '<div class="card-headshot">' + hshotImg(p, 'card-headshot-img', '') + '<div class="card-headshot-fallback" style="' + (hshotSrc(p) ? 'display:none' : '') + ';color:' + col + '">' + p.pos + '</div></div>';
+    html += '<div class="card-info">';
+    html += '<div class="card-pos-badge bg-' + p.pos.toLowerCase() + '">' + p.pos + '</div>';
+    html += '<div class="card-name">' + p.name + '</div>';
+    html += '<div class="card-school">' + (p.school || '') + '</div>';
+    html += '</div>';
+    html += '<div class="card-grade" style="color:' + lg.c + '">' + lg.l + '</div>';
+    html += '</div>';
+    html += '<div class="card-body">';
+    html += '<div class="grade-label">Final Grade</div>';
+    html += '<div class="grade-value" style="color:' + gradeColor(g) + '">' + (g ? fmt(g, 1) : '—') + '</div>';
+    html += '<div class="grade-bar-track"><div class="grade-bar-fill" style="width:' + Math.min(g, 100) + '%;background:' + lg.c + '"></div></div>';
+    html += '</div>';
+    html += '<div class="marker-section"><div class="marker-section-label">Markers ' + mk + '/' + mx + '</div><div class="marker-dots">' + dots + '</div></div>';
+    html += '<div class="marker-section" style="margin-top:8px"><div class="marker-section-label">PFF Markers ' + pmk + '/' + pmx + '</div><div class="marker-dots">' + pdots + '</div></div>';
+    const tag = tagHTML(p);
+    html += tag || '<div style="height:38px"></div>';
+    html += '<div class="card-metrics">' + metrics + '</div>';
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderTable() {
+  const list = getFiltered();
+  _lastRenderedList = list;
+  if (!list.length) { document.getElementById('tableBody').innerHTML = ''; document.getElementById('emptyState').style.display = 'block'; return; }
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('tableHead').innerHTML = '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Markers</th><th>PFF Mkrs</th><th>Grade</th><th>Ltr</th><th>Label</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
+  let html = '';
+  list.forEach((p, i) => {
+    const col = posColor(p.pos);
+    const lg = letterGrade(p.grade);
+    const rowTag = getTag(p);
+    html += '<tr onclick="openModalFromList(' + i + ')">';
+    html += '<td style="color:var(--muted)">' + (i + 1) + '</td>';
+    html += '<td class="table-name-cell" style="font-weight:700">' + p.name + '</td>';
+    html += '<td style="color:var(--muted)">' + (p.school || '—') + '</td>';
+    html += '<td style="color:' + col + ';font-weight:700;font-size:13px">' + p.pos + '</td>';
+    html += '<td>' + fmtAge(p.age) + '</td>';
+    html += '<td style="font-weight:700;color:' + col + '">' + (p.markers || '—') + '</td>';
+    html += '<td style="font-weight:700;color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</td>';
+    html += '<td style="font-weight:700;color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</td>';
+    html += '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:13px;color:' + lg.c + '">' + lg.l + '</td>';
+    html += '<td>' + (rowTag ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:13px;font-weight:700;letter-spacing:.5px;white-space:nowrap;color:' + rowTag.color + ';background:' + rowTag.color + '18;border:1px solid ' + rowTag.color + '44">' + rowTag.icon + ' ' + rowTag.label + '</span>' : '<span style="color:var(--muted);font-size:13px">—</span>') + '</td>';
+    html += '<td style="color:var(--muted)">' + (p.overall != null ? '#' + p.overall : '—') + '</td>';
+    html += '<td>' + (p.ht != null ? Math.floor(p.ht / 12) + "\'" + (p.ht % 12) + '"' : '—') + '</td>';
+    html += '<td>' + (p.dash != null ? p.dash + 's' : '—') + '</td>';
+    html += '<td style="color:var(--accent2)">' + (p.wass != null ? fmt(p.wass, 1) : '—') + '</td>';
+    html += '<td style="color:var(--accent2)">' + fmt(p.bestPPG, 1) + '</td>';
+    html += '</tr>';
+  });
+  document.getElementById('tableBody').innerHTML = html;
+}
+
+function renderHeroStats() {
+  const avg = ALL_CLASS_AVGS[activeYear] || 0;
+  const data = activeYear === 2026 ? PLAYERS : (yearCache[activeYear] || []);
+  const graded = data.filter(p => p.grade).length;
+  document.getElementById('heroTitle').innerHTML = activeYear + ' <span>ROOKIE DRAFT CLASS</span>';
+  const el = document.getElementById('heroStats');
+  if (el) el.innerHTML =
+    '<div class="hero-stat"><div class="hero-stat-val">' + graded + '</div><div class="hero-stat-lbl">Graded</div></div>' +
+    '<div class="hero-stat"><div class="hero-stat-val">' + fmt(avg, 1) + '</div><div class="hero-stat-lbl">Top-50 Avg</div></div>';
+}
+
+// ============================================================
+// YEAR TABS
+// ============================================================
+function buildYearTabs() {
+  [document.getElementById('yearBar'), document.getElementById('rankingsYearBar')].forEach(bar => {
+    if (!bar) return;
+    bar.innerHTML = (bar.innerHTML || '');
+    YEARS.forEach(yr => {
+      const btn = document.createElement('button');
+      btn.className = 'year-tab' + (yr === activeYear ? ' active' : '');
+      btn.dataset.yr = yr;
+      btn.textContent = yr;
+      btn.addEventListener('click', () => switchYear(yr));
+      bar.appendChild(btn);
+    });
+  });
+}
+
+async function switchYear(yr) {
+  if (yr === activeYear) return;
+  activeYear = yr;
+  document.querySelectorAll('.year-tab').forEach(b => b.classList.toggle('active', parseInt(b.dataset.yr) === yr));
+  document.getElementById('heroTitle').innerHTML = yr + ' <span>ROOKIE DRAFT CLASS</span>';
+  currentPos = 'ALL'; currentSort = 'rank'; searchQuery = ''; currentLabel = 'ALL'; currentSchool = 'ALL';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === 'ALL'));
+  document.getElementById('searchBox').value = '';
+  document.getElementById('sortSelect').value = 'rank';
+  document.getElementById('labelFilter').value = 'ALL';
+  document.getElementById('schoolFilter').value = 'ALL';
+
+  if (!yearCache[yr]) {
+    try {
+      const res = await fetch('data/' + yr + '.json?v=3');
+      const _d = await res.json();
+      _d.forEach(p => { if (!p.year) p.year = yr; });
+      yearCache[yr] = _d;
+    } catch (e) { return; }
+  }
+
+  const schools = [...new Set(yearCache[yr].map(p => p.school).filter(Boolean))].sort();
+  const sel = document.getElementById('schoolFilter');
+  sel.innerHTML = '<option value="ALL">All Schools</option>';
+  schools.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+
+  renderHeroStats();
+  render();
+  if (activePage === 'rankings') renderRankings();
+  allPlayersCache = null;
+  if (NFL_LOOKUP && yearCache[yr]) enrichPlayersWithNFL(yearCache[yr], yr);
+}
+
+// ============================================================
+// EVENT LISTENERS — PLAYER GRADES
+// ============================================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPos = btn.dataset.pos;
+    render();
+  });
+});
+document.getElementById('searchBox').addEventListener('input', e => { searchQuery = e.target.value.trim(); render(); });
+document.getElementById('schoolFilter').addEventListener('change', e => { currentSchool = e.target.value; render(); });
+document.getElementById('labelFilter').addEventListener('change', e => { currentLabel = e.target.value; render(); });
+document.getElementById('sortSelect').addEventListener('change', e => { currentSort = e.target.value; render(); });
+document.getElementById('cardViewBtn').addEventListener('click', () => { viewMode = 'cards'; document.getElementById('cardViewBtn').classList.add('active'); document.getElementById('tableViewBtn').classList.remove('active'); render(); });
+document.getElementById('tableViewBtn').addEventListener('click', () => { viewMode = 'table'; document.getElementById('tableViewBtn').classList.add('active'); document.getElementById('cardViewBtn').classList.remove('active'); render(); });
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ============================================================
+// DYNASTY RANKINGS
+// ============================================================
+const POSITIVE_LABELS = new Set([
+  'Greatest Prospect Since...', 'Late-Round Target',
+  "Fine, I'll Do It Myself", 'Try To Tackle Me', 'The McConkey List',
+  'Zone Crusher', 'The Bowers List', 'Analytical Darling', 'You Have My Attention',
+  'The Overlooked', 'Breakout Waiting', 'Stealth Weapon', 'Late Bloomer',
+  'High Floor', 'Athletic Freak', 'The Sleeper'
+]);
+const FADE_LABELS = new Set([
+  'ADP Trap', 'Overvalued', 'The Hype Train', 'One-Year Wonder',
+  'System Product', 'Injury Risk', 'Red Flag', 'Scheme Dependent',
+  'Age Concern', 'Developmental Project', 'Pass Catcher Only'
+]);
+const REACH_THRESHOLDS = {1: 30, 2: 50, 3: 65};
+
+function classifyPlayer(p, format) {
+  const grade = p.grade || 0;
+  const rd = p.round;
+  const tag = getTag(p);
+  const label = tag ? tag.label : null;
+  if (rd === 8) return null;
+  if (label && FADE_LABELS.has(label)) return { type: 'fade', reason: tag.icon + ' ' + label };
+  if (rd && REACH_THRESHOLDS[rd] && grade < REACH_THRESHOLDS[rd]) return { type: 'fade', reason: 'Rd ' + rd + ' reach (' + grade.toFixed(1) + ' grade)' };
+  if (rd && rd <= 2 && grade < 50 && (!label || !POSITIVE_LABELS.has(label))) return { type: 'fade', reason: 'Rd ' + rd + ' pick, grade only ' + grade.toFixed(1) };
+  if (grade >= 80) return { type: 'target', reason: 'Elite grade (' + grade.toFixed(1) + ')' };
+  if (grade >= 70 && label && POSITIVE_LABELS.has(label)) return { type: 'target', reason: (tag ? tag.icon + ' ' : '') + label };
+  if (label && POSITIVE_LABELS.has(label)) return { type: 'target', reason: (tag ? tag.icon + ' ' : '') + label };
+  return null;
+}
+
+function renderTargetsFades(players, format) {
+  const targets = [], fades = [];
+  players.forEach(p => {
+    const c = classifyPlayer(p, format);
+    if (!c) return;
+    const score = dynastySortForFormat(p, format);
+    if (c.type === 'target') targets.push({ p, reason: c.reason, score });
+    else fades.push({ p, reason: c.reason, score });
+  });
+  targets.sort((a, b) => b.score - a.score);
+  fades.sort((a, b) => a.score - b.score);
+
+  const chip = (item) => {
+    const col = posColor(item.p.pos);
+    return '<div class="tf-chip" onclick="openModal(' + JSON.stringify(item.p).replace(/"/g, '&quot;') + ')" style="border-color:' + col + '44">' +
+      '<span class="tf-chip-name" style="color:' + col + '">' + item.p.name + '</span>' +
+      '<span class="tf-chip-reason">' + item.reason + '</span>' +
+      '</div>';
+  };
+
+  document.getElementById('tfTargets').innerHTML = targets.map(chip).join('') || '<span style="color:var(--muted);font-size:13px">None</span>';
+  document.getElementById('tfFades').innerHTML = fades.map(chip).join('') || '<span style="color:var(--muted);font-size:13px">None</span>';
+  const el = document.getElementById('tfCounts');
+  if (el) el.textContent = '(' + targets.length + ' targets · ' + fades.length + ' fades)';
+}
+
+function renderRankings() {
+  const data = activeYear === 2026 ? PLAYERS : (yearCache[activeYear] || []);
+  const filtered = data.filter(p => p.grade && p.grade > 0);
+  const sorted = filtered.sort((a, b) => dynastySortForFormat(b, currentFormat) - dynastySortForFormat(a, currentFormat));
+
+  const posColors = { QB: 'var(--pos-qb)', RB: 'var(--pos-rb)', WR: 'var(--pos-wr)', TE: 'var(--pos-te)' };
+  document.getElementById('rankingsHead').innerHTML =
+    '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
+
+  let html = '', rank = 0, lastPos = null;
+  sorted.forEach(p => {
+    rank++;
+    const col = posColors[p.pos] || 'var(--accent)';
+    const lg = letterGrade(p.grade);
+    const tag = getTag(p);
+    const logo = logoSrc(p.school) || '';
+    html += '<tr onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
+    html += '<td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">' + rank + '</td>';
+    html += '<td style="font-weight:700">' + p.name + '</td>';
+    html += '<td><img src="' + logo + '" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">' + (p.school || '') + '</td>';
+    html += '<td style="color:' + col + ';font-weight:700;font-size:13px">' + p.pos + '</td>';
+    html += '<td>' + (p.age ? fmtAge(p.age) : '—') + '</td>';
+    html += '<td>' + (p.round ? 'Rd ' + p.round : '—') + '</td>';
+    html += '<td style="color:' + lg.c + ';font-weight:700">' + fmt(p.grade, 1) + '</td>';
+    html += '<td style="color:' + col + '">' + (p.markers || 0) + '</td>';
+    html += '<td style="color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</td>';
+    html += '<td>' + (tag ? '<span style="color:' + tag.color + ';font-size:13px;font-weight:700">' + tag.icon + ' ' + tag.label + '</span>' : '—') + '</td>';
+    html += '</tr>';
+  });
+  document.getElementById('rankingsBody').innerHTML = html;
+  renderTargetsFades(sorted, currentFormat);
+}
+
+document.getElementById('tfToggle').addEventListener('click', () => {
+  const btn = document.getElementById('tfToggle');
+  const body = document.getElementById('tfBody');
+  btn.classList.toggle('open');
+  body.classList.toggle('open');
+  const icon = btn.querySelector('.tf-toggle-icon');
+  if (icon) icon.textContent = btn.classList.contains('open') ? '▼' : '▶';
+});
+
+document.querySelectorAll('.format-btn[data-format]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.format-btn[data-format]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentFormat = b.dataset.format;
+    if (activePage === 'rankings') renderRankings();
+  });
+});
+
+// ============================================================
+// PLAYER COMPARISON
+// ============================================================
+let compPlayers = [null, null, null, null];
+
+async function getAllPlayers() {
+  if (allPlayersCache) return allPlayersCache;
+  let all = [...PLAYERS];
+  for (const yr of YEARS.filter(y => y !== 2026)) {
+    if (!yearCache[yr]) {
+      try {
+        const res = await fetch('data/' + yr + '.json?v=3');
+        const _d = await res.json();
+        _d.forEach(p => { if (!p.year) p.year = yr; });
+        yearCache[yr] = _d;
+      } catch (e) { yearCache[yr] = []; }
+    }
+    all = all.concat(yearCache[yr].map(p => ({ ...p, year: yr })));
+  }
+  allPlayersCache = all;
+  return all;
+}
+
+function renderComparison() {
+  const container = document.getElementById('compGrid');
+  if (!container) return;
+  const slots = [1, 2, 3, 4];
+  let html = '';
+  slots.forEach((s, i) => {
+    const p = compPlayers[i];
+    html += '<div class="comp-slot" id="compSlot' + s + '">';
+    if (p) {
+      const col = posColor(p.pos);
+      const lg = letterGrade(p.grade);
+      html += '<div class="comp-card" style="--pos-color:' + col + '" onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+      html += hshotImg(p, 'comp-headshot', '');
+      html += '<div><div style="font-size:13px;font-weight:700;color:' + col + '">' + p.pos + ' · ' + (p.year || activeYear) + '</div>';
+      html += '<div style="font-size:16px;font-weight:700">' + p.name + '</div>';
+      html += '<div style="font-size:11px;color:var(--muted)">' + (p.school || '') + '</div></div>';
+      html += '<div style="margin-left:auto;text-align:right"><div style="font-size:24px;font-weight:700;color:' + lg.c + '">' + lg.l + '</div>';
+      html += '<div style="font-size:13px;color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</div></div></div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">';
+      html += '<div style="color:var(--muted)">Markers</div><div style="font-weight:700;color:' + col + '">' + (p.markers || 0) + '/' + (POS_MAX[p.pos] || 14) + '</div>';
+      html += '<div style="color:var(--muted)">PFF</div><div style="font-weight:700;color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</div>';
+      html += '<div style="color:var(--muted)">40-Yd</div><div>' + (p.dash ? p.dash + 's' : '—') + '</div>';
+      html += '<div style="color:var(--muted)">Speed Sc</div><div>' + (p.wass ? fmt(p.wass, 1) : '—') + '</div>';
+      html += '</div>';
+      html += '<button onclick="event.stopPropagation();compPlayers[' + i + ']=null;renderComparison()" style="margin-top:10px;width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:4px;border-radius:4px;cursor:pointer;font-size:11px">Remove</button>';
+      html += '</div>';
+    } else {
+      html += '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:8px;padding:20px;min-height:120px">+ Add Player ' + s + '</div>';
+    }
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+[1, 2, 3, 4].forEach(s => {
+  const input = document.getElementById('compSearch' + s);
+  const dropdown = document.getElementById('compDropdown' + s);
+  if (!input || !dropdown) return;
+  input.addEventListener('input', async () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { dropdown.classList.remove('open'); return; }
+    const all = await getAllPlayers();
+    const results = all.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
+    dropdown.innerHTML = results.map(p =>
+      '<div class="comp-dropdown-item" style="cursor:pointer;padding:8px 12px;font-size:13px" ' +
+      'onclick="compPlayers[' + (s - 1) + ']=' + JSON.stringify(p).replace(/"/g, '&quot;') + ';document.getElementById(\'compSearch' + s + '\').value=\'' + p.name.replace(/'/g, "\\'") + ' (' + (p.year || activeYear) + ')\';document.getElementById(\'compDropdown' + s + '\').classList.remove(\'open\');renderComparison()">' +
+      '<span style="color:' + posColor(p.pos) + ';font-weight:700">' + p.pos + '</span> ' + p.name +
+      ' <span style="color:var(--muted)">' + (p.school || '') + ' · ' + (p.year || activeYear) + '</span>' +
+      '</div>'
+    ).join('');
+    dropdown.classList.toggle('open', results.length > 0);
+  });
+});
+
+// ============================================================
+// STAT EXPLORER
+// ============================================================
+const EXPLORER_METRICS = {
+  QB: [
+    {group:'Passing', metrics:[
+      {k:'careerPYd',  l:'Career Pass Yds',  fmt:'int', min:0, max:15000},
+      {k:'careerYPG',  l:'Pass YPG',         fmt:'dec', min:0, max:350},
+      {k:'careerPAPG', l:'Pass Att/G',       fmt:'dec', min:0, max:45},
+      {k:'careerCMP',  l:'Career CMP%',      fmt:'pct', min:0.5, max:0.8},
+      {k:'careerPTD',  l:'Career Pass TDs',  fmt:'int', min:0, max:120},
+      {k:'careerINT',  l:'Career INTs',      fmt:'int', min:0, max:40},
+      {k:'careerYPA',  l:'Career YPA',       fmt:'dec', min:6, max:12},
+      {k:'bestPYd',    l:'Best Season PYds', fmt:'int', min:0, max:5500},
+      {k:'bestPPG',    l:'Best PPG',         fmt:'dec', min:0, max:40},
+    ]},
+    {group:'Rushing', metrics:[
+      {k:'careerRuYd', l:'Career Rush Yds',  fmt:'int', min:0, max:3000},
+      {k:'careerRuYPG',l:'Rush YPG',         fmt:'dec', min:0, max:60},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'ht',   l:'Height (in)',  fmt:'int', min:68, max:80},
+      {k:'wt',   l:'Weight (lbs)', fmt:'int', min:190, max:260},
+      {k:'dash', l:'40-Yd Dash',  fmt:'dec', min:4.4, max:5.2},
+      {k:'grade',l:'Final Grade',  fmt:'dec', min:0, max:100},
+      {k:'pff',  l:'PFF Markers', fmt:'int', min:0, max:10},
+    ]},
+  ],
+  RB: [
+    {group:'Production', metrics:[
+      {k:'ypc',         l:'YPC',              fmt:'dec', min:3, max:8},
+      {k:'yptp',        l:'YPTP',             fmt:'dec', min:0, max:0.5},
+      {k:'bestTotalYds',l:'Best Total Yds',   fmt:'int', min:0, max:2500},
+      {k:'bestRec',     l:'Best Receptions',  fmt:'int', min:0, max:80},
+      {k:'careerYACO',  l:'Career YACO',      fmt:'dec', min:0, max:5},
+      {k:'careerYPRR',  l:'Career YPRR',      fmt:'dec', min:0, max:3},
+      {k:'bestPPG',     l:'Best PPG',         fmt:'dec', min:0, max:40},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'ht',    l:'Height (in)',  fmt:'int', min:64, max:76},
+      {k:'wt',    l:'Weight (lbs)', fmt:'int', min:180, max:240},
+      {k:'dash',  l:'40-Yd Dash',  fmt:'dec', min:4.2, max:4.8},
+      {k:'wass',  l:'Speed Score', fmt:'dec', min:80, max:140},
+      {k:'burst', l:'Burst Score', fmt:'dec', min:90, max:150},
+      {k:'grade', l:'Final Grade', fmt:'dec', min:0, max:100},
+      {k:'pff',   l:'PFF Markers', fmt:'int', min:0, max:12},
+    ]},
+  ],
+  WR: [
+    {group:'Production', metrics:[
+      {k:'bestYPTPA',     l:'Best YPTPA',     fmt:'dec', min:0, max:6},
+      {k:'bestMSYards',   l:'Best MS Yards',  fmt:'pct', min:0.1, max:0.6},
+      {k:'careerYPRR',    l:'Career YPRR',    fmt:'dec', min:0, max:4},
+      {k:'careerYPRRzone',l:'YPRR Zone',      fmt:'dec', min:0, max:4},
+      {k:'careerTPRR',    l:'Career TPRR',    fmt:'pct', min:0.1, max:0.5},
+      {k:'careerYACR',    l:'Career YACR',    fmt:'dec', min:0, max:5},
+      {k:'boy20',         l:'BOY20 Year',     fmt:'int', min:1, max:5},
+      {k:'boy30',         l:'BOY30 Year',     fmt:'int', min:1, max:5},
+      {k:'bestPPG',       l:'Best PPG',       fmt:'dec', min:0, max:40},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'ht',    l:'Height (in)',  fmt:'int', min:66, max:79},
+      {k:'wt',    l:'Weight (lbs)', fmt:'int', min:170, max:230},
+      {k:'dash',  l:'40-Yd Dash',  fmt:'dec', min:4.2, max:4.7},
+      {k:'wass',  l:'Speed Score', fmt:'dec', min:85, max:140},
+      {k:'burst', l:'Burst Score', fmt:'dec', min:90, max:150},
+      {k:'grade', l:'Final Grade', fmt:'dec', min:0, max:100},
+      {k:'pff',   l:'PFF Markers', fmt:'int', min:0, max:17},
+    ]},
+  ],
+  TE: [
+    {group:'Production', metrics:[
+      {k:'bestYPTPA',   l:'Best YPTPA',    fmt:'dec', min:0, max:5},
+      {k:'bestMSYards', l:'Best MS Yards', fmt:'pct', min:0.05, max:0.4},
+      {k:'careerYPG',   l:'Career YPG',   fmt:'dec', min:0, max:100},
+      {k:'careerYPRR',  l:'Career YPRR',  fmt:'dec', min:0, max:3},
+      {k:'careerTPRR',  l:'Career TPRR',  fmt:'pct', min:0.05, max:0.4},
+      {k:'avgPassBlock',l:'Pass Block',   fmt:'dec', min:50, max:90},
+      {k:'boy15',       l:'BOY15 Year',   fmt:'int', min:1, max:5},
+      {k:'boy20',       l:'BOY20 Year',   fmt:'int', min:1, max:5},
+      {k:'bestPPG',     l:'Best PPG',     fmt:'dec', min:0, max:30},
+    ]},
+    {group:'Measurables', metrics:[
+      {k:'ht',    l:'Height (in)',  fmt:'int', min:72, max:82},
+      {k:'wt',    l:'Weight (lbs)', fmt:'int', min:230, max:280},
+      {k:'dash',  l:'40-Yd Dash',  fmt:'dec', min:4.4, max:5.0},
+      {k:'wass',  l:'Speed Score', fmt:'dec', min:80, max:130},
+      {k:'burst', l:'Burst Score', fmt:'dec', min:85, max:140},
+      {k:'grade', l:'Final Grade', fmt:'dec', min:0, max:100},
+      {k:'pff',   l:'PFF Markers', fmt:'int', min:0, max:10},
+    ]},
+  ],
+};
+
+let explorerPos = 'WR';
+let explorerFilters = [];
+let explorerYears = new Set([2026]);
+const ALL_YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010];
+
+function buildExplorerYears() {
+  const wrap = document.getElementById('explorerYearBtns');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  ALL_YEARS.forEach(yr => {
+    const btn = document.createElement('button');
+    btn.className = 'explorer-year-btn' + (explorerYears.has(yr) ? ' active' : '');
+    btn.textContent = yr;
+    btn.addEventListener('click', async () => {
+      if (explorerYears.has(yr)) { if (explorerYears.size > 1) { explorerYears.delete(yr); btn.classList.remove('active'); } }
+      else {
+        explorerYears.add(yr);
+        btn.classList.add('active');
+        if (!yearCache[yr]) {
+          try {
+            const res = await fetch('data/' + yr + '.json?v=3');
+            const _d = await res.json();
+            _d.forEach(p => { if (!p.year) p.year = yr; });
+            yearCache[yr] = _d;
+          } catch (e) { yearCache[yr] = []; }
+        }
+      }
+      explorerRender();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+function renderExplorerFilters() {
+  const container = document.getElementById('explorerActiveFilters');
+  if (!container) return;
+  container.innerHTML = explorerFilters.map((f, i) =>
+    '<div class="explorer-filter-pill">' +
+      '<span>' + f.l + '</span>' +
+      '<input type="number" class="explorer-num-input" value="' + f.lo + '" step="' + (f.fmt === 'pct' ? '0.01' : f.fmt === 'dec' ? '0.1' : '1') + '" onchange="explorerFilters[' + i + '].lo=+this.value;explorerRender()">' +
+      '<span style="color:var(--muted)">–</span>' +
+      '<input type="number" class="explorer-num-input" value="' + f.hi + '" step="' + (f.fmt === 'pct' ? '0.01' : f.fmt === 'dec' ? '0.1' : '1') + '" onchange="explorerFilters[' + i + '].hi=+this.value;explorerRender()">' +
+      '<button class="explorer-filter-remove" onclick="explorerFilters.splice(' + i + ',1);renderExplorerFilters();explorerRender()">✕</button>' +
+    '</div>'
+  ).join('');
+}
+
+async function explorerRender() {
+  let players = [];
+  for (const yr of explorerYears) {
+    let data = yr === 2026 ? PLAYERS : yearCache[yr];
+    if (!data) {
+      try {
+        const res = await fetch('data/' + yr + '.json?v=3');
+        const _d = await res.json();
+        _d.forEach(p => { if (!p.year) p.year = yr; });
+        yearCache[yr] = _d; data = _d;
+      } catch (e) { data = []; }
+    }
+    players = players.concat(data.filter(p => p.pos === explorerPos).map(p => ({ ...p, year: yr })));
+  }
+
+  explorerFilters.forEach(f => {
+    players = players.filter(p => {
+      const v = p[f.k];
+      if (v == null) return false;
+      return v >= f.lo && v <= f.hi;
+    });
+  });
+
+  players.sort((a, b) => (b.grade || 0) - (a.grade || 0));
+
+  const container = document.getElementById('explorerResults');
+  if (!container) return;
+  if (!players.length) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No players match these filters.</div>';
+    return;
+  }
+
+  let html = '';
+  players.forEach((p, i) => {
+    const col = posColor(p.pos);
+    const lg = letterGrade(p.grade);
+    html += '<div class="explorer-result-card" onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
+    html += hshotImg(p, 'explorer-headshot', '');
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:11px;color:' + col + ';font-weight:700">' + p.pos + ' · ' + (p.year || activeYear) + '</div>';
+    html += '<div style="font-size:15px;font-weight:700">' + p.name + '</div>';
+    html += '<div style="font-size:11px;color:var(--muted)">' + (p.school || '') + '</div>';
+    html += '</div>';
+    html += '<div style="text-align:right">';
+    html += '<div style="font-size:22px;font-weight:700;color:' + lg.c + '">' + lg.l + '</div>';
+    html += '<div style="font-size:13px;color:' + gradeColor(p.grade) + '">' + (p.grade ? fmt(p.grade, 1) : '—') + '</div>';
+    html += '</div></div>';
+    explorerFilters.forEach(f => {
+      const v = p[f.k];
+      html += '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px">' +
+        '<span style="color:var(--muted)">' + f.l + '</span>' +
+        '<span style="font-weight:700">' + (v != null ? (f.fmt === 'pct' ? fmtPct(v) : fmt(v, f.fmt === 'int' ? 0 : 1)) : '—') + '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// Explorer position buttons
+document.querySelectorAll('.explorer-pos-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.explorer-pos-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    explorerPos = btn.dataset.pos;
+    explorerFilters = [];
+    renderExplorerFilters();
+    explorerRender();
+  });
+});
+
+// Explorer metric picker — event delegation
+document.getElementById('explorerAddMetric').addEventListener('click', () => {
+  const picker = document.getElementById('explorerPicker');
+  if (picker.style.display !== 'none') { picker.style.display = 'none'; return; }
+  const metrics = EXPLORER_METRICS[explorerPos] || [];
+  const activeKeys = new Set(explorerFilters.map(f => f.k));
+  picker.innerHTML = metrics.map(grp =>
+    '<div class="explorer-picker-group">' + grp.group + '</div>' +
+    grp.metrics.map(m =>
+      '<div class="explorer-picker-item' + (activeKeys.has(m.k) ? ' selected' : '') + '" data-k="' + m.k + '">' + m.l + (activeKeys.has(m.k) ? ' ✓' : '') + '</div>'
+    ).join('')
+  ).join('');
+  picker.style.display = 'block';
+});
+
+document.getElementById('explorerPicker').addEventListener('click', e => {
+  const item = e.target.closest('.explorer-picker-item');
+  if (!item || item.classList.contains('selected')) return;
+  const k = item.dataset.k;
+  const allM = [].concat(...(EXPLORER_METRICS[explorerPos] || []).map(g => g.metrics));
+  const meta = allM.find(m => m.k === k);
+  if (!meta) return;
+  explorerFilters.push({ ...meta, lo: meta.min, hi: meta.max });
+  document.getElementById('explorerPicker').style.display = 'none';
+  renderExplorerFilters();
+  explorerRender();
+});
+
+document.addEventListener('click', e => {
+  const picker = document.getElementById('explorerPicker');
+  const addBtn = document.getElementById('explorerAddMetric');
+  if (picker && !picker.contains(e.target) && e.target !== addBtn) picker.style.display = 'none';
+});
+
+document.getElementById('explorerReset').addEventListener('click', () => {
+  explorerFilters = [];
+  explorerYears = new Set([2026]);
+  document.querySelectorAll('.explorer-year-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === 2026));
+  renderExplorerFilters();
+  explorerRender();
+});
+
+// ============================================================
+// CLASS BREAKDOWN
+// ============================================================
+async function loadAndRenderBreakdown() {
+  const yr = activeYear;
+  if (!yearCache[yr]) {
+    try {
+      const res = await fetch('data/' + yr + '.json?v=3');
+      const _d = await res.json();
+      _d.forEach(p => { if (!p.year) p.year = yr; });
+      yearCache[yr] = _d;
+    } catch (e) { return; }
+  }
+  renderBreakdown(yearCache[yr], yr);
+}
+
+function renderBreakdown(players, yr) {
+  const byPos = { QB: [], RB: [], WR: [], TE: [] };
+  players.filter(p => p.grade).forEach(p => {
+    if (byPos[p.pos]) byPos[p.pos].push(p);
+  });
+
+  const posColors = { QB: '#7b61ff', RB: '#00e88a', WR: '#00c2ff', TE: '#ff8c42' };
+  const avgGrade = p => p.length ? p.reduce((s, x) => s + x.grade, 0) / p.length : 0;
+
+  // Position chart
+  const posCtx = document.getElementById('posBreakdownChart');
+  if (posCtx) {
+    if (posCtx._chartInstance) posCtx._chartInstance.destroy();
+    posCtx._chartInstance = new Chart(posCtx, {
+      type: 'bar',
+      data: {
+        labels: ['QB', 'RB', 'WR', 'TE'],
+        datasets: [{
+          label: 'Avg Grade',
+          data: ['QB','RB','WR','TE'].map(pos => parseFloat(avgGrade(byPos[pos]).toFixed(1))),
+          backgroundColor: ['#7b61ff','#00e88a','#00c2ff','#ff8c42'],
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#5a6478' }, grid: { color: '#1e2530' } },
+          y: { ticks: { color: '#5a6478' }, grid: { color: '#1e2530' }, min: 0, max: 100 }
+        }
+      }
+    });
+  }
+
+  // Table
+  const tbody = document.getElementById('breakdownBody');
+  if (!tbody) return;
+  const allGraded = players.filter(p => p.grade).sort((a, b) => b.grade - a.grade);
+  let html = '';
+  allGraded.forEach((p, i) => {
+    const col = posColors[p.pos] || '#e8edf3';
+    const lg = letterGrade(p.grade);
+    html += '<tr onclick="openModal(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">';
+    html += '<td style="color:var(--muted)">' + (i + 1) + '</td>';
+    html += '<td style="font-weight:700">' + p.name + '</td>';
+    html += '<td style="color:' + col + ';font-weight:700">' + p.pos + '</td>';
+    html += '<td style="color:' + gradeColor(p.grade) + ';font-weight:700">' + fmt(p.grade, 1) + '</td>';
+    html += '<td style="color:' + lg.c + '">' + lg.l + '</td>';
+    html += '<td>' + (p.markers || 0) + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+// ============================================================
+// GLOSSARY
+// ============================================================
+const GLOSSARY_TERMS = [
+  {term:'BOY15',cat:'TE',def:'Best Output Year with 15+ receptions — earliest year a TE exceeded 15 catches.'},
+  {term:'BOY20',cat:'WR/TE',def:'Best Output Year with 20+ receptions.'},
+  {term:'BOY30',cat:'WR',def:'Best Output Year with 30+ receptions.'},
+  {term:'YPTPA',cat:'WR/TE',def:'Yards Per Target Per Attempt — efficiency metric combining receiving yards, targets, and attempts.'},
+  {term:'YPRR',cat:'WR/TE',def:'Yards Per Route Run — receiving yards divided by total routes run.'},
+  {term:'TPRR',cat:'WR/TE',def:'Targets Per Route Run — target share per route.'},
+  {term:'YACR',cat:'WR',def:'Yards After Contact per Reception.'},
+  {term:'MS Yards',cat:'WR/TE',def:'Market Share of team receiving yards — measures target opportunity quality.'},
+  {term:'YPC',cat:'RB',def:'Yards Per Carry — rushing efficiency.'},
+  {term:'YPTP',cat:'RB',def:'Yards Per Touch Per Pound — efficiency weighted by body weight.'},
+  {term:'YACO',cat:'RB',def:'Yards After Contact per Opportunity — contact balance.'},
+  {term:'BA%',cat:'RB',def:'Breakaway percentage — portion of rushes going for 15+ yards.'},
+  {term:'CMP%',cat:'QB',def:'Completion percentage.'},
+  {term:'YPA',cat:'QB',def:'Yards Per Attempt.'},
+  {term:'PAPG',cat:'QB',def:'Pass Attempts Per Game.'},
+  {term:'Speed Score',cat:'All',def:'Adjusted speed metric accounting for weight: (Weight × 200) / (40 time^4).'},
+  {term:'Burst Score',cat:'All',def:'Composite of vertical jump and broad jump divided by height.'},
+  {term:'BMI',cat:'All',def:'Body Mass Index — weight relative to height.'},
+  {term:'Markers',cat:'All',def:'Position-specific threshold criteria. See individual position breakdowns.'},
+  {term:'PFF Markers',cat:'All',def:'PFF grade-based thresholds unique to each position.'},
+  {term:'Final Grade',cat:'All',def:'Composite score (0–100) from Markers and PFF, calibrated against historical NFL success at each position.'},
+  {term:'Superflex',cat:'Format',def:'Two-QB format where QB is the most valuable position.'},
+  {term:'TEP',cat:'Format',def:'Tight End Premium — extra points for TE receptions or targets.'},
+  {term:'ADP',cat:'Draft',def:'Average Draft Position — typical draft slot in community mock drafts.'},
+  {term:'UDFA',cat:'Draft',def:'Undrafted Free Agent — player not selected in the NFL Draft.'},
+];
+let glossaryFilter = 'All';
+let glossarySearch = '';
+
+function renderGlossary() {
+  const terms = GLOSSARY_TERMS.filter(t => {
+    if (glossaryFilter !== 'All' && !t.cat.includes(glossaryFilter)) return false;
+    if (glossarySearch && !t.term.toLowerCase().includes(glossarySearch.toLowerCase()) && !t.def.toLowerCase().includes(glossarySearch.toLowerCase())) return false;
+    return true;
+  });
+  const container = document.getElementById('glossaryTerms');
+  if (!container) return;
+  container.innerHTML = terms.map(t =>
+    '<div class="glossary-term">' +
+    '<div class="glossary-term-header"><span class="glossary-term-name">' + t.term + '</span><span class="glossary-term-cat">' + t.cat + '</span></div>' +
+    '<div class="glossary-term-def">' + t.def + '</div>' +
+    '</div>'
+  ).join('') || '<div style="padding:40px;text-align:center;color:var(--muted)">No terms found.</div>';
+}
+
+document.querySelectorAll('.glossary-cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.glossary-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    glossaryFilter = btn.dataset.cat || 'All';
+    renderGlossary();
+  });
+});
+const glossarySearchEl = document.getElementById('glossarySearch');
+if (glossarySearchEl) glossarySearchEl.addEventListener('input', e => { glossarySearch = e.target.value; renderGlossary(); });
+
+// ============================================================
+// NFL OUTCOMES PAGE
+// ============================================================
+let NFL_OUTCOMES = null;
+let outcomesSort = 'grade';
+let outcomesSortDir = 'desc';
+let outcomesPos = 'ALL';
+let outcomesYearFrom = 2010;
+let outcomesYearTo = 2025;
+let outcomesGradedOnly = true;
+
+async function loadNFLOutcomes() {
+  if (NFL_OUTCOMES) return;
+  try {
+    const res = await fetch('nfl_outcomes.json');
+    NFL_OUTCOMES = await res.json();
+  } catch (e) { NFL_OUTCOMES = []; }
+}
+
+async function loadAndRenderOutcomes() {
+  if (!NFL_OUTCOMES) {
+    document.getElementById('outcomesBody').innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted)">Loading NFL data...</td></tr>';
+    await loadNFLOutcomes();
+    buildOutcomesYearSelects();
+  }
+  renderOutcomes();
+}
+
+function buildOutcomesYearSelects() {
+  const years = Array.from({length: 16}, (_, i) => 2010 + i);
+  const fromSel = document.getElementById('outcomesYearFrom');
+  const toSel = document.getElementById('outcomesYearTo');
+  if (!fromSel || !toSel) return;
+  fromSel.innerHTML = ''; toSel.innerHTML = '';
+  years.forEach(yr => {
+    fromSel.innerHTML += '<option value="' + yr + '"' + (yr === 2010 ? ' selected' : '') + '>' + yr + '</option>';
+    toSel.innerHTML += '<option value="' + yr + '"' + (yr === 2025 ? ' selected' : '') + '>' + yr + '</option>';
+  });
+  fromSel.addEventListener('change', () => { outcomesYearFrom = Number(fromSel.value); renderOutcomes(); });
+  toSel.addEventListener('change', () => { outcomesYearTo = Number(toSel.value); renderOutcomes(); });
+}
+
+function setOutcomesSort(key) {
+  if (outcomesSort === key) outcomesSortDir = outcomesSortDir === 'desc' ? 'asc' : 'desc';
+  else { outcomesSort = key; outcomesSortDir = 'desc'; }
+  renderOutcomes();
+}
+
+function nflBadge(n, col) {
+  if (!n) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  return '<span style="font-weight:700;color:' + col + '">' + n + '</span>';
+}
+
+function renderOutcomes() {
+  if (!NFL_OUTCOMES) return;
+  const data = NFL_OUTCOMES.filter(p => {
+    if (p.year < outcomesYearFrom || p.year > outcomesYearTo) return false;
+    if (outcomesPos !== 'ALL' && p.pos !== outcomesPos) return false;
+    if (outcomesGradedOnly && !p.grade) return false;
+    return true;
+  });
+  const sortVal = p => { const v = p[outcomesSort]; return v == null ? -999 : v; };
+  const sorted = [...data].sort((a, b) => { const d = sortVal(b) - sortVal(a); return outcomesSortDir === 'desc' ? d : -d; });
+
+  const arr = k => k === outcomesSort ? (outcomesSortDir === 'desc' ? ' ↓' : ' ↑') : '';
+  const th = (k, label, col) => '<th class="' + (outcomesSort === k ? 'sorted' : '') + '" style="cursor:pointer;' + (col ? 'color:' + col : '') + '" onclick="setOutcomesSort(\'' + k + '\')">' + label + arr(k) + '</th>';
+
+  document.getElementById('outcomesHead').innerHTML =
+    '<tr>' + th('year','Year') + th('name','Player') + '<th>School</th>' + th('pos','Pos') + th('round','Round') +
+    th('grade','Grade') + th('markers','Markers') + th('pff','PFF Mkrs') + '<th>Label</th>' +
+    th('nfl_seasons','NFL Seasons') + th('nfl_career_ppg','Career PPG') + th('nfl_best_ppg','Best PPG') +
+    th('nfl_top5','Top-5','#00c2ff') + th('nfl_top12','Top-12','var(--pos-rb)') +
+    th('nfl_top24','Top-24','var(--accent2)') + th('nfl_top36','Top-36','var(--orange)') + '</tr>';
+
+  let html = '';
+  sorted.forEach(p => {
+    const col = posColor(p.pos);
+    const lg = p.grade ? letterGrade(p.grade) : { l: '—', c: 'var(--muted)' };
+    const noNfl = !p.has_nfl;
+    html += '<tr class="' + (noNfl ? 'no-nfl' : '') + '" onclick="openOutcomeModal(\'' + (p.pfr_id || '').replace(/'/g, '\u2019') + '\',\'' + p.name.replace(/'/g, '\u2019') + '\',' + p.year + ')">';
+    html += '<td style="color:var(--muted);font-family:\'Bebas Neue\',cursive;font-size:16px">' + p.year + '</td>';
+    html += '<td style="font-weight:700">' + p.name + '</td>';
+    html += '<td style="color:var(--muted);font-size:11px">' + (p.school || '—') + '</td>';
+    html += '<td style="color:' + col + ';font-weight:700;font-size:11px">' + p.pos + '</td>';
+    html += '<td style="color:var(--muted)">' + (p.round != null ? 'Rd ' + p.round : '—') + '</td>';
+    html += '<td style="color:' + lg.c + ';font-weight:700">' + (p.grade ? fmt(p.grade, 1) : '—') + '</td>';
+    html += '<td style="color:' + col + '">' + (p.markers != null ? p.markers : '—') + '</td>';
+    html += '<td style="color:var(--accent3)">' + (p.pff != null ? Math.round(p.pff) : '—') + '</td>';
+    {
+      const yr = p.year;
+      const cdata = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
+      const cp = cdata.find(x => x.name === p.name);
+      const tag = cp ? getTag(cp) : null;
+      html += '<td>' + (tag ? '<span style="color:' + tag.color + ';font-size:12px;font-weight:700">' + tag.icon + ' ' + tag.label + '</span>' : '—') + '</td>';
+    }
+    html += '<td style="color:' + (noNfl ? 'var(--muted)' : 'var(--text)') + '">' + (p.nfl_seasons || '—') + '</td>';
+    html += '<td style="font-weight:700;color:' + (noNfl ? 'var(--muted)' : 'var(--accent)') + '">' + (p.nfl_career_ppg != null ? fmt(p.nfl_career_ppg, 1) : '—') + '</td>';
+    html += '<td style="color:' + (noNfl ? 'var(--muted)' : 'var(--accent2)') + '">' + (p.nfl_best_ppg != null ? fmt(p.nfl_best_ppg, 1) : '—') + '</td>';
+    html += '<td>' + nflBadge(p.nfl_top5, '#00c2ff') + '</td>';
+    html += '<td>' + nflBadge(p.nfl_top12, 'var(--pos-rb)') + '</td>';
+    html += '<td>' + nflBadge(p.nfl_top24, 'var(--accent2)') + '</td>';
+    html += '<td>' + nflBadge(p.nfl_top36, 'var(--orange)') + '</td>';
+    html += '</tr>';
+  });
+  document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="16" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
+}
+
+document.querySelectorAll('.filter-btn[data-opos]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-opos]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    outcomesPos = btn.dataset.opos;
+    renderOutcomes();
+  });
+});
+
+const outcomesGradedEl = document.getElementById('outcomesGradedOnly');
+if (outcomesGradedEl) outcomesGradedEl.addEventListener('change', e => { outcomesGradedOnly = e.target.checked; renderOutcomes(); });
+
+function openOutcomeModal(pfrId, name, year) {
+  const yr = Number(year);
+  const data = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
+  const p = data.find(x => x.name === name || x.pfr_id === pfrId);
+  if (p) openModal({ ...p, year: yr });
+}
+
+// ============================================================
+// NFL ENRICHMENT
+// ============================================================
+let NFL_LOOKUP = null;
+
+async function loadNFLLookup() {
+  if (NFL_LOOKUP) return;
+  try {
+    const res = await fetch('nfl_lookup.json');
+    NFL_LOOKUP = await res.json();
+    enrichPlayersWithNFL(PLAYERS, 2026);
+    Object.entries(yearCache).forEach(([yr, players]) => {
+      if (Number(yr) !== 2026) enrichPlayersWithNFL(players, Number(yr));
+    });
+  } catch (e) { NFL_LOOKUP = {}; }
+}
+
+function enrichPlayersWithNFL(players, year) {
+  if (!NFL_LOOKUP || !players) return;
+  players.forEach(p => {
+    const key = p.name + '|' + year;
+    const nfl = NFL_LOOKUP[key];
+    if (nfl) {
+      p.nfl_top5 = nfl.nfl_top5 || 0;
+      p.nfl_top12 = nfl.nfl_top12 || 0;
+      p.nfl_top24 = nfl.nfl_top24 || 0;
+      p.nfl_top36 = nfl.nfl_top36 || 0;
+      p.nfl_career_ppg = nfl.nfl_career_ppg;
+      p.nfl_best_ppg = nfl.nfl_best_ppg;
+      p.nfl_seasons = nfl.nfl_seasons || 0;
+    }
+  });
+}
+
+// ============================================================
+// HISTORICAL COMPS
+// ============================================================
+const COMP_VARS = {
+  QB: ['ht','wt','grade','markers','pff','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
+  RB: ['ht','wt','grade','markers','bestTotalYds','bestRec','bestPPG','burst','dash'],
+  WR: ['ht','wt','grade','markers','pff','boy20','boy30','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+  TE: ['ht','wt','grade','markers','pff','boy15','boy20','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+};
+
+function computeComps(player) {
+  const pos = player.pos;
+  const vars = COMP_VARS[pos];
+  if (!vars) return [];
+  const targetYear = player.year || 2026;
+
+  const candidates = [];
+  Object.entries(yearCache).forEach(([yr, players]) => {
+    if (Number(yr) >= targetYear) return;
+    players.forEach(p => {
+      if (p.pos !== pos) return;
+      if (!p.grade) return;
+      candidates.push({ ...p, year: Number(yr) });
+    });
+  });
+  if (!candidates.length) return [];
+
+  // Compute means and stds
+  const means = {}, stds = {};
+  vars.forEach(v => {
+    const vals = candidates.map(p => p[v]).filter(x => x != null);
+    if (!vals.length) { means[v] = 0; stds[v] = 1; return; }
+    const mean = vals.reduce((s, x) => s + x, 0) / vals.length;
+    const std = Math.sqrt(vals.reduce((s, x) => s + (x - mean) ** 2, 0) / vals.length) || 1;
+    means[v] = mean; stds[v] = std;
+  });
+
+  const zScore = (val, v) => val != null ? (val - means[v]) / stds[v] : 0;
+  const playerZ = vars.map(v => zScore(player[v], v));
+
+  const dists = candidates.map(c => {
+    const dist = Math.sqrt(vars.reduce((s, v, i) => s + (zScore(c[v], v) - playerZ[i]) ** 2, 0));
+    return { p: c, dist };
+  });
+
+  dists.sort((a, b) => a.dist - b.dist);
+  return dists.slice(0, 3).map(d => d.p);
+}
+
+async function renderModalComps(player) {
+  const grid = document.getElementById('modalCompsGrid');
+  if (!grid) return;
+
+  // Ensure all historical years are loaded
+  for (const yr of YEARS.filter(y => y !== 2026)) {
+    if (!yearCache[yr]) {
+      try {
+        const res = await fetch('data/' + yr + '.json?v=3');
+        const _d = await res.json();
+        _d.forEach(p => { if (!p.year) p.year = yr; });
+        yearCache[yr] = _d;
+      } catch (e) { yearCache[yr] = []; }
+    }
+  }
+
+  const comps = computeComps(player);
+  if (!comps.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px">No comps available.</div>';
+    return;
+  }
+
+  grid.innerHTML = comps.map(c => {
+    const col = posColor(c.pos);
+    const lg = letterGrade(c.grade);
+    return '<div class="comp-mini-card" onclick="openModal(' + JSON.stringify(c).replace(/"/g, '&quot;') + ')">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+      hshotImg(c, 'comp-mini-headshot', '') +
+      '<div><div style="font-size:11px;color:' + col + ';font-weight:700">' + c.pos + ' · ' + c.year + '</div>' +
+      '<div style="font-size:14px;font-weight:700">' + c.name + '</div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + (c.school || '') + '</div></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;font-size:11px">' +
+      '<div><span style="color:var(--muted)">Grade </span><span style="font-weight:700;color:' + gradeColor(c.grade) + '">' + (c.grade ? fmt(c.grade, 1) : '—') + '</span></div>' +
+      '<div><span style="color:var(--muted)">Ltr </span><span style="font-weight:700;color:' + lg.c + '">' + lg.l + '</span></div>' +
+      (c.nfl_top12 ? '<div><span style="color:var(--muted)">T12 </span><span style="font-weight:700;color:var(--pos-rb)">' + c.nfl_top12 + '</span></div>' : '') +
+      '</div></div>';
+  }).join('');
+}
+
+// ============================================================
+// GLOBAL SEARCH
+// ============================================================
+async function globalSearchGetPlayers(q) {
+  const all = await getAllPlayers();
+  return all.filter(p => p.name.toLowerCase().includes(q.toLowerCase())).slice(0, 15);
+}
+
+function globalSearchSelect(p) {
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').style.display = 'none';
+  switchPage('grades');
+  setTimeout(() => openModal(p), 100);
+}
+
+const globalInput = document.getElementById('globalSearchInput');
+const globalResults = document.getElementById('globalSearchResults');
+if (globalInput) {
+  globalInput.addEventListener('input', async () => {
+    const q = globalInput.value.trim();
+    if (q.length < 2) { globalResults.style.display = 'none'; return; }
+    const players = await globalSearchGetPlayers(q);
+    globalResults.innerHTML = players.map(p =>
+      '<div class="global-search-item" onclick="globalSearchSelect(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">' +
+      '<span style="color:' + posColor(p.pos) + ';font-weight:700;margin-right:6px">' + p.pos + '</span>' +
+      p.name + ' <span style="color:var(--muted);font-size:11px">' + (p.school || '') + ' · ' + (p.year || activeYear) + '</span>' +
+      '</div>'
+    ).join('');
+    globalResults.style.display = players.length ? 'block' : 'none';
+  });
+  document.addEventListener('click', e => {
+    if (!globalInput.contains(e.target) && !globalResults.contains(e.target))
+      globalResults.style.display = 'none';
+  });
+}
+
+// ============================================================
+// DARK / LIGHT MODE
+// ============================================================
+function applyTheme(dark) {
+  document.body.classList.toggle('light-mode', !dark);
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = dark ? '☀' : '☾';
+}
+
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) themeToggle.addEventListener('click', () => {
+  applyTheme(document.body.classList.contains('light-mode'));
+});
+applyTheme(localStorage.getItem('theme') !== 'light');
+
+// ============================================================
+// SWITCH PAGE
+// ============================================================
+let activePage = 'grades';
+
+function switchPage(page) {
+  activePage = page;
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
+  if (page === 'rankings') renderRankings();
+  if (page === 'breakdown') loadAndRenderBreakdown();
+  if (page === 'glossary') renderGlossary();
+  if (page === 'explorer') explorerRender();
+  if (page === 'outcomes') loadAndRenderOutcomes();
+  if (navDrawer) navDrawer.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+}
+
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => switchPage(b.dataset.page));
+});
+
+// ============================================================
+// MOBILE — HAMBURGER DRAWER
+// ============================================================
+const hamburger = document.getElementById('hamburger');
+const navDrawer = document.getElementById('navDrawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+
+function openDrawer() { hamburger.classList.add('open'); navDrawer.classList.add('open'); drawerOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { hamburger.classList.remove('open'); navDrawer.classList.remove('open'); drawerOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+hamburger.addEventListener('click', () => navDrawer.classList.contains('open') ? closeDrawer() : openDrawer());
+drawerOverlay.addEventListener('click', closeDrawer);
+navDrawer.querySelectorAll('.nav-btn').forEach(b => { b.addEventListener('click', () => { switchPage(b.dataset.page); closeDrawer(); }); });
+
+// ============================================================
+// LAST UPDATED
+// ============================================================
+const navUpdatedEl = document.getElementById('navUpdated');
+if (navUpdatedEl) navUpdatedEl.textContent = 'Updated ' + LAST_UPDATED;
+
+// ============================================================
+// INIT
+// ============================================================
+buildYearTabs();
+renderHeroStats();
+render();
+
+// Prefetch historical years in background
+(async function prefetchHistoricalYears() {
+  const toFetch = YEARS.filter(yr => yr !== 2026);
+  for (const yr of toFetch) {
+    if (!yearCache[yr]) {
+      try {
+        const res = await fetch('data/' + yr + '.json?v=3');
+        const _d = await res.json();
+        _d.forEach(p => { if (!p.year) p.year = yr; });
+        yearCache[yr] = _d;
+      } catch (e) { yearCache[yr] = []; }
+    }
+    await new Promise(r => setTimeout(r, 50));
+  }
+})();
+
+// Load NFL lookup 500ms after page load
+setTimeout(loadNFLLookup, 500);
+
+buildExplorerYears();
+
+
+
+
 
 </script>
 </body>
