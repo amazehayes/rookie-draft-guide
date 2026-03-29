@@ -1720,14 +1720,7 @@ navDrawer.querySelectorAll('.nav-btn').forEach(b => {
   });
 });
 
-// Keep drawer nav active state in sync
-const _origSwitchPageMobile = switchPage;
-function switchPage(page) {
-  _origSwitchPageMobile(page);
-  navDrawer.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.page === page);
-  });
-}
+// Keep drawer nav active state in sync — handled in main switchPage
 
 
 // ============================================================
@@ -1745,6 +1738,12 @@ function switchPage(page) {
   if(page === 'breakdown') loadAndRenderBreakdown();
   if(page === 'glossary') renderGlossary();
   if(page === 'explorer') explorerRender();
+  if(page === 'outcomes') loadAndRenderOutcomes();
+
+  // Sync drawer nav
+  navDrawer.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+  });
 }
 
 document.querySelectorAll('.nav-btn').forEach(b => {
@@ -3154,19 +3153,15 @@ document.getElementById('outcomesGradedOnly').addEventListener('change', e => {
   renderOutcomes();
 });
 
-// Hook into switchPage
-const _origSwitchPageOutcomes = switchPage;
-async function switchPage(page) {
-  _origSwitchPageOutcomes(page);
-  if(page === 'outcomes') {
-    if(!NFL_OUTCOMES) {
-      document.getElementById('outcomesBody').innerHTML =
-        '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">Loading NFL data...</td></tr>';
-      await loadNFLOutcomes();
-      buildOutcomesYearSelects();
-    }
-    renderOutcomes();
+// outcomes page load triggered from main switchPage
+async function loadAndRenderOutcomes() {
+  if(!NFL_OUTCOMES) {
+    document.getElementById('outcomesBody').innerHTML =
+      '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">Loading NFL data...</td></tr>';
+    await loadNFLOutcomes();
+    buildOutcomesYearSelects();
   }
+  renderOutcomes();
 }
 
 buildOutcomesYearSelects();
