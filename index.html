@@ -1698,7 +1698,7 @@ render();
     if(!yearCache[yr]) {
       try {
         const res = await fetch('data/'+yr+'.json?v=3');
-        yearCache[yr] = await res.json();
+        const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }
     // Small delay between fetches so it doesn't block the main thread
@@ -1993,7 +1993,7 @@ async function getAllPlayers() {
     if(!yearCache[yr]) {
       try {
         const res = await fetch('data/'+yr+'.json?v=3');
-        yearCache[yr] = await res.json();
+        const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }
   }
@@ -2317,7 +2317,7 @@ async function loadAndRenderBreakdown() {
     if(!yearCache[yr]) {
       try {
         const res = await fetch('data/'+yr+'.json?v=3');
-        yearCache[yr] = await res.json();
+        const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }
   }));
@@ -2775,7 +2775,7 @@ function buildExplorerYears() {
         if(!yearCache[yr]) {
           try {
             const res = await fetch('data/'+yr+'.json?v=3');
-            yearCache[yr] = await res.json();
+            const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
           } catch(e) { yearCache[yr] = []; }
         }
       }
@@ -2908,6 +2908,10 @@ document.getElementById('explorerAddMetric').addEventListener('click', e => {
     ).join('')
   ).join('');
   picker.style.display = 'block';
+  // Position below the button
+  const rect = e.target.getBoundingClientRect();
+  picker.style.top = (rect.bottom + 4) + 'px';
+  picker.style.left = Math.min(rect.left, window.innerWidth - 270) + 'px';
 });
 
 // Event delegation — one listener on the picker div itself, survives innerHTML rebuilds
@@ -3317,7 +3321,7 @@ async function globalSearchGetPlayers(query) {
       if(!yearCache[yr]) {
         try {
           const res = await fetch('data/'+yr+'.json?v=3');
-          yearCache[yr] = await res.json();
+          const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
           yearCache[yr].forEach(p => {
             if(p.name.toLowerCase().includes(q)) results.push({...p, year: yr});
           });
@@ -3464,7 +3468,7 @@ async function renderModalComps(player) {
     await Promise.all(toLoad.map(async yr => {
       try {
         const res = await fetch('data/'+yr+'.json?v=3');
-        yearCache[yr] = await res.json();
+        const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }));
   }
