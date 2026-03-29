@@ -2546,7 +2546,43 @@ const EXPLORER_METRICS = {
       {k:'bmi',  l:'BMI',         fmt:'dec', min:22,  max:36},
       {k:'dash', l:'40 Dash',     fmt:'dec', min:4.2, max:5.2, low:true},
       {k:'wass', l:'Speed Score', fmt:'dec', min:60,  max:140},
+    ]},,
+    {group:'NFL Outcomes', metrics:[
+      {k:'nfl_top5',       l:'Top-5 Seasons',  fmt:'int', min:0, max:10},
+      {k:'nfl_top12',      l:'Top-12 Seasons', fmt:'int', min:0, max:12},
+      {k:'nfl_top24',      l:'Top-24 Seasons', fmt:'int', min:0, max:14},
+      {k:'nfl_top36',      l:'Top-36 Seasons', fmt:'int', min:0, max:16},
+      {k:'nfl_career_ppg', l:'NFL Career PPG',  fmt:'dec', min:0, max:35},
+      {k:'nfl_best_ppg',   l:'NFL Best PPG',    fmt:'dec', min:0, max:40},
+      {k:'nfl_seasons',    l:'NFL Seasons',     fmt:'int', min:0, max:15},
     ]},
+    {group:'NFL Outcomes', metrics:[
+      {k:'nfl_top5',       l:'Top-5 Seasons',  fmt:'int', min:0, max:10},
+      {k:'nfl_top12',      l:'Top-12 Seasons', fmt:'int', min:0, max:12},
+      {k:'nfl_top24',      l:'Top-24 Seasons', fmt:'int', min:0, max:14},
+      {k:'nfl_top36',      l:'Top-36 Seasons', fmt:'int', min:0, max:16},
+      {k:'nfl_career_ppg', l:'NFL Career PPG',  fmt:'dec', min:0, max:35},
+      {k:'nfl_best_ppg',   l:'NFL Best PPG',    fmt:'dec', min:0, max:40},
+      {k:'nfl_seasons',    l:'NFL Seasons',     fmt:'int', min:0, max:15},
+    ]},
+    {group:'NFL Outcomes', metrics:[
+      {k:'nfl_top5',       l:'Top-5 Seasons',  fmt:'int', min:0, max:10},
+      {k:'nfl_top12',      l:'Top-12 Seasons', fmt:'int', min:0, max:12},
+      {k:'nfl_top24',      l:'Top-24 Seasons', fmt:'int', min:0, max:14},
+      {k:'nfl_top36',      l:'Top-36 Seasons', fmt:'int', min:0, max:16},
+      {k:'nfl_career_ppg', l:'NFL Career PPG',  fmt:'dec', min:0, max:35},
+      {k:'nfl_best_ppg',   l:'NFL Best PPG',    fmt:'dec', min:0, max:40},
+      {k:'nfl_seasons',    l:'NFL Seasons',     fmt:'int', min:0, max:15},
+    ]},
+    {group:'NFL Outcomes', metrics:[
+      {k:'nfl_top5',       l:'Top-5 Seasons',  fmt:'int', min:0, max:10},
+      {k:'nfl_top12',      l:'Top-12 Seasons', fmt:'int', min:0, max:12},
+      {k:'nfl_top24',      l:'Top-24 Seasons', fmt:'int', min:0, max:14},
+      {k:'nfl_top36',      l:'Top-36 Seasons', fmt:'int', min:0, max:16},
+      {k:'nfl_career_ppg', l:'NFL Career PPG',  fmt:'dec', min:0, max:35},
+      {k:'nfl_best_ppg',   l:'NFL Best PPG',    fmt:'dec', min:0, max:40},
+      {k:'nfl_seasons',    l:'NFL Seasons',     fmt:'int', min:0, max:15},
+    ]}
   ],
   RB: [
     {group:'Grading', metrics:[
@@ -3085,6 +3121,7 @@ function renderOutcomes() {
     th('nfl_seasons','NFL Seasons') +
     th('nfl_career_ppg','Career PPG') +
     th('nfl_best_ppg','Best PPG') +
+    th('nfl_top5','Top-5') +
     th('nfl_top12','Top-12') +
     th('nfl_top24','Top-24') +
     th('nfl_top36','Top-36') +
@@ -3117,9 +3154,10 @@ function renderOutcomes() {
     html += `<td style="color:${noNfl?'var(--muted)':'var(--text)'}">${p.nfl_seasons||'—'}</td>`;
     html += `<td style="font-weight:700;color:${noNfl?'var(--muted)':'var(--accent)'}">${p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—'}</td>`;
     html += `<td style="color:${noNfl?'var(--muted)':'var(--accent2)'}">${p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—'}</td>`;
-    html += `<td>${nflBadge(p.nfl_top12,'var(--pos-wr)')}</td>`;
-    html += `<td>${nflBadge(p.nfl_top24,'var(--pos-rb)')}</td>`;
-    html += `<td>${nflBadge(p.nfl_top36,'var(--pos-te)')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top5,'#00c2ff')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top12,'var(--pos-rb)')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top24,'var(--accent2)')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top36,'var(--orange)')}</td>`;
     html += '</tr>';
   });
   document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
@@ -3169,6 +3207,51 @@ async function loadAndRenderOutcomes() {
 }
 
 buildOutcomesYearSelects();
+
+// ============================================================
+// NFL OUTCOMES ENRICHMENT
+// ============================================================
+let NFL_LOOKUP = null;
+
+async function loadNFLLookup() {
+  if(NFL_LOOKUP) return;
+  try {
+    const res = await fetch('nfl_lookup.json');
+    NFL_LOOKUP = await res.json();
+    // Enrich already-loaded players
+    enrichPlayersWithNFL(PLAYERS, 2026);
+    Object.entries(yearCache).forEach(([yr, players]) => {
+      if(Number(yr) !== 2026) enrichPlayersWithNFL(players, Number(yr));
+    });
+  } catch(e) { NFL_LOOKUP = {}; }
+}
+
+function enrichPlayersWithNFL(players, year) {
+  if(!NFL_LOOKUP || !players) return;
+  players.forEach(p => {
+    const key = p.name + '|' + year;
+    const nfl = NFL_LOOKUP[key];
+    if(nfl) {
+      p.nfl_top5        = nfl.nfl_top5  || 0;
+      p.nfl_top12       = nfl.nfl_top12 || 0;
+      p.nfl_top24       = nfl.nfl_top24 || 0;
+      p.nfl_top36       = nfl.nfl_top36 || 0;
+      p.nfl_career_ppg  = nfl.nfl_career_ppg;
+      p.nfl_best_ppg    = nfl.nfl_best_ppg;
+      p.nfl_seasons     = nfl.nfl_seasons || 0;
+    }
+  });
+}
+
+// Also hook into switchYear so newly loaded years get enriched
+const _origSwitchYear = switchYear;
+async function switchYear(yr) {
+  await _origSwitchYear(yr);
+  if(NFL_LOOKUP && yearCache[yr]) enrichPlayersWithNFL(yearCache[yr], yr);
+}
+
+// Load NFL lookup in background after page loads
+setTimeout(loadNFLLookup, 500);
 
 // ============================================================
 // DARK / LIGHT MODE
