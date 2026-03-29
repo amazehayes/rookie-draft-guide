@@ -1199,6 +1199,9 @@ function posStats(p, col) {
 async function downloadModalPDF() {
   const p = window._currentModalPlayer;
   if(!p) return;
+  const _mx = POS_MAX[p.pos]||14; const mk = p.markers||0;
+  const _pmx = PFF_MAX[p.pos]||10; const pmk = p.pff!=null?Math.round(p.pff):0;
+  const mx = _mx; const pmx = _pmx;
   const btn = document.querySelector('[onclick="downloadModalPDF()"]');
   if(btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
   try {
@@ -2002,8 +2005,8 @@ function classifyPlayer(p, format) {
   const label = tag ? tag.label : null;
   const adjScore = dynastySortForFormat(p, format);
 
-  // Never highlight undrafted (round 8) players
-  if(rd === 8 || rd == null) return null;
+  // Never highlight UDFA (round 8) players
+  if(rd === 8) return null;
 
   // ── FADE checks (run first — fades override targets) ──────────────────────
   // Negative label
@@ -3844,6 +3847,29 @@ async function exportRankingsPDF() {
         6:{cellWidth:16,halign:'center',fontStyle:'bold'},
         7:{cellWidth:14,halign:'center'},
         8:{cellWidth:12,halign:'center'},
+      },
+      didDrawPage: (data) => {
+        // Dark background on every page
+        doc.setFillColor(10,12,15);
+        doc.rect(0,0,297,210,'F');
+        // Re-draw header on continuation pages
+        if(data.pageNumber > 1) {
+          doc.setFillColor(10,12,15);
+          doc.rect(0,0,297,210,'F');
+          doc.setTextColor(0,194,255);
+          doc.setFontSize(10);
+          doc.setFont('helvetica','bold');
+          doc.text('THE MARKER SYSTEM — continued', 14, 10);
+          doc.setTextColor(90,100,120);
+          doc.setFontSize(7);
+          doc.text('themarkersystem.com', 14, 15);
+        }
+      },
+      willDrawCell: (data) => {
+        // Ensure cell backgrounds are dark
+        if(data.row.section === 'body') {
+          doc.setFillColor(data.row.index % 2 === 0 ? 17 : 24, data.row.index % 2 === 0 ? 20 : 28, data.row.index % 2 === 0 ? 24 : 34);
+        }
       }
     });
 
