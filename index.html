@@ -96,7 +96,7 @@
 .explorer-pos-btn.active[data-pos="WR"]{background:var(--pos-wr);color:var(--bg);border-color:var(--pos-wr);}
 .explorer-pos-btn.active[data-pos="TE"]{background:var(--pos-te);color:var(--bg);border-color:var(--pos-te);}
 .explorer-year-wrap{display:flex;flex-wrap:wrap;gap:4px;}
-.explorer-year-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.explorer-year-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;padding:3px 7px;border-radius:4px;cursor:pointer;transition:all .15s;}
 .explorer-year-btn:hover{color:var(--text);}
 .explorer-year-btn.active{background:var(--surface2);color:var(--accent);border-color:var(--accent);}
 .explorer-metric-list{padding:0 16px 8px;}
@@ -104,12 +104,12 @@
 .explorer-metric-item:last-child{border-bottom:none;}
 .explorer-metric-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .explorer-metric-name{font-size:11px;font-weight:700;color:var(--text);}
-.explorer-metric-vals{font-size:10px;color:var(--accent);font-family:'IBM Plex Mono',monospace;}
+.explorer-metric-vals{font-size:12px;color:var(--accent);font-family:'IBM Plex Mono',monospace;}
 .explorer-metric-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px;line-height:1;}
 .explorer-metric-remove:hover{color:var(--red);}
 .explorer-input-row{display:flex;gap:6px;align-items:center;margin-top:4px;}
 .explorer-input-wrap{flex:1;display:flex;flex-direction:column;gap:2px;}
-.explorer-input-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.explorer-input-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
 .explorer-num-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:5px 8px;outline:none;transition:border-color .15s;}
 .explorer-num-input:focus{border-color:var(--accent);}
 .explorer-input-sep{color:var(--muted);font-size:12px;padding-top:16px;}
@@ -121,7 +121,7 @@
 .explorer-picker-item{padding:7px 10px;border-radius:5px;cursor:pointer;font-size:11px;transition:background .1s;}
 .explorer-picker-item:hover{background:var(--surface);}
 .explorer-picker-item.selected{color:var(--muted);cursor:default;}
-.explorer-picker-group{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:8px 10px 4px;}
+.explorer-picker-group{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:8px 10px 4px;}
 .explorer-results{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
 .explorer-results::-webkit-scrollbar{width:4px;}
 .explorer-results::-webkit-scrollbar-thumb{background:var(--border);}
@@ -138,7 +138,7 @@
 .explorer-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);gap:8px;}
 .explorer-empty-title{font-family:'Bebas Neue',cursive;font-size:28px;color:var(--border);}
 .explorer-table{width:100%;border-collapse:collapse;font-size:12px;}
-.explorer-table th{text-align:left;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap;}
+.explorer-table th{text-align:left;padding:8px 10px;font-size:12px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap;}
 .explorer-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
 .explorer-table tr:hover td{background:var(--surface2);cursor:pointer;}
 .explorer-sidebar-actions{padding:12px 16px;border-top:1px solid var(--border);margin-top:auto;}
@@ -168,7 +168,7 @@ body.light-mode .nav-drawer{background:var(--surface);}
 .theme-toggle:hover{color:var(--text);border-color:var(--text);}
 
 /* ---- LAST UPDATED ---- */
-.nav-updated{font-size:10px;color:var(--muted);letter-spacing:.5px;white-space:nowrap;flex-shrink:0;}
+.nav-updated{font-size:12px;color:var(--muted);letter-spacing:.5px;white-space:nowrap;flex-shrink:0;}
 
 /* ---- GLOBAL SEARCH ---- */
 .global-search-wrap{position:relative;flex-shrink:0;}
@@ -182,7 +182,7 @@ body.light-mode .nav-drawer{background:var(--surface);}
 .global-search-result-item:last-child{border-bottom:none;}
 .global-search-result-item:hover{background:var(--surface);}
 .global-search-result-name{font-weight:700;font-size:12px;}
-.global-search-result-meta{font-size:10px;color:var(--muted);}
+.global-search-result-meta{font-size:12px;color:var(--muted);}
 .global-search-empty{padding:20px;text-align:center;color:var(--muted);font-size:11px;}
 
 /* ---- SHARE MODAL ---- */
@@ -202,9 +202,9 @@ body.light-mode .nav-drawer{background:var(--surface);}
 .comp-mini-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;}
 .comp-mini-card:hover{border-color:var(--accent);transform:translateY(-2px);}
 .comp-mini-name{font-weight:700;font-size:12px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.comp-mini-meta{font-size:10px;color:var(--muted);margin-bottom:6px;}
+.comp-mini-meta{font-size:12px;color:var(--muted);margin-bottom:6px;}
 .comp-mini-grade{font-size:13px;font-weight:700;}
-.comp-mini-sim{font-size:9px;color:var(--muted);margin-top:4px;}
+.comp-mini-sim{font-size:11px;color:var(--muted);margin-top:4px;}
 
 /* ---- PDF EXPORT ---- */
 .pdf-export-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
@@ -225,23 +225,23 @@ body.light-mode .nav-drawer{background:var(--surface);}
 .outcomes-stat{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
 .outcomes-table-wrap{overflow-x:auto;padding:0 0 40px;}
 .outcomes-table{width:100%;border-collapse:collapse;font-size:12px;}
-.outcomes-table th{text-align:left;padding:9px 12px;font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;background:var(--surface);}
+.outcomes-table th{text-align:left;padding:9px 12px;font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;background:var(--surface);}
 .outcomes-table th:hover{color:var(--accent);}
 .outcomes-table th.sorted{color:var(--accent);}
 .outcomes-table td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
 .outcomes-table tr:hover td{background:var(--surface2);cursor:pointer;}
 .outcomes-table tr.no-nfl td{opacity:.45;}
-.nfl-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;border-radius:4px;font-size:10px;font-weight:700;padding:0 5px;}
+.nfl-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;border-radius:4px;font-size:12px;font-weight:700;padding:0 5px;}
 .nfl-badge.gold{background:rgba(245,200,66,.2);color:var(--accent2);border:1px solid rgba(245,200,66,.3);}
 .nfl-badge.silver{background:rgba(90,100,120,.2);color:var(--muted);border:1px solid rgba(90,100,120,.2);}
-.nfl-badge.zero{background:transparent;color:var(--muted);font-size:9px;}
+.nfl-badge.zero{background:transparent;color:var(--muted);font-size:11px;}
 .outcomes-summary{display:flex;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .outcomes-summary-item{display:flex;flex-direction:column;gap:2px;}
 .outcomes-summary-val{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);}
-.outcomes-summary-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.outcomes-summary-lbl{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
 @media(max-width:768px){
   .outcomes-controls{padding:10px 12px;gap:8px;}
-  .outcomes-table th,.outcomes-table td{padding:7px 8px;font-size:10px;}
+  .outcomes-table th,.outcomes-table td{padding:7px 8px;font-size:12px;}
 }
 
 /* ---- SITE NAV ---- */
@@ -582,8 +582,8 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="comparison">Player Comparison</button>
     <button class="nav-btn" data-page="explorer">Stat Explorer</button>
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
-    <button class="nav-btn" data-page="glossary">Glossary</button>
     <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
+    <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;">
     <div class="nav-updated" id="navUpdated"></div>
@@ -600,8 +600,8 @@ td{padding:10px 14px;white-space:nowrap;}
   <button class="nav-btn" data-page="comparison">Player Comparison</button>
   <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
-  <button class="nav-btn" data-page="glossary">Glossary</button>
   <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
+  <button class="nav-btn" data-page="glossary">Glossary</button>
 </div>
 <div class="page-section active" id="page-grades">
 <div class="hero">
@@ -853,7 +853,6 @@ td{padding:10px 14px;white-space:nowrap;}
       <input type="checkbox" id="outcomesGradedOnly" checked style="accent-color:var(--accent)"> Graded only
     </label>
   </div>
-  <div class="outcomes-summary" id="outcomesSummary"></div>
   <div class="outcomes-table-wrap">
     <table class="outcomes-table">
       <thead id="outcomesHead"></thead>
@@ -2420,13 +2419,13 @@ function renderBreakdown() {
       html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Elite (85+)</div><span style="color:var(--accent2);font-weight:700">${d.elite!=null?d.elite:'—'}</span></div>`;
       html += `<div class="mobile-detail-item" style="grid-column:1/-1"><div class="mobile-detail-label">Top Player</div>${topCell(d.topPlayer, d.loaded)}</div>`;
       html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-qb)">QB Avg</div><span style="color:var(--pos-qb)">${d.qbAvg?fmt(d.qbAvg,1):'—'}</span></div>`;
-      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top QB</div><span style="font-size:10px">${d.topQB?d.topQB.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top QB</div><span style="font-size:12px">${d.topQB?d.topQB.name:'—'}</span></div>`;
       html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-rb)">RB Avg</div><span style="color:var(--pos-rb)">${d.rbAvg?fmt(d.rbAvg,1):'—'}</span></div>`;
-      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top RB</div><span style="font-size:10px">${d.topRB?d.topRB.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top RB</div><span style="font-size:12px">${d.topRB?d.topRB.name:'—'}</span></div>`;
       html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-wr)">WR Avg</div><span style="color:var(--pos-wr)">${d.wrAvg?fmt(d.wrAvg,1):'—'}</span></div>`;
-      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top WR</div><span style="font-size:10px">${d.topWR?d.topWR.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top WR</div><span style="font-size:12px">${d.topWR?d.topWR.name:'—'}</span></div>`;
       html += `<div class="mobile-detail-item"><div class="mobile-detail-label" style="color:var(--pos-te)">TE Avg</div><span style="color:var(--pos-te)">${d.teAvg?fmt(d.teAvg,1):'—'}</span></div>`;
-      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top TE</div><span style="font-size:10px">${d.topTE?d.topTE.name:'—'}</span></div>`;
+      html += `<div class="mobile-detail-item"><div class="mobile-detail-label">Top TE</div><span style="font-size:12px">${d.topTE?d.topTE.name:'—'}</span></div>`;
       html += '</div></td></tr>';
     });
   } else {
@@ -2435,7 +2434,7 @@ function renderBreakdown() {
     document.getElementById('bkHead').innerHTML =
       '<tr>' +
       th('year','Year') +
-      th('avg','Avg Grade <span style="font-size:9px;font-weight:400;opacity:.6">(top-50)</span>') +
+      th('avg','Avg Grade <span style="font-size:11px;font-weight:400;opacity:.6">(top-50)</span>') +
       th('elite','Elite (85+)') +
       '<th>Top Player</th>' +
       th('qbAvg','QB Avg','var(--pos-qb)') + '<th style="color:var(--pos-qb)">Top QB</th>' +
@@ -2934,14 +2933,14 @@ function explorerRender() {
           .map(f => {
             const v = p[f.k];
             return `<div style="min-width:0">
-              <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">${f.l}</div>
+              <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">${f.l}</div>
               <div style="font-size:14px;font-weight:700;color:${col};font-family:'IBM Plex Mono',monospace">${explorerFmtDisplay(v,f.fmt)}</div>
             </div>`;
           }).join('');
         const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
         return `<div class="player-card" style="--pos-color:${col};cursor:pointer" onclick="openModalFromList(${i})">
           <div class="card-body">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${p.year||2026}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">${p.year||2026}</div>
             <div class="card-name-row">
               <div class="card-avatar" style="border-color:${col}">
                 ${hshotImg(p,'','')}
@@ -2984,7 +2983,7 @@ function explorerRender() {
         <td>${p.school||''}</td>
         <td style="color:${lg.c};font-weight:700">${fmt(p.grade||0,1)}</td>
         ${filterCols.map(c=>`<td>${explorerFmtDisplay(p[c.k],c.fmt)}</td>`).join('')}
-        <td>${tag?`<span style="color:${tag.color};font-size:10px;font-weight:700">${tag.icon} ${tag.label}</span>`:'—'}</td>
+        <td>${tag?`<span style="color:${tag.color};font-size:12px;font-weight:700">${tag.icon} ${tag.label}</span>`:'—'}</td>
       </tr>`;
     }).join('');
     body.innerHTML = `<div style="overflow-x:auto"><table class="explorer-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
@@ -3065,12 +3064,7 @@ function renderOutcomes() {
   const top24 = data.filter(p => p.nfl_top24 > 0);
   const avgGrade = data.length ? (data.reduce((s,p)=>s+(p.grade||0),0)/data.length).toFixed(1) : '—';
 
-  document.getElementById('outcomesSummary').innerHTML =
-    sumItem(data.length, 'Players') +
-    sumItem(withNFL.length, 'With NFL Data') +
-    sumItem(top12.length, 'Top-12 Seasons') +
-    sumItem(top24.length, 'Top-24 Seasons') +
-    sumItem(avgGrade, 'Avg Grade');
+  // summary removed
 
   // Table header
   const arr = k => k === outcomesSort ? (outcomesSortDir === 'desc' ? ' ↓' : ' ↑') : '';
@@ -3087,6 +3081,7 @@ function renderOutcomes() {
     th('grade','Grade') +
     th('markers','Markers') +
     th('pff','PFF Mkrs') +
+    '<th>Label</th>' +
     th('nfl_seasons','NFL Seasons') +
     th('nfl_career_ppg','Career PPG') +
     th('nfl_best_ppg','Best PPG') +
@@ -3111,12 +3106,20 @@ function renderOutcomes() {
     html += `<td style="color:${lg.c};font-weight:700">${p.grade?fmt(p.grade,1):'—'}</td>`;
     html += `<td style="color:${col}">${p.markers!=null?p.markers:'—'}</td>`;
     html += `<td style="color:var(--accent3)">${p.pff!=null?Math.round(p.pff):'—'}</td>`;
+    {
+      // Need to find player in cache to get tag
+      const yr = p.year;
+      const data = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
+      const cp = data.find(x => x.name === p.name);
+      const tag = cp ? getTag(cp) : null;
+      html += `<td>${tag ? '<span style="color:'+tag.color+';font-size:12px;font-weight:700">'+tag.icon+' '+tag.label+'</span>' : '—'}</td>`;
+    }
     html += `<td style="color:${noNfl?'var(--muted)':'var(--text)'}">${p.nfl_seasons||'—'}</td>`;
     html += `<td style="font-weight:700;color:${noNfl?'var(--muted)':'var(--accent)'}">${p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—'}</td>`;
     html += `<td style="color:${noNfl?'var(--muted)':'var(--accent2)'}">${p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—'}</td>`;
-    html += `<td>${nflBadge(p.nfl_top12)}</td>`;
-    html += `<td>${nflBadge(p.nfl_top24)}</td>`;
-    html += `<td>${nflBadge(p.nfl_top36)}</td>`;
+    html += `<td>${nflBadge(p.nfl_top12,'var(--pos-wr)')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top24,'var(--pos-rb)')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top36,'var(--pos-te)')}</td>`;
     html += '</tr>';
   });
   document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
@@ -3126,10 +3129,9 @@ function sumItem(val, label) {
   return `<div class="outcomes-summary-item"><div class="outcomes-summary-val">${val}</div><div class="outcomes-summary-lbl">${label}</div></div>`;
 }
 
-function nflBadge(n) {
-  if(!n) return '<span class="nfl-badge zero">—</span>';
-  if(n >= 3) return `<span class="nfl-badge gold">${n}</span>`;
-  return `<span class="nfl-badge silver">${n}</span>`;
+function nflBadge(n, col) {
+  if(!n) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  return '<span style="font-weight:700;color:'+col+'">'+n+'</span>';
 }
 
 function openOutcomeModal(pfrId, name, year) {
@@ -3249,7 +3251,7 @@ globalInput.addEventListener('input', () => {
         const col = posColor(p.pos);
         const lg = letterGrade(p.grade||0);
         return '<div class="global-search-result-item" onclick="globalSearchSelect('+i+')">' +
-          '<div style="width:28px;height:28px;border-radius:50%;background:'+col+'22;border:1px solid '+col+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:'+col+';flex-shrink:0">'+p.pos+'</div>' +
+          '<div style="width:28px;height:28px;border-radius:50%;background:'+col+'22;border:1px solid '+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+col+';flex-shrink:0">'+p.pos+'</div>' +
           '<div style="flex:1;min-width:0">' +
             '<div class="global-search-result-name">'+p.name+'</div>' +
             '<div class="global-search-result-meta">'+(p.school||'')+' \u00b7 '+p.year+' \u00b7 Grade: <span style="color:'+lg.c+';font-weight:700">'+(p.grade?fmt(p.grade,1):'--')+'</span></div>' +
@@ -3385,7 +3387,7 @@ async function renderModalComps(player) {
     return '<div class="comp-mini-card" onclick="openModal(window._modalComps['+idx+'])">' +
       '<div class="comp-mini-name">'+p.name+'</div>' +
       '<div class="comp-mini-meta">'+(p.school||'')+' \u00b7 '+p.year+'</div>' +
-      '<div class="comp-mini-grade" style="color:'+lg.c+'">'+fmt(p.grade,1)+' <span style="font-size:10px;font-weight:400">'+lg.l+'</span></div>' +
+      '<div class="comp-mini-grade" style="color:'+lg.c+'">'+fmt(p.grade,1)+' <span style="font-size:12px;font-weight:400">'+lg.l+'</span></div>' +
       '<div class="comp-mini-sim">'+p._sim+'% match</div>' +
     '</div>';
   }).join('');
@@ -3442,7 +3444,7 @@ async function downloadPlayerCard(p) {
   div.innerHTML =
     '<div style="height:3px;background:'+col+'"></div>' +
     '<div style="padding:20px 22px 22px">' +
-      '<div style="font-size:9px;color:#5a6478;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">The Marker System \u00b7 '+(p.year||2026)+' Draft Class</div>' +
+      '<div style="font-size:11px;color:#5a6478;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">The Marker System \u00b7 '+(p.year||2026)+' Draft Class</div>' +
       '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">' +
         '<div style="width:52px;height:52px;border-radius:50%;border:2px solid '+col+';background:'+col+'22;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:'+col+';flex-shrink:0">'+p.pos+'</div>' +
         '<div>' +
@@ -3450,10 +3452,10 @@ async function downloadPlayerCard(p) {
           '<div style="font-size:11px;color:#5a6478;margin-top:3px">'+(p.school||'')+' \u00b7 '+(p.conf||'')+'</div>' +
         '</div>' +
       '</div>' +
-      (tag ? '<div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid '+tag.color+'44;background:'+tag.color+'18;color:'+tag.color+';margin-bottom:14px">'+tag.icon+' '+tag.label+'</div>' : '') +
+      (tag ? '<div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid '+tag.color+'44;background:'+tag.color+'18;color:'+tag.color+';margin-bottom:14px">'+tag.icon+' '+tag.label+'</div>' : '') +
       '<div style="margin-bottom:6px">' +
         '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
-          '<span style="font-size:9px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Final Grade</span>' +
+          '<span style="font-size:11px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Final Grade</span>' +
           '<span style="font-size:14px;font-weight:700;color:'+lg.c+'">'+fmt(p.grade||0,1)+' <span style="font-size:11px">'+lg.l+'</span></span>' +
         '</div>' +
         '<div style="height:5px;background:#1e2530;border-radius:3px;overflow:hidden">' +
@@ -3461,11 +3463,11 @@ async function downloadPlayerCard(p) {
         '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">' +
-        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:'+col+'">'+(p.markers||0)+'</div><div style="font-size:8px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Markers</div></div>' +
-        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#7b61ff">'+(p.pff!=null?Math.round(p.pff):'--')+'</div><div style="font-size:8px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">PFF Mkrs</div></div>' +
-        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#f5c842">'+(p.round!=null?'Rd '+p.round:'--')+'</div><div style="font-size:8px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Round</div></div>' +
+        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:'+col+'">'+(p.markers||0)+'</div><div style="font-size:11px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Markers</div></div>' +
+        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#7b61ff">'+(p.pff!=null?Math.round(p.pff):'--')+'</div><div style="font-size:11px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">PFF Mkrs</div></div>' +
+        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#f5c842">'+(p.round!=null?'Rd '+p.round:'--')+'</div><div style="font-size:11px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Round</div></div>' +
       '</div>' +
-      '<div style="margin-top:14px;font-size:9px;color:#5a6478;text-align:right;letter-spacing:1px">themarkersystem.com</div>' +
+      '<div style="margin-top:14px;font-size:11px;color:#5a6478;text-align:right;letter-spacing:1px">themarkersystem.com</div>' +
     '</div>';
   document.body.appendChild(div);
 
