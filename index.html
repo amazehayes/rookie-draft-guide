@@ -1791,6 +1791,9 @@ function classifyPlayer(p, format) {
   const label = tag ? tag.label : null;
   const adjScore = dynastySortForFormat(p, format);
 
+  // Never highlight undrafted (round 8) players
+  if(rd === 8 || rd == null) return null;
+
   // ── FADE checks (run first — fades override targets) ──────────────────────
   // Negative label
   if(label && FADE_LABELS.has(label))
