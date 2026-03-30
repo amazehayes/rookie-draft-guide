@@ -1157,7 +1157,7 @@ function pffStats(p,col){
     statSq(fmtPct(p.bestTWP),'Best TWP%'),
     statSq(fmtPct(p.bestSackPct),'Best Sack%'),
     statSq(p.careerRuYd!=null?p.careerRuYd+' yds':'—','Career Rush Yds'),
-    statSq(p.careerRuYPG!=null?fmt(p.careerRuYPG,1):'—','Career Rush YPG'),
+    statSq(p.careerRuYPG!=null?fmt(p.careerRuYPG,1)+'ypg':'—','Career Rush YPG'),
   ].join('');
   if(p.pos==='RB') return[
     statSq(fmtPct(p.careerBA),'Career BA/Att',col),
@@ -1185,12 +1185,12 @@ function pffStats(p,col){
     statSq(fmtPct(p.bestTPRR),'Best TPRR'),
     statSq(fmtPct(p.best1DRR),'Best 1D/Route'),
     statSq(fmt(p.bestYACR,1),'Best YACR'),
-    statSq(fmtPct(p.bestMTF),'Best MTF',col),
-    statSq(fmtPct(p.bestSlot),'Best Slot Rate'),
+    statSq(fmt(p.bestYPTPA,3),'Best YPTPA',col),
+    statSq(fmtPct(p.bestMSYards),'Best MS Yards',col),
     statSq(p.boy20!=null?'Yr '+p.boy20:'—','BOY20',col),
     statSq(p.boy30!=null?'Yr '+p.boy30:'—','BOY30',col),
-    statSq(p.boage20!=null?fmt(p.boage20,1):'—','BOA20',col),
-    statSq(p.boage30!=null?fmt(p.boage30,1):'—','BOA30',col),
+    statSq(p.boa20!=null?fmt(p.boa20,1):'—','BOA20',col),
+    statSq(p.boa30!=null?fmt(p.boa30,1):'—','BOA30',col),
   ].join('');
   // TE
   return[
