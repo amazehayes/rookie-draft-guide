@@ -1361,13 +1361,13 @@ function openModal(p){
 
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
-    // ── Header ──────────────────────────────────────────────────────────────
-    '<div class="modal-header" style="--pos-color:'+col+'">'+
-      '<div class="modal-avatar" style="border-color:'+col+';width:96px;height:96px;">'+
+    // ── Header: left = avatar + name, right = grades + athleticism ──────────
+    '<div class="modal-header" style="--pos-color:'+col+';align-items:stretch">'+
+      '<div class="modal-avatar" style="border-color:'+col+';width:96px;height:96px;flex-shrink:0;align-self:center">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
         '<div class="modal-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
       '</div>'+
-      '<div style="flex:1;min-width:0">'+
+      '<div style="flex:1;min-width:0;padding:22px 26px">'+
         '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+' · '+rl+'</div>'+
         '<div class="modal-name">'+p.name+'</div>'+
         '<div style="display:flex;align-items:center;gap:8px">'+
@@ -1376,43 +1376,44 @@ function openModal(p){
         '</div>'+
         tagHTML(p)+
       '</div>'+
-      // Grade summary right side of header
-      '<div style="display:flex;gap:0;flex-shrink:0;border-left:1px solid var(--border)">'+
-        '<div class="modal-grade-item" style="padding:0 28px"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Mkrs</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border);border-right:none"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Round</div></div>'+
+      // Right panel: grade strip on top, athleticism below
+      '<div style="border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0">'+
+        // Grade strip
+        '<div style="display:flex;border-bottom:1px solid var(--border)">'+
+          '<div class="modal-grade-item" style="padding:14px 22px"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
+          '<div class="modal-grade-item" style="padding:14px 22px;border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
+          '<div class="modal-grade-item" style="padding:14px 22px;border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
+          '<div class="modal-grade-item" style="padding:14px 22px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Mkrs</div></div>'+
+          '<div class="modal-grade-item" style="padding:14px 22px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Round</div></div>'+
+        '</div>'+
+        // Athleticism grid
+        '<div style="padding:14px 22px;flex:1">'+
+          '<div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px">Athleticism & Combine</div>'+
+          '<div class="modal-stats-grid">'+
+            statSq(p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—','Height')+
+            statSq(p.wt!=null?p.wt+' lbs':'—','Weight')+
+            statSq(p.dash!=null?p.dash+'s':'—','40-Yard Dash',p.dash&&p.dash<=4.4?'var(--green)':null)+
+            statSq(p.wass!=null?fmt(p.wass,1):'—','Speed Score',p.wass&&p.wass>=100?'var(--green)':null)+
+            statSq(p.burst!=null?fmt(p.burst,1):'—','Burst Score',p.burst&&p.burst>=120?'var(--green)':null)+
+            statSq(p.bmi!=null?fmt(p.bmi,2):'—','BMI')+
+          '</div>'+
+        '</div>'+
       '</div>'+
     '</div>'+
-    // ── 3-column body ────────────────────────────────────────────────────────
+    // ── Body rows: Markers, PFF, NFL ─────────────────────────────────────────
     '<div class="modal-body">'+
-      // Col 1: Production stats
-      '<div class="modal-section">'+
-        '<div class="modal-section-title">Production</div>'+
-        '<div class="modal-stats-grid">'+posStats(p,col)+'</div>'+
-      '</div>'+
-      // Col 2: Markers checklist + PFF dots
       '<div class="modal-section">'+
         '<div class="modal-section-title">Markers — '+mx+' Total ('+mk+' Hit)</div>'+
         checkHtml+
-        '<div class="modal-section-title" style="margin-top:20px">PFF Markers ('+pmk+'/'+pmx+')</div>'+
-        '<div class="marker-dots" style="margin-bottom:10px">'+pdots+'</div>'+
+      '</div>'+
+      '<div class="modal-section">'+
+        '<div class="modal-section-title">PFF Markers ('+pmk+'/'+pmx+')</div>'+
+        '<div class="marker-dots" style="margin-bottom:12px">'+pdots+'</div>'+
         '<div class="modal-stats-grid">'+pffStats(p,col)+'</div>'+
       '</div>'+
-      // Col 3: Athleticism + NFL Outcomes
-      '<div class="modal-section">'+
-        '<div class="modal-section-title">Athleticism & Combine</div>'+
-        '<div class="modal-stats-grid">'+
-          statSq(p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—','Height')+
-          statSq(p.wt!=null?p.wt+' lbs':'—','Weight')+
-          statSq(p.dash!=null?p.dash+'s':'—','40-Yard Dash',p.dash&&p.dash<=4.4?'var(--green)':null)+
-          statSq(p.wass!=null?fmt(p.wass,1):'—','Speed Score',p.wass&&p.wass>=100?'var(--green)':null)+
-          statSq(p.burst!=null?fmt(p.burst,1):'—','Burst Score',p.burst&&p.burst>=120?'var(--green)':null)+
-          statSq(p.bmi!=null?fmt(p.bmi,2):'—','BMI')+
-        '</div>'+
-        (p.nfl_seasons||p.nfl_top5||p.nfl_top12?
-          '<div class="modal-section-title" style="margin-top:20px">NFL Career Outcomes</div>'+
+      (p.nfl_seasons||p.nfl_top5||p.nfl_top12?
+        '<div class="modal-section">'+
+          '<div class="modal-section-title">NFL Career Outcomes</div>'+
           '<div class="modal-stats-grid">'+
             statSq(p.nfl_seasons||0,'NFL Seasons')+
             statSq(p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—','Career PPG')+
@@ -1421,9 +1422,9 @@ function openModal(p){
             statSq(p.nfl_top12||0,'Top-12 Szns','var(--pos-rb)')+
             statSq(p.nfl_top24||0,'Top-24 Szns','var(--accent2)')+
             statSq(p.nfl_top36||0,'Top-36 Szns','var(--orange)')+
-          '</div>'
-        :'')+
-      '</div>'+
+          '</div>'+
+        '</div>'
+      :'')+
     '</div>'+
     '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">'+
       '<div class="modal-comps-title">Historical Comps</div>'+
