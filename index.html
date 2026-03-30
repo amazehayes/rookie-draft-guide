@@ -1289,6 +1289,52 @@ function openModalFromList(i){
   const p=_lastRenderedList[i];if(!p)return;
   openModal(p);
 }
+function posStats(p, col) {
+  const f = (v, d) => v != null ? fmt(v, d) : '—';
+  const fp = v => v != null ? fmtPct(v) : '—';
+  if(p.pos === 'QB') return (
+    statSq(f(p.careerPYd,0), 'Career Pass Yds') +
+    statSq(f(p.careerYPG,1), 'Pass YPG') +
+    statSq(f(p.careerPAPG,1), 'Pass Att/G') +
+    statSq(fp(p.careerCMP), 'CMP%') +
+    statSq(f(p.careerPTD,0), 'Career TDs') +
+    statSq(f(p.careerINT,0), 'Career INTs') +
+    statSq(f(p.careerRuYd,0), 'Career Rush Yds') +
+    statSq(f(p.bestPPG,1), 'Best PPG')
+  );
+  if(p.pos === 'RB') return (
+    statSq(f(p.ypc,2), 'YPC') +
+    statSq(f(p.yptp,3), 'YPTP') +
+    statSq(f(p.bestTotalYds,0), 'Best Total Yds') +
+    statSq(f(p.bestRec,0), 'Best Receptions') +
+    statSq(fp(p.careerBA), 'Career BA%') +
+    statSq(f(p.careerYACO,2), 'Career YACO') +
+    statSq(f(p.careerYPRR,2), 'Career YPRR') +
+    statSq(f(p.bestPPG,1), 'Best PPG')
+  );
+  if(p.pos === 'WR') return (
+    statSq(f(p.bestYPTPA,3), 'Best YPTPA') +
+    statSq(fp(p.bestMSYards), 'Best MS Yards') +
+    statSq(f(p.careerYPRR,2), 'Career YPRR') +
+    statSq(f(p.careerYPRRzone,2), 'YPRR Zone') +
+    statSq(fp(p.careerTPRR), 'Career TPRR') +
+    statSq(f(p.careerYACR,2), 'Career YACR') +
+    statSq(p.boy20!=null?'Yr '+p.boy20:'—', 'BOY20') +
+    statSq(f(p.bestPPG,1), 'Best PPG')
+  );
+  if(p.pos === 'TE') return (
+    statSq(f(p.bestYPTPA,3), 'Best YPTPA') +
+    statSq(fp(p.bestMSYards), 'Best MS Yards') +
+    statSq(f(p.careerYPG,1), 'Career YPG') +
+    statSq(f(p.careerYPRR,2), 'Career YPRR') +
+    statSq(fp(p.careerTPRR), 'Career TPRR') +
+    statSq(f(p.avgPassBlock,1), 'Pass Block') +
+    statSq(p.boy15!=null?'Yr '+p.boy15:'—', 'BOY15') +
+    statSq(f(p.bestPPG,1), 'Best PPG')
+  );
+  return '';
+}
+
 function openModal(p){
   window._currentModalPlayer = p;
   if(!p)return;
@@ -1379,20 +1425,6 @@ function openModal(p){
         :'')+
       '</div>'+
     '</div>'+
-        (p.nfl_seasons||p.nfl_top5||p.nfl_top12 ?
-      '<div class="modal-section" style="border-top:1px solid var(--border);padding:16px 26px">'+
-        '<div class="modal-section-title">NFL Career Outcomes</div>'+
-        '<div class="modal-stats-grid">'+
-          statSq(p.nfl_seasons||0,'NFL Seasons')+
-          statSq(p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—','Career PPG')+
-          statSq(p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—','Best PPG')+
-          statSq(p.nfl_top5||0,'Top-5 Szns','#00c2ff')+
-          statSq(p.nfl_top12||0,'Top-12 Szns','var(--pos-rb)')+
-          statSq(p.nfl_top24||0,'Top-24 Szns','var(--accent2)')+
-          statSq(p.nfl_top36||0,'Top-36 Szns','var(--orange)')+
-        '</div>'+
-      '</div>'
-    : '')+
     '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">'+
       '<div class="modal-comps-title">Historical Comps</div>'+
       '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>'+
