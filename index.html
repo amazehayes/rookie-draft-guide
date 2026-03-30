@@ -1361,7 +1361,7 @@ function openModal(p){
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
     '<div class="modal-header" style="--pos-color:'+col+'">'+
-      '<div class="modal-avatar" style="border-color:'+col+'">'+
+      '<div class="modal-avatar" style="border-color:'+col+';width:96px;height:96px;">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
         '<div class="modal-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
       '</div>'+
@@ -1377,13 +1377,13 @@ function openModal(p){
         '</div>'+
         tagHTML(p)+
       '</div>'+
-    '</div>'+
-    '<div class="modal-grade-row">'+
-      '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Final Grade</div></div>'+
-      '<div class="modal-grade-item"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter Grade</div></div>'+
-      '<div class="modal-grade-item"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers Hit</div></div>'+
-      '<div class="modal-grade-item"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Markers</div></div>'+
-      '<div class="modal-grade-item"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Draft Round</div></div>'+
+      '<div style="display:flex;gap:0;flex-shrink:0;border-left:1px solid var(--border)">'+
+        '<div class="modal-grade-item" style="padding:0 28px"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
+        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
+        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
+        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Mkrs</div></div>'+
+        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Round</div></div>'+
+      '</div>'+
     '</div>'+
     '<div class="modal-body">'+
       '<div class="modal-section">'+
