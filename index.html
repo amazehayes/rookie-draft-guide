@@ -574,9 +574,9 @@ td{padding:10px 14px;white-space:nowrap;}
   .marker-checklist{grid-template-columns:1fr;}
   /* Modal grade strip: smaller text, scrollable */
   .modal-grade-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .modal-grade-item{min-width:64px;flex-shrink:0;padding:10px 10px;}
-  .modal-grade-item .val{font-size:15px;}
-  .modal-grade-item .lbl{font-size:9px;letter-spacing:0;}
+  .modal-grade-item{flex:1;min-width:0;padding:10px 8px;}
+  .modal-grade-item .val{font-size:14px;}
+  .modal-grade-item .lbl{font-size:9px;letter-spacing:0;white-space:nowrap;}
   /* Modal header: stack avatar+name above grade strip */
   .modal-header{flex-direction:column;align-items:flex-start;padding:16px;}
   .modal-header > div[style*="border-left"]{border-left:none !important;border-top:1px solid var(--border);width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
@@ -1415,11 +1415,11 @@ function openModal(p){
         tagHTML(p)+
       '</div>'+
       '<div style="display:flex;gap:0;flex-shrink:0;border-left:1px solid var(--border)">'+
-        '<div class="modal-grade-item" style="padding:0 28px"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Mkrs</div></div>'+
-        '<div class="modal-grade-item" style="padding:0 28px;border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Round</div></div>'+
+        '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
+        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
+        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
+        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">PFF Mkrs</div></div>'+
+        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Round</div></div>'+
       '</div>'+
     '</div>'+
     '<div class="modal-body">'+
