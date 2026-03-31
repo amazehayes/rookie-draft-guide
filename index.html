@@ -1565,18 +1565,20 @@ function getFiltered() {
     }
     return true;
   }).sort((a,b) => {
+    let diff;
     switch(currentSort) {
-      case 'grade':   return (b.grade||0)-(a.grade||0);
-      case 'markers': return (b.markers||0)-(a.markers||0);
-      case 'age':     return (a.age||99)-(b.age||99);
-      case 'name':    return a.name.localeCompare(b.name);
+      case 'grade':   diff = (b.grade||0)-(a.grade||0); break;
+      case 'markers': diff = (b.markers||0)-(a.markers||0); break;
+      case 'age':     diff = (a.age||99)-(b.age||99); break;
+      case 'name':    diff = a.name.localeCompare(b.name); break;
       case 'draft': {
         const ao = a.overall!=null?a.overall:9999;
         const bo = b.overall!=null?b.overall:9999;
-        return ao-bo;
+        diff = ao-bo; break;
       }
-      default: return dynastySort(b)-dynastySort(a);
+      default: diff = dynastySort(b)-dynastySort(a);
     }
+    return sortDir === 'asc' ? -diff : diff;
   });
 }
 
