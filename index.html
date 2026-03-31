@@ -1084,17 +1084,16 @@ let currentPos='ALL',currentSort='rank',sortDir='desc',searchQuery='',viewMode='
   });
 })();
 
-function rankLabel(p,list){
-  const pos=list.indexOf(p)+1;
-  const dir=sortDir==='asc'?'↑':'';
-  switch(currentSort){
-    case'grade':  return dir+'#'+pos+' BY GRADE';
-    case'markers':return dir+'#'+pos+' BY MARKERS';
-    case'age':    return sortDir==='asc'?'#'+pos+' OLDEST':'#'+pos+' YOUNGEST';
-    case'name':   return p.pos;
-    case'draft':  return p.overall!=null?'PICK #'+p.overall:'UNDRAFTED';
-    default:      return dir+'#'+pos+' OVERALL';
-  }
+function rankLabel(p, list) {
+  // Always rank by Final Grade regardless of current sort
+  const data = yearCache[activeYear] || PLAYERS;
+  const graded = data.filter(q => q.grade).sort((a,b) => (b.grade||0)-(a.grade||0));
+  const overall = graded.findIndex(q => q.name === p.name) + 1;
+  const byPos = graded.filter(q => q.pos === p.pos);
+  const posRank = byPos.findIndex(q => q.name === p.name) + 1;
+  const posLabel = p.pos + (posRank > 0 ? posRank : '');
+  const overallLabel = overall > 0 ? '#' + overall + ' Overall' : 'Ungraded';
+  return posLabel + ' · ' + overallLabel;
 }
 
 // ---- MARKER EVALUATION ----
@@ -1245,11 +1244,26 @@ function renderCards(){
   if(!list.length){container.innerHTML='';document.getElementById('emptyState').style.display='block';return;}
   document.getElementById('emptyState').style.display='none';
   let html='';
+  // Pre-compute grade-based ranks (positional + overall)
+  const allForRank = getFiltered.length ? list : list; // use full filtered list
+  // Get all players sorted by grade for overall rank
+  const gradeList = [...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
+  const overallRankMap = new Map(gradeList.map((p,i)=>[p,i+1]));
+  // Positional ranks by grade
+  const posCounts = {};
+  const posRankMap = new Map();
+  gradeList.forEach(p => {
+    posCounts[p.pos] = (posCounts[p.pos]||0) + 1;
+    posRankMap.set(p, posCounts[p.pos]);
+  });
+
   list.forEach((p,i)=>{
     const col=posColor(p.pos);const g=p.grade||0;
     const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
     const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
-    const rl=rankLabel(p,list);
+    const posRank = posRankMap.get(p) || '?';
+    const overallRank = overallRankMap.get(p) || '?';
+    const rl = p.pos+posRank+' · #'+overallRank+' Overall';
     const lg=letterGrade(g);
     const metrics=cardMetrics(p).map(m=>'<div class="metric-item"><span class="metric-val">'+m.v+'</span><span class="metric-lbl">'+m.l+'</span></div>').join('');
     let dots='',pdots='';
@@ -1380,7 +1394,15 @@ function openModal(p){
   const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
   const markers=evalMarkers(p);
   const list=getFiltered();
-  const rl=rankLabel(p,list);
+  // Compute positional + overall grade rank
+  const _gradeList = [...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
+  const _overallRank = _gradeList.indexOf(p)+1 || '?';
+  const _posCounts = {}; let _posRank = '?';
+  _gradeList.forEach(q => {
+    _posCounts[q.pos] = (_posCounts[q.pos]||0)+1;
+    if(q===p) _posRank = _posCounts[q.pos];
+  });
+  const rl = p.pos+_posRank+' · #'+_overallRank+' Overall';
   const lg=letterGrade(p.grade);
 
   let checkHtml='<div class="marker-checklist">';
