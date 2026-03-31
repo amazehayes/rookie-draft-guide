@@ -328,7 +328,7 @@ body.light-mode .nav-drawer{background:var(--surface);}
 .mobile-expand-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:3px;}
 .mobile-expand-btn:hover{color:var(--accent);}
 
-@media (max-width: 1100px) {
+@media (max-width: 768px) {
   /* Nav */
   .site-nav{padding:0 16px;height:56px;}
   .nav-links{display:none;}
@@ -3703,6 +3703,44 @@ async function exportRankingsPDF() {
     btn.disabled = false;
   }
 }
+
+// ── Dynamic nav collapse ──────────────────────────────────────────────────────
+function checkNavOverflow() {
+  const nav = document.getElementById('siteNav');
+  const links = nav ? nav.querySelector('.nav-links') : null;
+  const hamburger = document.getElementById('hamburger');
+  if (!nav || !links || !hamburger) return;
+
+  // Temporarily show links to measure
+  const wasForcedHidden = nav.classList.contains('nav-overflow');
+  links.style.display = 'flex';
+  hamburger.style.display = 'none';
+
+  // Check if links overflow the nav
+  const overflows = links.scrollWidth > links.clientWidth || 
+                    nav.scrollWidth > nav.clientWidth;
+
+  if (overflows) {
+    links.style.display = '';
+    hamburger.style.display = '';
+    nav.classList.add('nav-overflow');
+  } else {
+    links.style.display = '';
+    hamburger.style.display = '';
+    nav.classList.remove('nav-overflow');
+  }
+}
+
+// CSS class to hide/show based on overflow
+const navOverflowStyle = document.createElement('style');
+navOverflowStyle.textContent = `
+  .nav-overflow .nav-links { display: none !important; }
+  .nav-overflow .hamburger { display: flex !important; }
+`;
+document.head.appendChild(navOverflowStyle);
+
+checkNavOverflow();
+window.addEventListener('resize', checkNavOverflow);
 
 </script>
 </body>
