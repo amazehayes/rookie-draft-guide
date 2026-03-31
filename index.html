@@ -1086,13 +1086,14 @@ let currentPos='ALL',currentSort='rank',sortDir='desc',searchQuery='',viewMode='
 
 function rankLabel(p,list){
   const pos=list.indexOf(p)+1;
+  const dir=sortDir==='asc'?'↑':'';
   switch(currentSort){
-    case'grade':  return'#'+pos+' BY GRADE';
-    case'markers':return'#'+pos+' BY MARKERS';
-    case'age':    return'#'+pos+' YOUNGEST';
+    case'grade':  return dir+'#'+pos+' BY GRADE';
+    case'markers':return dir+'#'+pos+' BY MARKERS';
+    case'age':    return sortDir==='asc'?'#'+pos+' OLDEST':'#'+pos+' YOUNGEST';
     case'name':   return p.pos;
     case'draft':  return p.overall!=null?'PICK #'+p.overall:'UNDRAFTED';
-    default:      return'#'+pos+' OVERALL';
+    default:      return dir+'#'+pos+' OVERALL';
   }
 }
 
