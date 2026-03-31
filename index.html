@@ -144,6 +144,13 @@
 .explorer-sidebar-actions{padding:12px 16px;border-top:1px solid var(--border);margin-top:auto;}
 .explorer-reset-btn{width:100%;background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:8px;border-radius:6px;cursor:pointer;transition:all .15s;}
 .explorer-reset-btn:hover{border-color:var(--red);color:var(--red);}
+@media(max-width:1200px){
+  .nav-btn{font-size:11px;padding:5px 7px;letter-spacing:0;}
+  .site-nav{gap:12px;}
+}
+@media(max-width:1000px){
+  .nav-btn{font-size:10px;padding:4px 6px;}
+}
 @media(max-width:768px){
   .explorer-layout{flex-direction:column;height:auto;}
   .explorer-sidebar{width:100%;max-height:360px;border-right:none;border-bottom:1px solid var(--border);}
@@ -247,8 +254,8 @@ body.light-mode .nav-drawer{background:var(--surface);}
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
-.nav-links{display:flex;gap:2px;flex-shrink:0;}
-.nav-btn{background:none;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.nav-links{display:flex;gap:2px;flex:1;overflow:hidden;}
+.nav-btn{background:none;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 10px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .nav-btn:hover{color:var(--text);}
 .nav-btn.active{background:var(--accent);color:var(--bg);}
 /* year bar lives inside pages now */
@@ -638,14 +645,14 @@ td{padding:10px 14px;white-space:nowrap;}
     <option value="You Have My Attention">✏️ You Have My Attention</option>
     <option value="_ANY">— Has Any Label —</option>
   </select>
-  <select class="sort-select" id="sortSelect">
+  <div style="display:flex;gap:4px;align-items:center"><select class="sort-select" id="sortSelect">
     <option value="rank">Dynasty Value</option>
     <option value="grade">Final Grade</option>
     <option value="markers">Markers</option>
     <option value="draft">NFL Draft Pick</option>
     <option value="age">Age (Youngest)</option>
     <option value="name">Name A–Z</option>
-  </select>
+  </select><button id="sortDirBtn" title="Toggle sort direction" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:6px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">↓ High→Low</button></div>
   <div class="view-toggle">
     <button class="view-btn active" id="cardViewBtn" title="Cards">▦</button>
     <button class="view-btn" id="tableViewBtn" title="Table">☰</button>
@@ -902,7 +909,7 @@ function logoSrc(school){
 }
 
 function letterGrade(g){
-  if(g==null)return{l:'—',c:'var(--muted)'};
+  if(g==null||g===0)return{l:'—',c:'var(--muted)'};
   if(g>=97)return{l:'A+',c:'#3dffa0'};
   if(g>=93)return{l:'A', c:'#3dffa0'};
   if(g>=90)return{l:'A-',c:'#3dffa0'};
@@ -1048,7 +1055,7 @@ function dynastySortForFormat(p, format) {
 // Player Grades default sort = superflex base
 function dynastySort(p) { return superflexBase(p); }
 
-let currentPos='ALL',currentSort='rank',searchQuery='',viewMode='cards',currentLabel='ALL',currentSchool='ALL';
+let currentPos='ALL',currentSort='rank',sortDir='desc',searchQuery='',viewMode='cards',currentLabel='ALL',currentSchool='ALL';
 
 // Populate school dropdown (2026 default)
 (function(){
@@ -1446,6 +1453,11 @@ document.getElementById('searchBox').addEventListener('input',e=>{searchQuery=e.
 document.getElementById('schoolFilter').addEventListener('change',e=>{currentSchool=e.target.value;render();});
 document.getElementById('labelFilter').addEventListener('change',e=>{currentLabel=e.target.value;render();});
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;render();});
+document.getElementById('sortDirBtn').addEventListener('click',()=>{
+  sortDir = sortDir==='desc'?'asc':'desc';
+  document.getElementById('sortDirBtn').textContent = sortDir==='desc'?'↓ High→Low':'↑ Low→High';
+  render();
+});
 document.getElementById('cardViewBtn').addEventListener('click',()=>{viewMode='cards';document.getElementById('cardViewBtn').classList.add('active');document.getElementById('tableViewBtn').classList.remove('active');render();});
 document.getElementById('tableViewBtn').addEventListener('click',()=>{viewMode='table';document.getElementById('tableViewBtn').classList.add('active');document.getElementById('cardViewBtn').classList.remove('active');render();});
 document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
