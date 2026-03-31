@@ -572,9 +572,11 @@ td{padding:10px 14px;white-space:nowrap;}
   .cards-grid{grid-template-columns:1fr;}
   .modal-name{font-size:24px;}
   .marker-checklist{grid-template-columns:1fr;}
-  /* Modal grade strip: scroll horizontally rather than wrap ugly */
+  /* Modal grade strip: smaller text, scrollable */
   .modal-grade-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .modal-grade-item{min-width:80px;flex-shrink:0;}
+  .modal-grade-item{min-width:64px;flex-shrink:0;padding:10px 10px;}
+  .modal-grade-item .val{font-size:15px;}
+  .modal-grade-item .lbl{font-size:9px;letter-spacing:0;}
   /* Modal header: stack avatar+name above grade strip */
   .modal-header{flex-direction:column;align-items:flex-start;padding:16px;}
   .modal-header > div[style*="border-left"]{border-left:none !important;border-top:1px solid var(--border);width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
