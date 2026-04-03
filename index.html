@@ -468,39 +468,28 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 /* CARDS */
 .main{padding:24px 32px;}
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
-.player-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;animation:fadeUp .3s ease both;}
-.player-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--pos-color,var(--accent));opacity:.8;}
-.player-card:hover{border-color:var(--pos-color,var(--accent));transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 0 1px var(--pos-color,var(--accent)) inset;}
+.player-card{border-radius:10px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;animation:fadeUp .3s ease both;aspect-ratio:3/2;min-height:160px;}
+.player-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.6);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.card-body{padding:16px 18px 18px;}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.card-rank{font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
-.card-pos-badge{font-size:13px;font-weight:700;letter-spacing:2px;padding:3px 7px;border-radius:3px;text-transform:uppercase;}
-.card-name-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.card-avatar{width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--pos-color,var(--accent));background:var(--surface2);}
-.card-avatar img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
-.card-avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-weight:800;font-size:17px;color:var(--muted);}
-.card-name{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;line-height:1;margin-bottom:3px;}
-.card-school{font-size:13px;color:var(--muted);letter-spacing:.5px;}
-.card-school span{color:var(--text);opacity:.4;}
-.grade-bar-wrap{margin-bottom:12px;}
-.grade-bar-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-.grade-bar-lbl-text{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);}
-.grade-val-row{display:flex;align-items:baseline;gap:6px;}
-.grade-val{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:1px;line-height:1;}
-.grade-letter{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;padding:2px 6px;border-radius:3px;letter-spacing:0;}
-.grade-bar-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-.grade-bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
-.marker-section{margin-top:11px;}
-.marker-section-label{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px;}
-.marker-dots{display:flex;gap:3px;flex-wrap:wrap;}
-.marker-dot{width:7px;height:7px;border-radius:50%;}
-.marker-dot.hit{opacity:.9;}
-.marker-dot.miss{background:var(--border)!important;opacity:1;}
-.card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-.metric-item{text-align:center;}
-.metric-val{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;display:block;margin-bottom:2px;}
-.metric-lbl{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.card-bg{position:absolute;inset:0;background-size:cover;background-position:center top;z-index:0;}
+.card-bg-overlay{position:absolute;inset:0;z-index:1;}
+.card-body{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;}
+.card-rank{font-size:12px;color:rgba(255,255,255,0.9);letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.4);padding:2px 7px;border-radius:4px;backdrop-filter:blur(4px);}
+.card-pos-badge{font-size:11px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:3px;text-transform:uppercase;}
+.card-bottom{display:flex;flex-direction:column;gap:4px;}
+.card-name{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;line-height:1;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8);}
+.card-school{font-size:12px;color:rgba(255,255,255,0.75);letter-spacing:.5px;}
+.card-grade-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.card-grade-pill{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);}
+.card-markers-row{display:flex;gap:2px;flex-wrap:wrap;margin-top:3px;}
+.card-avatar{display:none;}
+.card-avatar-fallback{display:none;}
+.card-name-row{display:none;}
+.grade-bar-wrap{display:none;}
+.marker-section{display:none;}
+.card-metrics{display:none;}
+.card-school span{color:rgba(255,255,255,0.5);}
 /* TABLE */
 .table-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid var(--pos-color,var(--accent));background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:10px;}
 .table-avatar img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
@@ -920,6 +909,736 @@ td{padding:10px 14px;white-space:nowrap;}
 <script>
 const HEADSHOT_BASE='headshots/';
 const POS_COLORS={QB:'#c084fc',RB:'#3dffa0',WR:'#e8ff47',TE:'#ff6b35'};
+const SCHOOL_COLORS = {
+"Abilene Christian": [
+"#4B2E83",
+"#C8A951"
+],
+"Air Force": [
+"#003087",
+"#8A8B8C"
+],
+"Akron": [
+"#041E42",
+"#A89968"
+],
+"Alabama": [
+"#9E1B32",
+"#828A8F"
+],
+"Alabama State": [
+"#000000",
+"#C8A951"
+],
+"Appalachian State": [
+"#FFB81C",
+"#000000"
+],
+"Arizona": [
+"#CC0033",
+"#003366"
+],
+"Arizona State": [
+"#8C1D40",
+"#FFC627"
+],
+"Arkansas": [
+"#9D2235",
+"#000000"
+],
+"Arkansas State": [
+"#CC0000",
+"#000000"
+],
+"Ashland": [
+"#4B2E83",
+"#C8A951"
+],
+"Auburn": [
+"#0C2340",
+"#E87722"
+],
+"BYU": [
+"#002E5D",
+"#FFFFFF"
+],
+"Ball State": [
+"#BA0C2F",
+"#000000"
+],
+"Baylor": [
+"#1D4E3E",
+"#FFB81C"
+],
+"Boise State": [
+"#0033A0",
+"#D64309"
+],
+"Boston College": [
+"#8B0000",
+"#C8A951"
+],
+"Bowling Green": [
+"#4B2E83",
+"#FC4C02"
+],
+"Buffalo": [
+"#005BBB",
+"#000000"
+],
+"California": [
+"#003262",
+"#FDB515"
+],
+"Central Arkansas": [
+"#4F2D7F",
+"#C8A951"
+],
+"Central Michigan": [
+"#6A0032",
+"#FFC82E"
+],
+"Charlotte": [
+"#005035",
+"#C8A951"
+],
+"Cincinnati": [
+"#E00122",
+"#000000"
+],
+"Citadel": [
+"#00205B",
+"#C8A951"
+],
+"Clemson": [
+"#F66733",
+"#522D80"
+],
+"Coastal Carolina": [
+"#006F51",
+"#A27752"
+],
+"Colorado": [
+"#CFB87C",
+"#000000"
+],
+"Colorado State": [
+"#1E4D2B",
+"#C8C372"
+],
+"Cornell": [
+"#B31B1B",
+"#222222"
+],
+"Dayton": [
+"#CE1141",
+"#002147"
+],
+"Delaware": [
+"#00539F",
+"#FFD200"
+],
+"Drake": [
+"#004B8D",
+"#C8A951"
+],
+"Duke": [
+"#003087",
+"#FFFFFF"
+],
+"East Carolina": [
+"#4B1869",
+"#C8A951"
+],
+"East Central (OK)": [
+"#1A3A5C",
+"#C8A951"
+],
+"Eastern Illinois": [
+"#004B98",
+"#C8A951"
+],
+"Eastern Michigan": [
+"#006633",
+"#C8A951"
+],
+"Eastern Washington": [
+"#A10022",
+"#000000"
+],
+"Florida": [
+"#0021A5",
+"#FA4616"
+],
+"Florida Atlantic": [
+"#003366",
+"#CC0000"
+],
+"Florida International": [
+"#081E3F",
+"#B6862C"
+],
+"Florida State": [
+"#782F40",
+"#CEB888"
+],
+"Fordham": [
+"#6B0D14",
+"#C8A951"
+],
+"Fresno State": [
+"#CC0033",
+"#003366"
+],
+"Georgia": [
+"#BA0C2F",
+"#000000"
+],
+"Georgia Southern": [
+"#012F6B",
+"#C8A951"
+],
+"Georgia State": [
+"#0039A6",
+"#C8A951"
+],
+"Georgia Tech": [
+"#B3A369",
+"#003057"
+],
+"Grambling": [
+"#000000",
+"#CFB87C"
+],
+"Harvard": [
+"#A51C30",
+"#FFFFFF"
+],
+"Hawaii": [
+"#024731",
+"#C8A951"
+],
+"Hillsdale": [
+"#00205B",
+"#C8A951"
+],
+"Houston": [
+"#CC0033",
+"#FFFFFF"
+],
+"Idaho": [
+"#B3A369",
+"#003057"
+],
+"Illinois": [
+"#E84A27",
+"#13294B"
+],
+"Illinois State": [
+"#CC0000",
+"#FFFFFF"
+],
+"Incarnate Word": [
+"#C8102E",
+"#003DA5"
+],
+"Indiana": [
+"#990000",
+"#DFBBBB"
+],
+"Indiana State": [
+"#003DA5",
+"#FFFFFF"
+],
+"Iowa": [
+"#FFCD00",
+"#000000"
+],
+"Iowa State": [
+"#C8102E",
+"#F1BE48"
+],
+"Jacksonville State": [
+"#CC0033",
+"#C8A951"
+],
+"Kansas": [
+"#0051A5",
+"#E8000D"
+],
+"Kansas State": [
+"#512888",
+"#FFFFFF"
+],
+"Kent State": [
+"#002664",
+"#C8A951"
+],
+"Kentucky": [
+"#0033A0",
+"#FFFFFF"
+],
+"Kentucky Wesleyan": [
+"#4B2E83",
+"#C8A951"
+],
+"LSU": [
+"#461D7C",
+"#FDD023"
+],
+"Liberty": [
+"#990000",
+"#002147"
+],
+"Louisiana": [
+"#CE1141",
+"#000000"
+],
+"Louisiana Tech": [
+"#002F8B",
+"#E31B23"
+],
+"Louisville": [
+"#AD0000",
+"#000000"
+],
+"Maine": [
+"#003263",
+"#B0B7BC"
+],
+"Malone": [
+"#003DA5",
+"#C8A951"
+],
+"Marshall": [
+"#00B140",
+"#000000"
+],
+"Maryland": [
+"#E03A3E",
+"#FFD520"
+],
+"Massachusetts": [
+"#881C1C",
+"#FFFFFF"
+],
+"Memphis": [
+"#0C1C8C",
+"#878787"
+],
+"Miami (FL)": [
+"#005030",
+"#F47321"
+],
+"Miami (OH)": [
+"#B61E2E",
+"#FFFFFF"
+],
+"Michigan": [
+"#00274C",
+"#FFCB05"
+],
+"Michigan State": [
+"#18453B",
+"#FFFFFF"
+],
+"Middle Tennessee": [
+"#003B7C",
+"#FFFFFF"
+],
+"Minnesota": [
+"#7A0019",
+"#FFB71B"
+],
+"Minnesota St": [
+"#4B2E83",
+"#C8A951"
+],
+"Mississippi": [
+"#CE1126",
+"#14213D"
+],
+"Mississippi State": [
+"#660000",
+"#FFFFFF"
+],
+"Missouri": [
+"#F1B82D",
+"#000000"
+],
+"Missouri State": [
+"#5B2333",
+"#C8A951"
+],
+"Monmouth": [
+"#041E42",
+"#C8A951"
+],
+"Montana": [
+"#730220",
+"#C8A951"
+],
+"Montana State": [
+"#003B6F",
+"#C8A951"
+],
+"Mount Union": [
+"#461D7C",
+"#C8A951"
+],
+"Murray State": [
+"#002D62",
+"#C8A951"
+],
+"Navy": [
+"#00205B",
+"#C8A951"
+],
+"Nebraska": [
+"#E41C38",
+"#000000"
+],
+"Nevada": [
+"#003366",
+"#807B6F"
+],
+"New Hampshire": [
+"#002D62",
+"#C8A951"
+],
+"New Mexico": [
+"#BA0C2F",
+"#63666A"
+],
+"New Mexico State": [
+"#861F41",
+"#C8A951"
+],
+"North Carolina": [
+"#7BAFD4",
+"#13294B"
+],
+"North Carolina A&T": [
+"#004684",
+"#C8A951"
+],
+"North Carolina State": [
+"#CC0000",
+"#000000"
+],
+"North Dakota State": [
+"#006633",
+"#FFC82E"
+],
+"North Texas": [
+"#00853E",
+"#FFFFFF"
+],
+"Northern Illinois": [
+"#BA0C2F",
+"#000000"
+],
+"Northern Iowa": [
+"#4B116F",
+"#C8A951"
+],
+"Northwestern": [
+"#4E2A84",
+"#FFFFFF"
+],
+"Notre Dame": [
+"#0C1C8C",
+"#C8A951"
+],
+"Ohio": [
+"#00694E",
+"#C8A951"
+],
+"Ohio State": [
+"#BA0C2F",
+"#666666"
+],
+"Oklahoma": [
+"#841617",
+"#FDF9D8"
+],
+"Oklahoma State": [
+"#FF6600",
+"#000000"
+],
+"Old Dominion": [
+"#003A6C",
+"#7AB2DD"
+],
+"Oregon": [
+"#154733",
+"#FEE123"
+],
+"Oregon State": [
+"#DC4405",
+"#000000"
+],
+"Penn State": [
+"#041E42",
+"#FFFFFF"
+],
+"Pennsylvania": [
+"#011F5B",
+"#990000"
+],
+"Pittsburgh": [
+"#003594",
+"#FFB81C"
+],
+"Portland State": [
+"#006737",
+"#FFFFFF"
+],
+"Princeton": [
+"#FF6600",
+"#000000"
+],
+"Purdue": [
+"#CEB888",
+"#000000"
+],
+"Rhode Island": [
+"#002147",
+"#75B2DD"
+],
+"Rice": [
+"#00205B",
+"#C8A951"
+],
+"Richmond": [
+"#003594",
+"#C8A951"
+],
+"Rutgers": [
+"#CC0033",
+"#000000"
+],
+"SMU": [
+"#0033A0",
+"#C8102E"
+],
+"Saginaw Valley State": [
+"#003DA5",
+"#C8A951"
+],
+"San Diego State": [
+"#A6192E",
+"#000000"
+],
+"San Jose State": [
+"#0055A2",
+"#E5A823"
+],
+"South Alabama": [
+"#00205B",
+"#C8A951"
+],
+"South Carolina": [
+"#73000A",
+"#000000"
+],
+"South Carolina State": [
+"#00205B",
+"#C8A951"
+],
+"South Dakota State": [
+"#003DA5",
+"#FFD700"
+],
+"South Florida": [
+"#006747",
+"#C8A951"
+],
+"Southern Illinois": [
+"#720020",
+"#C8A951"
+],
+"Southern Mississippi": [
+"#FFB81C",
+"#000000"
+],
+"Stanford": [
+"#8C1515",
+"#FFFFFF"
+],
+"Stetson": [
+"#006747",
+"#C8A951"
+],
+"Syracuse": [
+"#D44500",
+"#000E54"
+],
+"TCU": [
+"#4D1979",
+"#FFFFFF"
+],
+"Temple": [
+"#9D1A33",
+"#000000"
+],
+"Tennessee": [
+"#FF8200",
+"#FFFFFF"
+],
+"Texas": [
+"#BF5700",
+"#FFFFFF"
+],
+"Texas A&M": [
+"#500000",
+"#FFFFFF"
+],
+"Texas Southern": [
+"#1C3F6E",
+"#C8A951"
+],
+"Texas State": [
+"#501214",
+"#C8A951"
+],
+"Texas Tech": [
+"#CC0000",
+"#000000"
+],
+"Toledo": [
+"#15397F",
+"#FFCB05"
+],
+"Towson": [
+"#FFB81C",
+"#000000"
+],
+"Troy": [
+"#8B0000",
+"#C8A951"
+],
+"Tulane": [
+"#006747",
+"#418FDE"
+],
+"Tulsa": [
+"#002D62",
+"#C8A951"
+],
+"UAB": [
+"#1E6B52",
+"#C8A951"
+],
+"UC-Davis": [
+"#002855",
+"#C8A951"
+],
+"UCF": [
+"#000000",
+"#BA9B37"
+],
+"UCLA": [
+"#2D68C4",
+"#F2A900"
+],
+"UConn": [
+"#000E2F",
+"#C8A951"
+],
+"UL Monroe": [
+"#800000",
+"#C8A951"
+],
+"UNLV": [
+"#CF0A2C",
+"#000000"
+],
+"USC": [
+"#990000",
+"#FFC72C"
+],
+"UTEP": [
+"#FF8200",
+"#041E42"
+],
+"UTSA": [
+"#002147",
+"#F15A22"
+],
+"Utah": [
+"#CC0000",
+"#FFFFFF"
+],
+"Utah State": [
+"#003CA5",
+"#FFFFFF"
+],
+"Vanderbilt": [
+"#000000",
+"#CFB87C"
+],
+"Virginia": [
+"#232D4B",
+"#F84C1E"
+],
+"Virginia State": [
+"#003DA5",
+"#C8A951"
+],
+"Virginia Tech": [
+"#630031",
+"#CF4420"
+],
+"Wake Forest": [
+"#9E7E38",
+"#000000"
+],
+"Washington": [
+"#4B2E83",
+"#B7A57A"
+],
+"Washington State": [
+"#981E32",
+"#5E6A71"
+],
+"Weber State": [
+"#492F92",
+"#FFFFFF"
+],
+"West Virginia": [
+"#002855",
+"#EAAA00"
+],
+"Western Kentucky": [
+"#C60C30",
+"#000000"
+],
+"Western Michigan": [
+"#6C4023",
+"#C8A951"
+],
+"Western Oregon": [
+"#003DA5",
+"#C8A951"
+],
+"William & Mary": [
+"#115740",
+"#C8A951"
+],
+"Wisconsin": [
+"#C5050C",
+"#FFFFFF"
+],
+"Wyoming": [
+"#492F92",
+"#FFC425"
+],
+"Youngstown State": [
+"#CC0033",
+"#C8A951"
+]
+};
 const POS_MAX={QB:17,RB:12,WR:14,TE:14};
 const PFF_MAX={QB:10,RB:12,WR:17,TE:10};
 
@@ -1278,58 +1997,54 @@ function renderCards(){
   const container=document.getElementById('cardsContainer');
   if(!list.length){container.innerHTML='';document.getElementById('emptyState').style.display='block';return;}
   document.getElementById('emptyState').style.display='none';
-  let html='';
-  // Pre-compute grade-based ranks (positional + overall)
-  const allForRank = getFiltered.length ? list : list; // use full filtered list
-  // Get all players sorted by grade for overall rank
-  const gradeList = [...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
-  const overallRankMap = new Map(gradeList.map((p,i)=>[p,i+1]));
-  // Positional ranks by grade
-  const posCounts = {};
-  const posRankMap = new Map();
-  gradeList.forEach(p => {
-    posCounts[p.pos] = (posCounts[p.pos]||0) + 1;
-    posRankMap.set(p, posCounts[p.pos]);
-  });
 
+  const gradeList=[...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
+  const overallRankMap=new Map(gradeList.map((p,i)=>[p,i+1]));
+  const posCounts={};const posRankMap=new Map();
+  gradeList.forEach(p=>{posCounts[p.pos]=(posCounts[p.pos]||0)+1;posRankMap.set(p,posCounts[p.pos]);});
+
+  let html='';
   list.forEach((p,i)=>{
-    const col=posColor(p.pos);const g=p.grade||0;
-    const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
-    const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
-    const posRank = posRankMap.get(p) || '?';
-    const overallRank = overallRankMap.get(p) || '?';
-    const rl = p.pos+posRank+' · #'+overallRank+' Overall';
+    const col=posColor(p.pos);
+    const g=p.grade||0;
+    const mx=POS_MAX[p.pos]||14; const mk=p.markers||0;
+    const pmx=PFF_MAX[p.pos]||10; const pmk=p.pff!=null?Math.round(p.pff):0;
+    const posRank=posRankMap.get(p)||'?';
+    const overallRank=overallRankMap.get(p)||'?';
+    const rl=p.pos+posRank+' · #'+overallRank+' Overall';
     const lg=letterGrade(g);
-    const metrics=cardMetrics(p).map(m=>'<div class="metric-item"><span class="metric-val">'+m.v+'</span><span class="metric-lbl">'+m.l+'</span></div>').join('');
-    let dots='',pdots='';
-    for(let i=0;i<mx;i++)dots+='<div class="marker-dot '+(i<mk?'hit':'miss')+'" style="background:'+(i<mk?col:'')+'"></div>';
-    for(let i=0;i<pmx;i++)pdots+='<div class="marker-dot '+(i<pmk?'hit':'miss')+'" style="background:'+(i<pmk?'var(--accent3)':'')+'"></div>';
-    html+='<div class="player-card" style="--pos-color:'+col+'" onclick="openModalFromList('+i+')">';
-    html+='<div class="card-body">';
-    html+='<div class="card-header"><div class="card-rank">'+rl+'</div><div class="card-pos-badge bg-'+p.pos.toLowerCase()+'">'+p.pos+'</div></div>';
-    html+='<div class="card-name-row">';
-    html+='<div class="card-avatar" style="border-color:'+col+'">';
-    html+=hshotImg(p,'','')||'';
-    html+='<div class="card-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>';
-    html+='</div>';
-    html+='<div style="flex:1;min-width:0"><div class="card-name">'+p.name+'</div><div class="card-school">'+p.school+' <span>· '+p.conf+'</span></div></div>';
-    html+='<img src="'+logoSrc(p.school)+'" class="school-logo" alt="" onerror="this.style.display=\'none\'">';
-    html+='</div>';
-    html+='<div class="grade-bar-wrap">';
-    html+='<div class="grade-bar-label"><span class="grade-bar-lbl-text">Final Grade</span>';
-    html+='<div class="grade-val-row"><span class="grade-val" style="color:'+gradeColor(g)+'">'+(g?fmt(g,1):'—')+'</span>';
-    html+='<span class="grade-letter" style="color:'+lg.c+';background:'+lg.c+'22">'+lg.l+'</span></div></div>';
-    html+='<div class="grade-bar-track"><div class="grade-bar-fill" style="width:'+g+'%;background:'+gradeColor(g)+'"></div></div>';
-    html+='</div>';
-    html+='<div class="marker-section"><div class="marker-section-label">Markers '+mk+'/'+mx+'</div><div class="marker-dots">'+dots+'</div></div>';
-    html+='<div class="marker-section" style="margin-top:8px"><div class="marker-section-label">Advanced Markers '+pmk+'/'+pmx+'</div><div class="marker-dots">'+pdots+'</div></div>';
-    const tag=tagHTML(p);
-    html+=tag||'<div style="height:38px"></div>';
-    html+='<div class="card-metrics">'+metrics+'</div>';
-    html+='</div></div>';
+    const sc=SCHOOL_COLORS[p.school]||['#1a1f28','#111418'];
+    const c1=sc[0], c2=sc[1];
+    const hs=hshotSrc(p);
+    const hsUrl=hs?hs.primary:null;
+    let dots='';
+    for(let j=0;j<mx;j++) dots+='<div style="width:5px;height:5px;border-radius:50%;background:'+(j<mk?col:'rgba(255,255,255,0.2)')+';flex-shrink:0"></div>';
+    const tag=getTag(p);
+
+    html+=`<div class="player-card" onclick="openModalFromList(${i})">
+      <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
+      ${hsUrl?`<img src="${hsUrl}" style="position:absolute;right:0;bottom:0;height:100%;width:60%;object-fit:cover;object-position:top center;z-index:1;mask-image:linear-gradient(to left,rgba(0,0,0,0.95) 40%,transparent 100%);-webkit-mask-image:linear-gradient(to left,rgba(0,0,0,0.95) 40%,transparent 100%)" onerror="this.style.display=\'none\'">` : ''}
+      <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0.38) 55%,rgba(0,0,0,0.05) 100%)"></div>
+      <div class="card-body">
+        <div class="card-header">
+          <div class="card-rank">${rl}</div>
+          <div class="card-pos-badge bg-${p.pos.toLowerCase()}">${p.pos}</div>
+        </div>
+        <div class="card-bottom">
+          ${tag?`<div style="font-size:10px;color:${tag.color};background:rgba(0,0,0,0.4);border:1px solid ${tag.color}66;border-radius:4px;padding:1px 6px;display:inline-block;width:fit-content">${tag.icon} ${tag.label}</div>`:''}
+          <div class="card-name">${p.name}</div>
+          <div class="card-school">${p.school||''}</div>
+          <div class="card-grade-row">
+            <div class="card-grade-pill" style="color:${lg.c}">${g?fmt(g,1):'—'} <span style="opacity:0.7;font-size:10px">${lg.l}</span></div>
+            <div class="card-grade-pill" style="color:${col}">${mk}/${mx} <span style="opacity:0.6;font-size:10px">MKR</span></div>
+            <div class="card-grade-pill" style="color:rgba(255,255,255,0.8)">${pmk}/${pmx} <span style="opacity:0.6;font-size:10px">ADV</span></div>
+          </div>
+          <div style="display:flex;gap:2px;margin-top:3px;flex-wrap:wrap">${dots}</div>
+        </div>
+      </div>
+    </div>`;
   });
   container.innerHTML=html;
-  
 }
 
 function renderTable(){
