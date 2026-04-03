@@ -926,13 +926,11 @@ function fmtPct(v){if(v==null||isNaN(v))return'—';return(v*100).toFixed(1)+'%'
 function fmtAge(v){if(!v||isNaN(v))return'—';const yr=Math.floor(v);const mo=Math.round((v-yr)*12);return yr+'y '+mo+'m';}
 const LOGO_BASE='logos/';
 function hshotSrc(p){
-  // 2026 class uses CFR_ID in PNG folder; 2025 and before use PFR_ID in JPEG folder
-  if(p.cfr_id) return {primary: HEADSHOT_PNG+p.cfr_id+'.png', fallback: p.pfr_id ? HEADSHOT_BASE+p.pfr_id+'.jpeg' : null};
-  if(p.pfr_id) return {primary: HEADSHOT_BASE+p.pfr_id+'.jpeg', fallback: null};
+  if(p.cfr_id) return {primary: HEADSHOT_PNG+p.cfr_id+'.png', fallback: p.pfr_id ? HEADSHOT_PNG+p.pfr_id+'.png' : null};
+  if(p.pfr_id) return {primary: HEADSHOT_PNG+p.pfr_id+'.png', fallback: null};
   return null;
 }
 function cardHshotUrl(p){
-  // For cards: PNG preferred (cfr_id), fallback to JPEG (pfr_id)
   if(p.cfr_id) return HEADSHOT_PNG+p.cfr_id+'.png';
   if(p.pfr_id) return HEADSHOT_PNG+p.pfr_id+'.png';
   return null;
@@ -3916,7 +3914,7 @@ const NFL_CAREER_COMP_VARS = {
 
 function nflHshot(pfr_id, size=56) {
   if (!pfr_id) return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:${Math.round(size*0.3)}px;flex-shrink:0">?</div>`;
-  const src = HEADSHOT_BASE + pfr_id + '.jpeg';
+  const src = HEADSHOT_PNG + pfr_id + '.png';
   return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:2px solid var(--border);flex-shrink:0;background:var(--surface2)">
     <img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:center 15%" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted)\\'>?</div>'">
   </div>`;
