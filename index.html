@@ -3863,32 +3863,29 @@ function explorerRender() {
             </div>`;
           }).join('');
         const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
-        return `<div class="player-card" style="--pos-color:${col};cursor:pointer" onclick="openModalFromList(${i})">
+        return `<div class="player-card" onclick="openModalFromList(${i})">
+          <!-- School color bg -->
+          <div class="card-bg" style="background:linear-gradient(135deg,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[0]} 0%,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[1]} 100%)"></div>
+          <!-- Logo left -->
+          <img src="${logo}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:0.15;filter:grayscale(20%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
+          <!-- Overlay -->
+          <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.5) 100%)"></div>
+          <!-- Headshot -->
+          ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:3" onerror="this.style.display='none'">` : ''}
           <div class="card-body">
-            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">${p.year||2026}</div>
-            <div class="card-name-row">
-              <div class="card-avatar" style="border-color:${col}">
-                ${hshotImg(p,'','')}
-                <div class="card-avatar-fallback" style="${hs?'display:none':''};color:${col}">${p.pos}</div>
-              </div>
-              <div style="flex:1;min-width:0">
-                <div class="card-name">${p.name}</div>
-                <div class="card-school">${p.school||''}</div>
-              </div>
-              <img src="${logo}" class="school-logo" onerror="this.style.display=\'none\'">
+            <div class="card-header">
+              <div class="card-rank" style="font-size:11px">${p.pos} · ${p.year||2026}</div>
+              <div class="card-pos-badge bg-${p.pos.toLowerCase()}">${p.pos}</div>
             </div>
-            ${tag?`<div class="player-tag" style="color:${tag.color};background:${tag.color}18;border-color:${tag.color}44">${tag.icon} ${tag.label}</div>`:'<div style="height:38px"></div>'}
-            <div class="grade-bar-wrap">
-              <div class="grade-bar-label">
-                <span class="grade-bar-lbl-text">Final Grade</span>
-                <div class="grade-val-row">
-                  <span class="grade-val" style="color:${lg.c}">${fmt(p.grade||0,1)}</span>
-                  <span class="grade-letter" style="color:${lg.c};background:${lg.c}22">${lg.l}</span>
-                </div>
+            <div class="card-bottom">
+              ${tag?`<div style="font-size:10px;color:${tag.color};background:rgba(0,0,0,0.4);border:1px solid ${tag.color}66;border-radius:4px;padding:1px 6px;display:inline-block;width:fit-content">${tag.icon} ${tag.label}</div>`:''}
+              <div class="card-name">${p.name}</div>
+              <div class="card-school">${p.school||''}</div>
+              <div class="card-grade-row">
+                <div class="card-grade-pill" style="color:${lg.c}">${p.grade?fmt(p.grade,1):'—'} <span style="opacity:0.7;font-size:10px">${lg.l}</span></div>
               </div>
-              <div class="grade-bar-track"><div class="grade-bar-fill" style="width:${Math.min(p.grade||0,100)}%;background:${lg.c}"></div></div>
+              ${statsGrid ? `<div style="margin-top:6px">${filterStats.slice(0,2).join('')}</div>` : ''}
             </div>
-            ${statsGrid}
           </div>
         </div>`;
       }).join('') + '</div>';
@@ -3901,9 +3898,16 @@ function explorerRender() {
     const tbody = sorted.map((p,i) => {
       const lg = letterGrade(p.grade||0);
       const tag = getTag(p);
+      const col = posColor(p.pos);
       return `<tr onclick="openModalFromList(${i})">
         <td style="color:var(--muted);font-family:'Bebas Neue',cursive;font-size:19px">${i+1}</td>
-        <td style="font-weight:700">${p.name}</td>
+        <td><div class="table-name-cell">
+          <div class="table-avatar" style="--pos-color:${col}">
+            ${hshotImg(p,'','')||''}
+            <div class="table-avatar-fallback" style="${hshotSrc(p)?'display:none':'display:flex'}">${p.pos}</div>
+          </div>
+          <span style="font-weight:700">${p.name}</span>
+        </div></td>
         <td style="color:var(--muted)">${p.year||2026}</td>
         <td>${p.school||''}</td>
         <td style="color:${lg.c};font-weight:700">${fmt(p.grade||0,1)}</td>
