@@ -890,16 +890,16 @@ td{padding:10px 14px;white-space:nowrap;}
     </div>
   </div>
 
-  <!-- Tab 2: Year 1 NFL Comps -->
+  <!-- Tab 2: NFL Career Comps -->
   <div id="outcomesTabComps" style="display:none">
     <div style="padding:20px 24px;border-bottom:1px solid var(--border);background:var(--surface)">
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">
-        Search any NFL player to find historical players with similar Year 1 stats — and see what their Year 2 and career looked like.
+        Pick any active NFL player (2016+ draft class). The app calculates their current career profile and finds historical players who had a similar career through the same number of seasons — then shows what those comps did next.
       </div>
       <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
         <div style="flex:1;min-width:200px;max-width:360px;position:relative">
           <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Player</div>
-          <input type="text" id="nflCompSearch" placeholder="e.g. Tetairoa McMillan..." autocomplete="off"
+          <input type="text" id="nflCompSearch" placeholder="e.g. Ja'Marr Chase, McMillan..." autocomplete="off"
             style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 12px;outline:none;">
           <div id="nflCompDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:6px;z-index:100;max-height:240px;overflow-y:auto;margin-top:4px"></div>
         </div>
@@ -913,7 +913,7 @@ td{padding:10px 14px;white-space:nowrap;}
         </div>
       </div>
     </div>
-    <div id="nflCompResults" style="padding:24px;color:var(--muted);font-size:13px">Search for a player above to see their Year 1 comps.</div>
+    <div id="nflCompResults" style="padding:24px;color:var(--muted);font-size:13px">Search for an active NFL player above to see their career comps.</div>
   </div>
 </div>
 
@@ -3789,10 +3789,251 @@ async function exportRankingsPDF() {
 
 // ── Dynamic nav collapse ──────────────────────────────────────────────────────
 // ============================================================
-// NFL YEAR 1 COMPS
+// NFL CAREER COMPS
 // ============================================================
-let NFL_YR1_DATA = null;
+let NFL_CAREER_INDEX = null;   // search index (small, loaded on tab open)
+let NFL_CAREER_COMPS = null;   // full comp pool (loaded on first search)
 let activeOutcomesTab = 'table';
+
+function switchOutcomesTab(tab) {
+  activeOutcomesTab = tab;
+  document.querySelectorAll('.outcomes-tab').forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    btn.style.borderBottomColor = isActive ? 'var(--accent)' : 'transparent';
+    btn.style.color = isActive ? 'var(--text)' : 'var(--muted)';
+  });
+  document.getElementById('outcomesTabTable').style.display = tab === 'table' ? '' : 'none';
+  document.getElementById('outcomesTabComps').style.display = tab === 'comps' ? '' : 'none';
+  if (tab === 'comps' && !NFL_CAREER_INDEX) loadNFLCareerIndex();
+}
+
+async function loadNFLCareerIndex() {
+  try {
+    const res = await fetch('nfl_career_index.json');
+    NFL_CAREER_INDEX = await res.json();
+    setupNFLCompSearch();
+  } catch(e) {
+    document.getElementById('nflCompResults').textContent = 'Failed to load player index.';
+  }
+}
+
+async function loadNFLCareerComps() {
+  if (NFL_CAREER_COMPS) return;
+  document.getElementById('nflCompResults').innerHTML = '<div style="color:var(--muted)">Loading comp database...</div>';
+  try {
+    const res = await fetch('nfl_career_comps.json');
+    NFL_CAREER_COMPS = await res.json();
+  } catch(e) {
+    document.getElementById('nflCompResults').textContent = 'Failed to load comp data.';
+  }
+}
+
+function setupNFLCompSearch() {
+  const input = document.getElementById('nflCompSearch');
+  const dropdown = document.getElementById('nflCompDropdown');
+  if (!input || !NFL_CAREER_INDEX) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { dropdown.style.display = 'none'; return; }
+    const matches = NFL_CAREER_INDEX
+      .filter(p => p.player && p.player.toLowerCase().includes(q))
+      .slice(0, 12);
+    dropdown.innerHTML = matches.map(p =>
+      `<div onclick="selectNFLPlayer('${p.player_id}')" 
+        style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)"
+        onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+        <span style="color:${posColor(p.pos)};font-weight:700;margin-right:8px">${p.pos}</span>
+        ${p.player}
+        <span style="color:var(--muted);font-size:11px;margin-left:8px">Yr ${p.current_nfl_yr} · ${p.draftyear||'?'}</span>
+        ${p.college_grade ? `<span style="color:${gradeColor(p.college_grade)};font-size:11px;margin-left:8px">${fmt(p.college_grade,1)}</span>` : ''}
+      </div>`
+    ).join('');
+    dropdown.style.display = matches.length ? 'block' : 'none';
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !dropdown.contains(e.target))
+      dropdown.style.display = 'none';
+  });
+}
+
+async function selectNFLPlayer(playerId) {
+  document.getElementById('nflCompDropdown').style.display = 'none';
+  const indexEntry = NFL_CAREER_INDEX.find(p => p.player_id === playerId);
+  if (indexEntry) document.getElementById('nflCompSearch').value = indexEntry.player;
+  await loadNFLCareerComps();
+  if (NFL_CAREER_COMPS) runNFLCareerComps(playerId);
+}
+
+// Comp variables per position — career profile variables
+const NFL_CAREER_COMP_VARS = {
+  QB:  ['career_ppg','peak_ppg','career_passyds','career_passtd','career_int','career_rushyds'],
+  RB:  ['career_ppg','peak_ppg','career_rushyds','career_rec','career_recyds','career_tgt'],
+  WR:  ['career_ppg','peak_ppg','career_tgt','career_rec','career_recyds','career_games'],
+  TE:  ['career_ppg','peak_ppg','career_tgt','career_rec','career_recyds','career_games'],
+};
+
+function runNFLCareerComps(playerId) {
+  const container = document.getElementById('nflCompResults');
+  const n = parseInt(document.getElementById('nflCompCount').value) || 5;
+
+  const player = NFL_CAREER_COMPS.find(p => p.player_id === playerId);
+  if (!player) { container.innerHTML = '<div style="color:var(--muted)">Player not found in comp pool.</div>'; return; }
+
+  const pos = player.pos;
+  const vars = NFL_CAREER_COMP_VARS[pos] || [];
+  const nflYr = player.current_nfl_yr || 1;
+
+  // Candidates: same pos, have AT LEAST nflYr seasons, have future data beyond nflYr
+  const candidates = NFL_CAREER_COMPS.filter(p =>
+    p.pos === pos &&
+    p.player_id !== playerId &&
+    p.seasons && p.seasons.length >= nflYr &&  // has data through same year
+    p.seasons.some(s => s.nfl_yr > nflYr)      // has future data to project
+  ).map(p => {
+    // Build a career profile through nflYr only (fair comparison)
+    const thruNow = p.seasons.filter(s => s.nfl_yr <= nflYr);
+    if (!thruNow.length) return null;
+    const ppgs = thruNow.map(s => s.ppg).filter(x => x != null);
+    return {
+      ...p,
+      career_ppg: ppgs.length ? ppgs.reduce((a,b)=>a+b,0)/ppgs.length : 0,
+      peak_ppg: ppgs.length ? Math.max(...ppgs) : 0,
+      career_games: thruNow.reduce((s,x)=>s+(x.games||0),0),
+      career_tgt: thruNow.reduce((s,x)=>s+(x.tgt||0),0),
+      career_rec: thruNow.reduce((s,x)=>s+(x.rec||0),0),
+      career_recyds: thruNow.reduce((s,x)=>s+(x.recyds||0),0),
+      career_rushyds: thruNow.reduce((s,x)=>s+(x.rushyds||0),0),
+      career_passyds: thruNow.reduce((s,x)=>s+(x.passyds||0),0),
+      career_passtd: thruNow.reduce((s,x)=>s+(x.passtd||0),0),
+      career_int: thruNow.reduce((s,x)=>s+(x.ints||0),0),
+    };
+  }).filter(Boolean);
+
+  if (candidates.length < 3) {
+    container.innerHTML = `<div style="color:var(--muted)">Not enough historical comps available for Year ${nflYr} profiles yet.</div>`;
+    return;
+  }
+
+  // Z-score normalization
+  const means = {}, stds = {};
+  vars.forEach(v => {
+    const vals = candidates.map(p => p[v]).filter(x => x != null);
+    if (!vals.length) { means[v]=0; stds[v]=1; return; }
+    const mean = vals.reduce((s,x)=>s+x,0)/vals.length;
+    const std = Math.sqrt(vals.reduce((s,x)=>s+(x-mean)**2,0)/vals.length) || 1;
+    means[v]=mean; stds[v]=std;
+  });
+  const z = (val, v) => val != null ? (val - means[v]) / stds[v] : 0;
+  const playerZ = vars.map(v => z(player[v], v));
+
+  const dists = candidates.map(c => {
+    const cz = vars.map(v => z(c[v], v));
+    const dist = Math.sqrt(vars.reduce((s,_,i) => s+(playerZ[i]-cz[i])**2, 0));
+    return {dist, c};
+  }).sort((a,b)=>a.dist-b.dist).slice(0,n);
+
+  const col = posColor(pos);
+
+  // Player header
+  const playerSeasons = player.seasons || [];
+  const seasonRows = playerSeasons.map(s =>
+    `<div style="display:flex;gap:16px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);min-width:48px">Yr ${s.nfl_yr}</div>
+      <div style="font-weight:700;color:${s.ppg >= 20 ? 'var(--green)' : s.ppg >= 14 ? 'var(--accent)' : 'var(--text)'}">
+        ${s.ppg != null ? fmt(s.ppg,1) : '—'} PPG
+      </div>
+      ${s.tgt != null ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.tgt)} tgt</div>` : ''}
+      ${s.recyds != null && s.recyds > 0 ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.recyds)} yds</div>` : ''}
+      ${s.rushyds != null && s.rushyds > 0 ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.rushyds)} rush</div>` : ''}
+      ${s.passyds != null && s.passyds > 0 ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.passyds)} pass</div>` : ''}
+    </div>`
+  ).join('');
+
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;align-items:start">
+      <div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${pos} · ${player.draftyear||'?'} Draft</div>
+        <div style="font-size:26px;font-weight:700;color:${col};margin-bottom:2px">${player.player}</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">${player.school||''} ${player.college_grade ? `· Grade <span style="color:${gradeColor(player.college_grade)};font-weight:700">${fmt(player.college_grade,1)}</span>` : ''}</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Career through Year ${nflYr}</div>
+        ${seasonRows}
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Career Profile</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${[
+            ['Career PPG', fmt(player.career_ppg,1), col],
+            ['Peak PPG', fmt(player.peak_ppg,1), 'var(--accent2)'],
+            ['Career Games', Math.round(player.career_games||0), null],
+            pos==='QB' ? ['Career Pass Yds', Math.round(player.career_passyds||0), null] :
+            pos==='RB' ? ['Career Rush Yds', Math.round(player.career_rushyds||0), null] :
+                         ['Career Rec Yds', Math.round(player.career_recyds||0), null],
+            pos==='QB' ? ['Career TDs', Math.round(player.career_passtd||0), 'var(--green)'] :
+                         ['Career Targets', Math.round(player.career_tgt||0), null],
+          ].map(([lbl,val,c])=>`
+            <div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">${lbl}</div>
+              <div style="font-size:17px;font-weight:700;${c?'color:'+c:''}">${val}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">
+      Top ${n} Historical Comps — Through Year ${nflYr} → What happened next
+    </div>
+    <div style="display:grid;gap:10px">
+      ${dists.map(({dist, c}, idx) => {
+        const futureSeasons = c.seasons.filter(s => s.nfl_yr > nflYr);
+        const futurePpgs = futureSeasons.map(s=>s.ppg).filter(x=>x!=null);
+        const futureAvg = futurePpgs.length ? futurePpgs.reduce((a,b)=>a+b,0)/futurePpgs.length : null;
+        const futurePeak = futurePpgs.length ? Math.max(...futurePpgs) : null;
+        const trend = futureAvg != null && c.career_ppg ? 
+          (futureAvg > c.career_ppg ? '↑' : '↓') : '—';
+        const trendCol = futureAvg > c.career_ppg ? 'var(--green)' : 'var(--red)';
+        const futureSeasonStr = futureSeasons.map(s =>
+          `<span style="color:var(--muted)">Yr${s.nfl_yr}:</span> <span style="font-weight:700;color:${(s.ppg||0)>=20?'var(--green)':(s.ppg||0)>=14?'var(--accent)':'var(--text)'}">${s.ppg!=null?fmt(s.ppg,1):'—'}</span>`
+        ).join('  ');
+
+        return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+                <span style="font-size:18px;font-weight:700;color:var(--muted);font-family:'IBM Plex Mono',monospace">${idx+1}</span>
+                <span style="font-size:15px;font-weight:700">${c.player}</span>
+                <span style="color:var(--muted);font-size:12px">${c.draftyear||'?'} Draft</span>
+                ${c.college_grade ? `<span style="color:${gradeColor(c.college_grade)};font-size:12px;font-weight:700">${fmt(c.college_grade,1)}</span>` : ''}
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${c.school||''}</div>
+              <div style="font-size:12px;display:flex;gap:16px;flex-wrap:wrap">
+                <span><span style="color:var(--muted)">Thru Yr${nflYr} PPG </span><span style="font-weight:700;color:${col}">${fmt(c.career_ppg,1)}</span></span>
+                <span><span style="color:var(--muted)">Peak </span><span style="font-weight:700;color:var(--accent2)">${fmt(c.peak_ppg,1)}</span></span>
+              </div>
+            </div>
+            ${futureAvg != null ? `
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">After Yr ${nflYr}</div>
+              <div style="font-size:22px;font-weight:700;color:${trendCol}">${trend} ${fmt(futureAvg,1)}</div>
+              <div style="font-size:11px;color:var(--muted)">Peak: ${fmt(futurePeak,1)} PPG</div>
+            </div>` : '<div style="color:var(--muted);font-size:12px">No future data</div>'}
+          </div>
+          ${futureSeasonStr ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;display:flex;gap:14px;flex-wrap:wrap">${futureSeasonStr}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+document.getElementById('nflCompCount').addEventListener('change', () => {
+  const input = document.getElementById('nflCompSearch').value.trim();
+  if (input && NFL_CAREER_COMPS) {
+    const entry = NFL_CAREER_INDEX && NFL_CAREER_INDEX.find(p => p.player === input);
+    if (entry) runNFLCareerComps(entry.player_id);
+  }
+});
+
+
 
 function switchOutcomesTab(tab) {
   activeOutcomesTab = tab;
