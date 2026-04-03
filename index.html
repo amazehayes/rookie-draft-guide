@@ -1303,7 +1303,7 @@ function renderCards(){
       <!-- School color base -->
       <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
       <!-- College logo bleed behind — left side, vertical fade -->
-      <img src="${logoSrc(p.school)}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:0.15;filter:grayscale(20%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
+      <img src="${logoSrc(p.school)}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:0.30;filter:grayscale(10%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
       <!-- Overlay -->
       <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.5) 100%)"></div>
       <!-- Headshot: fully visible, no mask, right side -->
@@ -3138,7 +3138,7 @@ function explorerRender() {
           <!-- School color bg -->
           <div class="card-bg" style="background:linear-gradient(135deg,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[0]} 0%,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[1]} 100%)"></div>
           <!-- Logo left -->
-          <img src="${logo}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:0.15;filter:grayscale(20%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
+          <img src="${logo}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:0.30;filter:grayscale(10%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
           <!-- Overlay -->
           <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.5) 100%)"></div>
           <!-- Headshot -->
