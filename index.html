@@ -907,7 +907,8 @@ td{padding:10px 14px;white-space:nowrap;}
 </div>
 
 <script>
-const HEADSHOT_BASE='headshots/';
+const HEADSHOT_BASE='headshots/JPEG/';
+const HEADSHOT_PNG='headshots/PNG/';
 const POS_COLORS={QB:'#c084fc',RB:'#3dffa0',WR:'#e8ff47',TE:'#ff6b35'};
 const SCHOOL_COLORS = {
 "Abilene Christian": [
@@ -2023,8 +2024,8 @@ function renderCards(){
 
     html+=`<div class="player-card" onclick="openModalFromList(${i})">
       <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
-      ${hsUrl?`<div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:2;width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.25);flex-shrink:0;background:rgba(0,0,0,0.3)">
-        <img src="${hsUrl}" style="width:100%;height:100%;object-fit:cover;object-position:center 15%" onerror="this.parentElement.style.display=\'none\'">
+      ${(p.cfr_id||p.pfr_id)?`<div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:2;width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.25);flex-shrink:0;background:rgba(0,0,0,0.3)">
+        <img src="${HEADSHOT_PNG+(p.cfr_id||p.pfr_id)+'.png'}" style="width:100%;height:100%;object-fit:cover;object-position:center 15%" onerror="this.parentElement.style.display=\'none\'">
       </div>` : ''}
       <div class="card-bg-overlay" style="background:rgba(0,0,0,0.45)"></div>
       <div class="card-body">
