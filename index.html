@@ -2029,8 +2029,14 @@ function renderCards(){
 
     html+=`<div class="player-card" onclick="openModalFromList(${i})">
       <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
-      ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:0;bottom:0;height:100%;width:58%;object-fit:cover;object-position:top center;z-index:1;mask-image:linear-gradient(to left,rgba(0,0,0,1) 30%,transparent 100%);-webkit-mask-image:linear-gradient(to left,rgba(0,0,0,1) 30%,transparent 100%)" onerror="this.style.display='none'">` : ''}
-      <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.5) 45%,rgba(0,0,0,0.0) 100%)"></div>
+      <!-- School color base -->
+      <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
+      <!-- College logo bleed behind -->
+      <img src="${logoSrc(p.school)}" style="position:absolute;right:-10px;top:50%;transform:translateY(-50%);height:85%;width:auto;z-index:1;opacity:0.18;filter:grayscale(30%)" onerror="this.style.display='none'">
+      <!-- Overlay to darken edges and improve text contrast -->
+      <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.3) 60%,rgba(0,0,0,0.55) 100%)"></div>
+      <!-- Headshot: fully visible, no mask, right side -->
+      ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:3" onerror="this.style.display='none'">` : ''}
       <div class="card-body">
         <div class="card-header">
           <div class="card-rank">${rl}</div>
