@@ -2062,7 +2062,7 @@ function renderRankings() {
   const isMobile = window.innerWidth <= 768;
   document.getElementById('rankingsHead').innerHTML = isMobile
     ? '<tr><th>#</th><th>Player</th><th>Pos</th><th>Grade</th><th>Label</th><th></th></tr>'
-    : '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Markers</th><th>PFF</th><th>Label</th></tr>';
+    : '<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Round</th><th>Grade</th><th>Markers</th><th>Adv Mkrs</th><th>Label</th></tr>';
 
   _lastRenderedList = sorted;
   let html = '';
@@ -2090,7 +2090,7 @@ function renderRankings() {
       html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Age</div>'+(p.age?fmtAge(p.age):'—')+'</div>';
       html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Round</div>'+(p.round?'Rd '+p.round:'UDFA')+'</div>';
       html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Markers</div><span style="color:'+col+'font-weight:700">'+(p.markers||0)+'</span></div>';
-      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">PFF</div>'+(p.pff!=null?Math.round(p.pff):'—')+'</div>';
+      html += '<div class="mobile-detail-item"><div class="mobile-detail-label">Adv Mkrs</div>'+(p.pff!=null?Math.round(p.pff):'—')+'</div>';
       if(tag) html += '<div class="mobile-detail-item" style="grid-column:1/-1"><div class="mobile-detail-label">Label</div><span style="color:'+tag.color+';font-weight:700">'+tag.icon+' '+tag.label+'</span></div>';
       html += '</div></td></tr>';
     } else {
@@ -2235,7 +2235,7 @@ function renderComparison() {
             </div>
             <div style="background:var(--surface2);border-radius:6px;padding:6px 8px;text-align:center">
               <div style="font-size:16px;font-weight:700;color:var(--accent3)">${pmk}/${pmx}</div>
-              <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">PFF</div>
+              <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Adv Mkrs</div>
             </div>
           </div>
           ${tag ? `<div style="font-size:11px;color:${tag.color};background:${tag.color}18;border:1px solid ${tag.color}44;border-radius:5px;padding:4px 8px;display:inline-block">${tag.icon} ${tag.label}</div>` : ''}
@@ -3786,7 +3786,7 @@ async function exportRankingsPDF() {
     doc.text('themarkersystem.com \u00b7 Generated ' + new Date().toLocaleDateString(), 14, 29);
 
     const players = getFiltered();
-    const head = [['#','Player','School','Pos','Age','Round','Grade','Markers','PFF','Label']];
+    const head = [['#','Player','School','Pos','Age','Round','Grade','Markers','Adv Mkrs','Label']];
     const body = players.map((p,i) => {
       const t = getTag(p);
       return [
