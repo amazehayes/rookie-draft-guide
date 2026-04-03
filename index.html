@@ -3205,7 +3205,7 @@ let outcomesGradedOnly = true;
 async function loadNFLOutcomes() {
   if(NFL_OUTCOMES) return NFL_OUTCOMES;
   try {
-    const res = await fetch('nfl_outcomes.json');
+    const res = await fetch('data/nfl_outcomes.json');
     NFL_OUTCOMES = await res.json();
   } catch(e) {
     NFL_OUTCOMES = [];
@@ -3378,7 +3378,7 @@ let NFL_LOOKUP = null;
 async function loadNFLLookup() {
   if(NFL_LOOKUP) return;
   try {
-    const res = await fetch('nfl_lookup.json');
+    const res = await fetch('data/nfl_lookup.json');
     NFL_LOOKUP = await res.json();
     // Enrich already-loaded players
     enrichPlayersWithNFL(PLAYERS, 2026);
@@ -3847,7 +3847,7 @@ function switchOutcomesTab(tab) {
 
 async function loadNFLCareerIndex() {
   try {
-    const res = await fetch('nfl_career_index.json');
+    const res = await fetch('data/nfl_career_index.json');
     NFL_CAREER_INDEX = await res.json();
     setupNFLCompSearch();
   } catch(e) {
@@ -3859,7 +3859,7 @@ async function loadNFLCareerComps() {
   if (NFL_CAREER_COMPS) return;
   document.getElementById('nflCompResults').innerHTML = '<div style="color:var(--muted)">Loading comp database...</div>';
   try {
-    const res = await fetch('nfl_career_comps.json');
+    const res = await fetch('data/nfl_career_comps.json');
     NFL_CAREER_COMPS = await res.json();
   } catch(e) {
     document.getElementById('nflCompResults').textContent = 'Failed to load comp data.';
