@@ -861,7 +861,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <!-- Tab switcher -->
   <div style="display:flex;border-bottom:1px solid var(--border);background:var(--surface)">
     <button class="outcomes-tab active" data-tab="table" onclick="switchOutcomesTab('table')" style="background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">Draft Class Outcomes</button>
-    <button class="outcomes-tab" data-tab="comps" onclick="switchOutcomesTab('comps')" style="background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">Year 1 NFL Comps</button>
+    <button class="outcomes-tab" data-tab="comps" onclick="switchOutcomesTab('comps')" style="background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">NFL Career Comps</button>
   </div>
 
   <!-- Tab 1: Draft Class Outcomes table -->
@@ -3874,49 +3874,65 @@ const NFL_CAREER_COMP_VARS = {
   TE:  ['career_ppg','peak_ppg','career_tgt','career_rec','career_recyds','career_games'],
 };
 
+function nflHshot(pfr_id, size=56) {
+  if (!pfr_id) return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:${size*0.3}px;flex-shrink:0">?</div>`;
+  const src = HEADSHOT_BASE + pfr_id + '.jpeg';
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:2px solid var(--border);flex-shrink:0;background:var(--surface2)">
+    <img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:center 15%" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:${size*0.3}px\\''>?</div>'">
+  </div>`;
+}
+
+function ppgColor(ppg) {
+  if (ppg == null) return 'var(--muted)';
+  if (ppg >= 22) return 'var(--green)';
+  if (ppg >= 16) return 'var(--accent)';
+  if (ppg >= 10) return 'var(--accent2)';
+  return 'var(--muted)';
+}
+
 function runNFLCareerComps(playerId) {
   const container = document.getElementById('nflCompResults');
   const n = parseInt(document.getElementById('nflCompCount').value) || 5;
 
   const player = NFL_CAREER_COMPS.find(p => p.player_id === playerId);
-  if (!player) { container.innerHTML = '<div style="color:var(--muted)">Player not found in comp pool.</div>'; return; }
+  if (!player) { container.innerHTML = '<div style="color:var(--muted);padding:24px">Player not found in comp pool.</div>'; return; }
 
   const pos = player.pos;
   const vars = NFL_CAREER_COMP_VARS[pos] || [];
   const nflYr = player.current_nfl_yr || 1;
+  const col = posColor(pos);
 
-  // Candidates: same pos, have AT LEAST nflYr seasons, have future data beyond nflYr
+  // Build candidates: same pos, have data through nflYr, have future data
   const candidates = NFL_CAREER_COMPS.filter(p =>
     p.pos === pos &&
     p.player_id !== playerId &&
-    p.seasons && p.seasons.length >= nflYr &&  // has data through same year
-    p.seasons.some(s => s.nfl_yr > nflYr)      // has future data to project
+    p.seasons && p.seasons.length >= nflYr &&
+    p.seasons.some(s => s.nfl_yr > nflYr)
   ).map(p => {
-    // Build a career profile through nflYr only (fair comparison)
     const thruNow = p.seasons.filter(s => s.nfl_yr <= nflYr);
     if (!thruNow.length) return null;
     const ppgs = thruNow.map(s => s.ppg).filter(x => x != null);
     return {
       ...p,
-      career_ppg: ppgs.length ? ppgs.reduce((a,b)=>a+b,0)/ppgs.length : 0,
-      peak_ppg: ppgs.length ? Math.max(...ppgs) : 0,
-      career_games: thruNow.reduce((s,x)=>s+(x.games||0),0),
-      career_tgt: thruNow.reduce((s,x)=>s+(x.tgt||0),0),
-      career_rec: thruNow.reduce((s,x)=>s+(x.rec||0),0),
+      career_ppg:    ppgs.length ? ppgs.reduce((a,b)=>a+b,0)/ppgs.length : 0,
+      peak_ppg:      ppgs.length ? Math.max(...ppgs) : 0,
+      career_games:  thruNow.reduce((s,x)=>s+(x.games||0),0),
+      career_tgt:    thruNow.reduce((s,x)=>s+(x.tgt||0),0),
+      career_rec:    thruNow.reduce((s,x)=>s+(x.rec||0),0),
       career_recyds: thruNow.reduce((s,x)=>s+(x.recyds||0),0),
-      career_rushyds: thruNow.reduce((s,x)=>s+(x.rushyds||0),0),
-      career_passyds: thruNow.reduce((s,x)=>s+(x.passyds||0),0),
+      career_rushyds:thruNow.reduce((s,x)=>s+(x.rushyds||0),0),
+      career_passyds:thruNow.reduce((s,x)=>s+(x.passyds||0),0),
       career_passtd: thruNow.reduce((s,x)=>s+(x.passtd||0),0),
-      career_int: thruNow.reduce((s,x)=>s+(x.ints||0),0),
+      career_int:    thruNow.reduce((s,x)=>s+(x.ints||0),0),
     };
   }).filter(Boolean);
 
   if (candidates.length < 3) {
-    container.innerHTML = `<div style="color:var(--muted)">Not enough historical comps available for Year ${nflYr} profiles yet.</div>`;
+    container.innerHTML = `<div style="color:var(--muted);padding:24px">Not enough historical comps available for Year ${nflYr} profiles yet.</div>`;
     return;
   }
 
-  // Z-score normalization
+  // Z-score
   const means = {}, stds = {};
   vars.forEach(v => {
     const vals = candidates.map(p => p[v]).filter(x => x != null);
@@ -3934,94 +3950,128 @@ function runNFLCareerComps(playerId) {
     return {dist, c};
   }).sort((a,b)=>a.dist-b.dist).slice(0,n);
 
-  const col = posColor(pos);
+  // Season sparkline helper
+  function sparkline(seasons, highlightAfter) {
+    return seasons.map(s => {
+      const isFuture = s.nfl_yr > highlightAfter;
+      const c = ppgColor(s.ppg);
+      return `<div style="text-align:center;flex:1;min-width:36px">
+        <div style="font-size:9px;color:var(--muted);margin-bottom:2px">Y${s.nfl_yr}</div>
+        <div style="font-size:13px;font-weight:700;color:${isFuture?c:'var(--muted)'};
+          ${isFuture?'':'opacity:0.5;'}padding:4px 0;border-radius:4px;
+          ${isFuture?'background:'+c+'18;border:1px solid '+c+'44':''}">
+          ${s.ppg!=null?fmt(s.ppg,1):'—'}
+        </div>
+      </div>`;
+    }).join('');
+  }
 
-  // Player header
+  // Career stat chips
+  function statChips(p) {
+    const chips = [];
+    if (pos === 'WR' || pos === 'TE') {
+      if (p.career_tgt)    chips.push([Math.round(p.career_tgt),'Tgt']);
+      if (p.career_rec)    chips.push([Math.round(p.career_rec),'Rec']);
+      if (p.career_recyds) chips.push([Math.round(p.career_recyds),'Yds']);
+    } else if (pos === 'RB') {
+      if (p.career_rushyds) chips.push([Math.round(p.career_rushyds),'Rush']);
+      if (p.career_rec)     chips.push([Math.round(p.career_rec),'Rec']);
+      if (p.career_tgt)     chips.push([Math.round(p.career_tgt),'Tgt']);
+    } else if (pos === 'QB') {
+      if (p.career_passyds) chips.push([Math.round(p.career_passyds),'Pass Yds']);
+      if (p.career_passtd)  chips.push([Math.round(p.career_passtd),'TD']);
+      if (p.career_int)     chips.push([Math.round(p.career_int),'INT']);
+    }
+    return chips.map(([v,l])=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px"><span style="font-weight:700">${v}</span> <span style="color:var(--muted)">${l}</span></div>`).join('');
+  }
+
+  // ── Player header card ────────────────────────────────────────────────────
   const playerSeasons = player.seasons || [];
-  const seasonRows = playerSeasons.map(s =>
-    `<div style="display:flex;gap:16px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
-      <div style="font-size:11px;color:var(--muted);min-width:48px">Yr ${s.nfl_yr}</div>
-      <div style="font-weight:700;color:${s.ppg >= 20 ? 'var(--green)' : s.ppg >= 14 ? 'var(--accent)' : 'var(--text)'}">
-        ${s.ppg != null ? fmt(s.ppg,1) : '—'} PPG
-      </div>
-      ${s.tgt != null ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.tgt)} tgt</div>` : ''}
-      ${s.recyds != null && s.recyds > 0 ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.recyds)} yds</div>` : ''}
-      ${s.rushyds != null && s.rushyds > 0 ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.rushyds)} rush</div>` : ''}
-      ${s.passyds != null && s.passyds > 0 ? `<div style="color:var(--muted);font-size:11px">${Math.round(s.passyds)} pass</div>` : ''}
-    </div>`
-  ).join('');
-
   container.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;align-items:start">
-      <div>
-        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${pos} · ${player.draftyear||'?'} Draft</div>
-        <div style="font-size:26px;font-weight:700;color:${col};margin-bottom:2px">${player.player}</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">${player.school||''} ${player.college_grade ? `· Grade <span style="color:${gradeColor(player.college_grade)};font-weight:700">${fmt(player.college_grade,1)}</span>` : ''}</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Career through Year ${nflYr}</div>
-        ${seasonRows}
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Career Profile</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${[
-            ['Career PPG', fmt(player.career_ppg,1), col],
-            ['Peak PPG', fmt(player.peak_ppg,1), 'var(--accent2)'],
-            ['Career Games', Math.round(player.career_games||0), null],
-            pos==='QB' ? ['Career Pass Yds', Math.round(player.career_passyds||0), null] :
-            pos==='RB' ? ['Career Rush Yds', Math.round(player.career_rushyds||0), null] :
-                         ['Career Rec Yds', Math.round(player.career_recyds||0), null],
-            pos==='QB' ? ['Career TDs', Math.round(player.career_passtd||0), 'var(--green)'] :
-                         ['Career Targets', Math.round(player.career_tgt||0), null],
-          ].map(([lbl,val,c])=>`
-            <div>
-              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">${lbl}</div>
-              <div style="font-size:17px;font-weight:700;${c?'color:'+c:''}">${val}</div>
-            </div>`).join('')}
+    <div style="padding:24px;border-bottom:1px solid var(--border)">
+
+      <!-- Player profile -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div style="position:relative">
+          ${nflHshot(player.pfr_id, 72)}
+          <div style="position:absolute;bottom:-4px;right:-4px;background:${col};color:var(--bg);font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px">${pos}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:22px;font-weight:700;line-height:1.1">${player.player}</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px">
+            ${player.school||''} · ${player.draftyear||'?'} Draft
+            ${player.draftround ? ` · Rd ${Math.round(player.draftround)}` : ''}
+            ${player.college_grade ? ` · <span style="color:${gradeColor(player.college_grade)};font-weight:700">${fmt(player.college_grade,1)} College Grade</span>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <div style="background:${col}22;border:1px solid ${col}44;border-radius:6px;padding:4px 10px;font-size:12px">
+              <span style="color:${col};font-weight:700">${fmt(player.career_ppg,1)}</span> <span style="color:var(--muted)">Career PPG</span>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px">
+              <span style="color:var(--accent2);font-weight:700">${fmt(player.peak_ppg,1)}</span> <span style="color:var(--muted)">Peak PPG</span>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px">
+              <span style="font-weight:700">Yr ${nflYr}</span> <span style="color:var(--muted)">career profile</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Season-by-season PPG -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Season PPG</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">${sparkline(playerSeasons, nflYr)}</div>
+      </div>
     </div>
 
-    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">
-      Top ${n} Historical Comps — Through Year ${nflYr} → What happened next
-    </div>
-    <div style="display:grid;gap:10px">
-      ${dists.map(({dist, c}, idx) => {
-        const futureSeasons = c.seasons.filter(s => s.nfl_yr > nflYr);
-        const futurePpgs = futureSeasons.map(s=>s.ppg).filter(x=>x!=null);
-        const futureAvg = futurePpgs.length ? futurePpgs.reduce((a,b)=>a+b,0)/futurePpgs.length : null;
-        const futurePeak = futurePpgs.length ? Math.max(...futurePpgs) : null;
-        const trend = futureAvg != null && c.career_ppg ? 
-          (futureAvg > c.career_ppg ? '↑' : '↓') : '—';
-        const trendCol = futureAvg > c.career_ppg ? 'var(--green)' : 'var(--red)';
-        const futureSeasonStr = futureSeasons.map(s =>
-          `<span style="color:var(--muted)">Yr${s.nfl_yr}:</span> <span style="font-weight:700;color:${(s.ppg||0)>=20?'var(--green)':(s.ppg||0)>=14?'var(--accent)':'var(--text)'}">${s.ppg!=null?fmt(s.ppg,1):'—'}</span>`
-        ).join('  ');
+    <!-- Comps -->
+    <div style="padding:20px 24px">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">
+        Top ${n} Comps — Similar Career Through Yr ${nflYr} → What Happened Next
+      </div>
+      <div style="display:grid;gap:12px">
+        ${dists.map(({c}, idx) => {
+          const futureSeasons = c.seasons.filter(s => s.nfl_yr > nflYr);
+          const futurePpgs = futureSeasons.map(s=>s.ppg).filter(x=>x!=null);
+          const futureAvg = futurePpgs.length ? futurePpgs.reduce((a,b)=>a+b,0)/futurePpgs.length : null;
+          const futurePeak = futurePpgs.length ? Math.max(...futurePpgs) : null;
+          const improved = futureAvg != null ? futureAvg > c.career_ppg : null;
+          const futureCol = improved ? 'var(--green)' : 'var(--red)';
+          const allSeasons = c.seasons;
 
-        return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-                <span style="font-size:18px;font-weight:700;color:var(--muted);font-family:'IBM Plex Mono',monospace">${idx+1}</span>
-                <span style="font-size:15px;font-weight:700">${c.player}</span>
-                <span style="color:var(--muted);font-size:12px">${c.draftyear||'?'} Draft</span>
-                ${c.college_grade ? `<span style="color:${gradeColor(c.college_grade)};font-size:12px;font-weight:700">${fmt(c.college_grade,1)}</span>` : ''}
+          return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <!-- Card header -->
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:700;color:var(--border);font-family:'IBM Plex Mono',monospace;min-width:24px">${idx+1}</div>
+              ${nflHshot(c.pfr_id, 48)}
+              <div style="flex:1;min-width:0">
+                <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.player}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:1px">
+                  ${c.school||''} · ${c.draftyear||'?'} Draft
+                  ${c.college_grade ? ` · <span style="color:${gradeColor(c.college_grade)};font-weight:700">${fmt(c.college_grade,1)}</span>` : ''}
+                </div>
               </div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${c.school||''}</div>
-              <div style="font-size:12px;display:flex;gap:16px;flex-wrap:wrap">
-                <span><span style="color:var(--muted)">Thru Yr${nflYr} PPG </span><span style="font-weight:700;color:${col}">${fmt(c.career_ppg,1)}</span></span>
-                <span><span style="color:var(--muted)">Peak </span><span style="font-weight:700;color:var(--accent2)">${fmt(c.peak_ppg,1)}</span></span>
-              </div>
+              ${futureAvg != null ? `
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Yr ${nflYr+1}+</div>
+                <div style="font-size:22px;font-weight:700;color:${futureCol}">${improved?'↑':'↓'} ${fmt(futureAvg,1)}</div>
+                <div style="font-size:10px;color:var(--muted)">Peak ${fmt(futurePeak,1)}</div>
+              </div>` : `<div style="color:var(--muted);font-size:11px;flex-shrink:0">No future data</div>`}
             </div>
-            ${futureAvg != null ? `
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">After Yr ${nflYr}</div>
-              <div style="font-size:22px;font-weight:700;color:${trendCol}">${trend} ${fmt(futureAvg,1)}</div>
-              <div style="font-size:11px;color:var(--muted)">Peak: ${fmt(futurePeak,1)} PPG</div>
-            </div>` : '<div style="color:var(--muted);font-size:12px">No future data</div>'}
-          </div>
-          ${futureSeasonStr ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;display:flex;gap:14px;flex-wrap:wrap">${futureSeasonStr}</div>` : ''}
-        </div>`;
-      }).join('')}
+            <!-- Stats row -->
+            <div style="padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+              <div style="font-size:12px"><span style="color:var(--muted)">Thru Yr${nflYr} PPG </span><span style="font-weight:700;color:${col}">${fmt(c.career_ppg,1)}</span></div>
+              <div style="font-size:12px"><span style="color:var(--muted)">Peak </span><span style="font-weight:700;color:var(--accent2)">${fmt(c.peak_ppg,1)}</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">${statChips(c)}</div>
+            </div>
+            <!-- Sparkline -->
+            <div style="padding:10px 16px">
+              <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Season PPG <span style="color:${futureCol}">(highlighted = after Yr ${nflYr})</span></div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">${sparkline(allSeasons, nflYr)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>`;
 }
 
