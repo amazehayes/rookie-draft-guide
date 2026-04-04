@@ -362,7 +362,7 @@ body.light-mode .nav-drawer{background:var(--surface);}
   /* Cards grid */
   .cards-grid{grid-template-columns:1fr 1fr;gap:10px;padding:12px;}
   .player-card{font-size:13px;}
-  .card-name{font-size:16px;}
+  .card-name{font-size:22px;}
 
   /* Format bar */
   .format-bar{padding:10px 12px;gap:6px;}
@@ -467,21 +467,21 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 .view-btn.active{background:var(--accent);color:var(--bg);}
 /* CARDS */
 .main{padding:24px 32px;}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
 .player-card{border-radius:10px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;animation:fadeUp .3s ease both;aspect-ratio:3/2;min-height:160px;}
 .player-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.6);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .card-bg{position:absolute;inset:0;background-size:cover;background-position:center top;z-index:0;}
 .card-bg-overlay{position:absolute;inset:0;z-index:1;}
-.card-body{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;}
+.card-body{position:relative;z-index:4;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:14px 16px;}
 .card-header{display:flex;justify-content:space-between;align-items:flex-start;}
-.card-rank{font-size:12px;color:rgba(255,255,255,0.9);letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.4);padding:2px 7px;border-radius:4px;backdrop-filter:blur(4px);}
-.card-pos-badge{font-size:11px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:3px;text-transform:uppercase;}
-.card-bottom{display:flex;flex-direction:column;gap:4px;}
-.card-name{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;line-height:1;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8);}
-.card-school{font-size:12px;color:rgba(255,255,255,0.75);letter-spacing:.5px;}
-.card-grade-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
-.card-grade-pill{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);}
+.card-rank{font-size:13px;color:rgba(255,255,255,0.9);letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.55);padding:3px 9px;border-radius:4px;backdrop-filter:blur(4px);}
+.card-pos-badge{font-size:12px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:3px;text-transform:uppercase;}
+.card-bottom{display:flex;flex-direction:column;gap:6px;}
+.card-name{font-family:'Bebas Neue',cursive;font-size:30px;letter-spacing:1px;line-height:1;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.95);}
+.card-school{font-size:14px;color:rgba(255,255,255,0.8);letter-spacing:.5px;}
+.card-grade-row{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.card-grade-pill{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);}
 .card-markers-row{display:flex;gap:2px;flex-wrap:wrap;margin-top:3px;}
 .card-avatar{display:none;}
 .card-avatar-fallback{display:none;}
@@ -1293,7 +1293,7 @@ function renderCards(){
     const hs=hshotSrc(p);
     const hsUrl=hs?hs.primary:null;
     let dots='';
-    for(let j=0;j<mx;j++) dots+='<div style="width:5px;height:5px;border-radius:50%;background:'+(j<mk?col:'rgba(255,255,255,0.2)')+';flex-shrink:0"></div>';
+    for(let j=0;j<mx;j++) dots+='<div style="width:8px;height:8px;border-radius:50%;background:'+(j<mk?col:'rgba(255,255,255,0.2)')+';flex-shrink:0"></div>';
     const tag=getTag(p);
 
     html+=`<div class="player-card" onclick="openModalFromList(${i})">
@@ -1320,7 +1320,7 @@ function renderCards(){
             <div class="card-grade-pill" style="color:${col}">${mk}/${mx} <span style="opacity:0.6;font-size:10px">MKR</span></div>
             <div class="card-grade-pill" style="color:rgba(255,255,255,0.8)">${pmk}/${pmx} <span style="opacity:0.6;font-size:10px">ADV</span></div>
           </div>
-          <div style="display:flex;gap:2px;margin-top:3px;flex-wrap:wrap">${dots}</div>
+          <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${dots}</div>
         </div>
       </div>
     </div>`;
@@ -3140,14 +3140,14 @@ function explorerRender() {
           <!-- Overlay -->
           <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.5) 100%)"></div>
           <!-- Headshot -->
-          ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:3" onerror="this.style.display='none'">` : ''}
+          ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:2" onerror="this.style.display='none'">` : ''}
           <div class="card-body">
             <div class="card-header">
               <div class="card-rank" style="font-size:11px">${p.pos} · ${p.year||2026}</div>
               <div class="card-pos-badge bg-${p.pos.toLowerCase()}">${p.pos}</div>
             </div>
             <div class="card-bottom">
-              ${tag?`<div style="font-size:10px;color:${tag.color};background:rgba(0,0,0,0.4);border:1px solid ${tag.color}66;border-radius:4px;padding:1px 6px;display:inline-block;width:fit-content">${tag.icon} ${tag.label}</div>`:''}
+              ${tag?`<div style="font-size:12px;font-weight:700;color:${tag.color};background:${tag.color}33;border:1px solid ${tag.color}88;border-radius:5px;padding:4px 10px;display:inline-block;width:fit-content;letter-spacing:.3px">${tag.icon} ${tag.label}</div>`:''}
               <div class="card-name">${p.name}</div>
               <div class="card-school">${p.school||''}</div>
               <div class="card-grade-row">
