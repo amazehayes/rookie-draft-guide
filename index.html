@@ -616,7 +616,7 @@ td{padding:10px 14px;white-space:nowrap;}
 </div>
 <div class="page-section active" id="page-grades">
 <div class="hero">
-  <div class="hero-bg-text">2026</div>
+  <div class="hero-bg-text" id="heroBgText">2026</div>
   <h1 id="heroTitle">2026 <span>ROOKIE DRAFT CLASS</span></h1>
 </div>
 <div class="year-bar" id="gradesYearBar"><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
@@ -1637,27 +1637,10 @@ function getFiltered() {
   });
 }
 
-// Override renderHeroStats to use activeYear data
+// Update hero bg text on year switch
 function renderHeroStats() {
-  const data = yearCache[activeYear] || PLAYERS;
-  const byPos = {};
-  data.forEach(p => { byPos[p.pos] = (byPos[p.pos]||0)+1; });
-  const grades = data.filter(p=>p.grade).map(p=>p.grade);
-  const avg = grades.length ? grades.reduce((s,g)=>s+g,0)/grades.length : 0;
-
-  // Class rank among all years
-  const allAvgs = Object.entries(ALL_CLASS_AVGS).sort((a,b)=>b[1]-a[1]);
-  const classRank = allAvgs.findIndex(([y])=>parseInt(y)===activeYear)+1;
-  const totalYears = allAvgs.length;
-
-  document.getElementById('heroStats').innerHTML =
-    '<div class="stat-pill"><div class="val c-accent">'+data.length+'</div><div class="lbl">Players</div></div>'+
-    '<div class="stat-pill"><div class="val" style="color:var(--pos-qb)">'+(byPos.QB||0)+'</div><div class="lbl">QBs</div></div>'+
-    '<div class="stat-pill"><div class="val" style="color:var(--pos-rb)">'+(byPos.RB||0)+'</div><div class="lbl">RBs</div></div>'+
-    '<div class="stat-pill"><div class="val" style="color:var(--pos-wr)">'+(byPos.WR||0)+'</div><div class="lbl">WRs</div></div>'+
-    '<div class="stat-pill"><div class="val" style="color:var(--pos-te)">'+(byPos.TE||0)+'</div><div class="lbl">TEs</div></div>'+
-    '<div class="stat-pill"><div class="val c-accent2">'+fmt(avg,1)+'</div><div class="lbl">Avg Grade</div>'+
-    '<div class="sub">#'+classRank+' of '+totalYears+' classes (2010–2026)</div></div>';
+  const el = document.getElementById('heroBgText');
+  if(el) el.textContent = activeYear;
 }
 
 
