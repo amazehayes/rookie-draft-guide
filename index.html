@@ -1284,7 +1284,7 @@ function renderCards(){
   let html='';
   list.forEach((p,i)=>{
     const col=posColor(p.pos);
-    const g=p.grade||0;
+    const g=p.grade||null;
     const mx=POS_MAX[p.pos]||14; const mk=p.markers||0;
     const pmx=PFF_MAX[p.pos]||10; const pmk=p.pff!=null?Math.round(p.pff):0;
     const posRank=posRankMap.get(p)||'?';
