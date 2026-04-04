@@ -467,7 +467,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 .view-btn.active{background:var(--accent);color:var(--bg);}
 /* CARDS */
 .main{padding:24px 32px;}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px;}
 .player-card{border-radius:10px;overflow:hidden;cursor:pointer;transition:all .18s;position:relative;animation:fadeUp .3s ease both;aspect-ratio:3/2;min-height:160px;}
 .player-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.6);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -1302,23 +1302,22 @@ function renderCards(){
 
     html+=`<div class="player-card" onclick="openModalFromList(${i})">
       <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
-      <!-- School color base -->
-      <div class="card-bg" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)"></div>
       <!-- College logo bleed behind — left side, vertical fade -->
       <img src="${logoSrc(p.school)}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:${SCHOOL_OPACITY[p.school]||0.30};filter:grayscale(10%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
       <!-- Overlay -->
       <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.5) 100%)"></div>
-      <!-- Headshot: fully visible, no mask, right side -->
-      ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:3" onerror="this.style.display='none'">` : ''}
+      <!-- Headshot -->
+      ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:2" onerror="this.style.display='none'">` : ''}
       <div class="card-body">
+        <!-- Top: tag if exists, else rank -->
         <div class="card-header">
-          <div class="card-rank">${rl}</div>
-          <div class="card-pos-badge bg-${p.pos.toLowerCase()}">${p.pos}</div>
+          ${tag
+            ? `<div style="font-size:12px;font-weight:700;color:${tag.color};background:${tag.color}33;border:1px solid ${tag.color}88;border-radius:5px;padding:4px 10px;display:inline-block;width:fit-content;letter-spacing:.3px">${tag.icon} ${tag.label}</div>`
+            : `<div class="card-rank">${rl}</div>`}
         </div>
         <div class="card-bottom">
-          ${tag?`<div style="font-size:10px;color:${tag.color};background:rgba(0,0,0,0.4);border:1px solid ${tag.color}66;border-radius:4px;padding:1px 6px;display:inline-block;width:fit-content">${tag.icon} ${tag.label}</div>`:''}
           <div class="card-name">${p.name}</div>
-          <div class="card-school">${p.school||''}</div>
+          <div class="card-school"><span style="color:${col};font-weight:700">${p.pos}</span> · ${p.school||''}</div>
           <div class="card-grade-row">
             <div class="card-grade-pill" style="color:${lg.c}">${g?fmt(g,1):'—'}${p.finalGrade!==false ? ` <span style="opacity:0.7;font-size:10px">${lg.l}</span>` : ''}</div>
             <div class="card-grade-pill" style="color:${col}">${mk}/${mx} <span style="opacity:0.6;font-size:10px">MKR</span></div>
