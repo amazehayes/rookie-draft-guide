@@ -1029,11 +1029,11 @@ function getTag(p) {
   }
 
   if(pos==='TE'){
-    if(hasPff && pff>7 && (markers>=10 || grade>=85))
+    if(hasPff && pff>=7 && (markers>=10 || grade>=85))
       return {label:'The Bowers List', color:'#1687A3', icon:'🏆'};
     if(markers>=10 || grade>=85)
       return {label:'Analytical Darling', color:'#16A34A', icon:'⭐'};
-    if(hasPff && pff>7 && (round==null || round<=5))
+    if(hasPff && pff>=7 && (round==null || round<=5))
       return {label:'You Have My Attention', color:'#16A34A', icon:'✏️'};
     return null;
   }
