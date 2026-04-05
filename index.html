@@ -2288,8 +2288,9 @@ function renderComparison() {
 
   // ── Player header cards (compact, across the top) ──────────────────────────
   const numPlayers = compPlayers.filter(Boolean).length;
+  const isMobile = window.innerWidth < 640;
   container.innerHTML = `
-    <div style="display:grid;grid-template-columns:140px repeat(${Math.min(numPlayers,4)},1fr);gap:1px;background:var(--border)">
+    <div style="display:grid;grid-template-columns:${isMobile ? '80px' : '140px'} repeat(${Math.min(numPlayers,4)},1fr);gap:1px;background:var(--border)">
       <div style="background:var(--surface2)"></div>
       ${compPlayers.map((p, i) => {
         if (!p) return '';
@@ -2299,6 +2300,24 @@ function renderComparison() {
         const mx = POS_MAX[p.pos]||14; const mk = p.markers||0;
         const pmx = PFF_MAX[p.pos]||10; const pmk = p.pff!=null?Math.round(p.pff):0;
         const tag = getTag(p);
+        if(isMobile) {
+          // Mobile: ultra-compact header — no avatar, just name + key stats
+          return `<div style="background:var(--surface);padding:10px;border-top:3px solid ${COMP_COLORS[i]}">
+            <div style="font-size:9px;color:${COMP_COLORS[i]};letter-spacing:1px;font-weight:700;margin-bottom:4px">P${i+1}</div>
+            <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">${p.name.split(' ').pop()}</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${p.pos} · ${p.school||''}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+              <div style="background:var(--surface2);border-radius:4px;padding:4px 6px;text-align:center">
+                <div style="font-size:13px;font-weight:700;color:${lg.c}">${g ? fmt(g,1) : '—'}</div>
+                <div style="font-size:8px;color:var(--muted);text-transform:uppercase">Grade</div>
+              </div>
+              <div style="background:var(--surface2);border-radius:4px;padding:4px 6px;text-align:center">
+                <div style="font-size:13px;font-weight:700;color:${col}">${mk}/${mx}</div>
+                <div style="font-size:8px;color:var(--muted);text-transform:uppercase">Mkrs</div>
+              </div>
+            </div>
+          </div>`;
+        }
         return `<div style="background:var(--surface);padding:16px;border-top:3px solid ${COMP_COLORS[i]}">
           <div style="font-size:10px;color:${COMP_COLORS[i]};letter-spacing:2px;font-weight:700;margin-bottom:8px">PLAYER ${i+1} · ${p.year||2026}</div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -2315,7 +2334,6 @@ function renderComparison() {
               </div>
             </div>
           </div>
-          <!-- Grade + markers summary -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
             <div style="background:var(--surface2);border-radius:6px;padding:6px 8px;text-align:center">
               <div style="font-size:16px;font-weight:700;color:${lg.c}">${g ? fmt(g,1) : '—'}</div>
@@ -2470,7 +2488,7 @@ function renderCompStats(players) {
       const nums = vals.map(v => v != null ? parseFloat(v) : null);
       const maxVal = Math.max(...nums.filter(x => x != null));
 
-      h += `<div style="display:grid;grid-template-columns:140px repeat(${players.length},1fr);
+      h += `<div style="display:grid;grid-template-columns:${window.innerWidth<640?'80px':'140px'} repeat(${players.length},1fr);
         border-bottom:1px solid var(--border);align-items:center">
         <div style="padding:9px 16px;font-size:12px;color:var(--muted);white-space:nowrap">${row.l}</div>`;
 
@@ -2501,7 +2519,7 @@ function renderCompStats(players) {
   let html = `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0 0 8px 8px;overflow:hidden">`;
 
   // Column headers
-  html += `<div style="display:grid;grid-template-columns:140px repeat(${players.length},1fr);background:var(--surface);border-bottom:2px solid var(--border)">
+  html += `<div style="display:grid;grid-template-columns:${window.innerWidth<640?'80px':'140px'} repeat(${players.length},1fr);background:var(--surface);border-bottom:2px solid var(--border)">
     <div style="padding:10px 16px;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Stat</div>`;
   players.forEach((p, i) => {
     html += `<div style="padding:10px 12px;border-left:1px solid var(--border)">
