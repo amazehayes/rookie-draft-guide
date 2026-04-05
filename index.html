@@ -568,6 +568,7 @@ td{padding:10px 14px;white-space:nowrap;}
   .modal-grade-item .lbl{font-size:9px;letter-spacing:0;white-space:nowrap;}
   /* Modal header: stack avatar+name above grade strip */
   .modal-header{flex-direction:column;align-items:flex-start;padding:16px;}
+  .modal-comps-grid{grid-template-columns:1fr !important;}
   .modal-header > div[style*="border-left"]{border-left:none !important;border-top:1px solid var(--border);width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .modal-header > div[style*="border-left"] > div[style*="display:flex"]{min-width:max-content;}
 }
@@ -667,9 +668,11 @@ td{padding:10px 14px;white-space:nowrap;}
   <div class="empty-state" id="emptyState" style="display:none">No players match your filters.</div>
 </div>
 <div class="modal-overlay" id="modalOverlay">
+  <button id="modalPrev" onclick="navigateModal(-1)" style="position:fixed;left:12px;top:50%;transform:translateY(-50%);z-index:210;background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:50%;width:44px;height:44px;color:var(--text);font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s" onmouseover="this.style.background='rgba(0,194,255,0.2)';this.style.borderColor='var(--accent)'" onmouseout="this.style.background='rgba(0,0,0,0.6)';this.style.borderColor='var(--border)'">‹</button>
   <div class="modal" id="modal">
     <div id="modalContent"></div>
   </div>
+  <button id="modalNext" onclick="navigateModal(1)" style="position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:210;background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:50%;width:44px;height:44px;color:var(--text);font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s" onmouseover="this.style.background='rgba(0,194,255,0.2)';this.style.borderColor='var(--accent)'" onmouseout="this.style.background='rgba(0,0,0,0.6)';this.style.borderColor='var(--border)'">›</button>
 </div>
 </div>
 
@@ -1372,10 +1375,67 @@ function renderTable(){
 }
 
 // Cache of last rendered list for modal lookup
-let _lastRenderedList=[];
+let _currentModalIdx = -1;
+
 function openModalFromList(i){
+  _currentModalIdx = i;
   const p=_lastRenderedList[i];if(!p)return;
   openModal(p);
+  updateModalNavArrows();
+}
+
+function navigateModal(dir) {
+  const next = _currentModalIdx + dir;
+  if(next < 0 || next >= _lastRenderedList.length) return;
+  _currentModalIdx = next;
+  openModal(_lastRenderedList[next]);
+  updateModalNavArrows();
+}
+
+function updateModalNavArrows() {
+  const prev = document.getElementById('modalPrev');
+  const next = document.getElementById('modalNext');
+  if(!prev || !next) return;
+  const show = _lastRenderedList.length > 1;
+  prev.style.display = show && _currentModalIdx > 0 ? 'flex' : 'none';
+  next.style.display = show && _currentModalIdx < _lastRenderedList.length - 1 ? 'flex' : 'none';
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if(!document.getElementById('modalOverlay').classList.contains('open')) return;
+  if(e.key === 'ArrowLeft')  { e.preventDefault(); navigateModal(-1); }
+  if(e.key === 'ArrowRight') { e.preventDefault(); navigateModal(1); }
+  if(e.key === 'Escape') closeModal();
+});
+
+// Touch swipe navigation
+(function() {
+  let touchStartX = 0, touchStartY = 0;
+  const overlay = document.getElementById('modalOverlay');
+  overlay.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive: true});
+  overlay.addEventListener('touchend', e => {
+    if(!overlay.classList.contains('open')) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    // Only trigger if horizontal swipe dominates
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      navigateModal(dx < 0 ? 1 : -1);
+    }
+  }, {passive: true});
+})();
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  updateModalNavArrows();
+  // hide arrows when closed
+  const prev = document.getElementById('modalPrev');
+  const next = document.getElementById('modalNext');
+  if(prev) prev.style.display = 'none';
+  if(next) next.style.display = 'none';
 }
 function posStats(p, col) {
   const f = (v, d) => v != null ? fmt(v, d) : '—';
@@ -1516,7 +1576,7 @@ function openModal(p){
   setTimeout(() => renderModalComps(p), 50);
 }
 
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+// closeModal defined above with arrow cleanup
 function render(){
   if(viewMode==='cards'){renderCards();document.getElementById('cardsContainer').style.display='grid';document.getElementById('tableContainer').style.display='none';}
   else{renderTable();document.getElementById('cardsContainer').style.display='none';document.getElementById('tableContainer').style.display='block';}
