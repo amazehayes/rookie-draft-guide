@@ -155,15 +155,65 @@ body{font-family:'Sora',sans-serif;font-size:15px;line-height:1.6;background:var
 
 
 /* ---- DARK / LIGHT MODE ---- */
-/* Light mode = default, dark mode toggle preserved for future */
+/* Dark mode overrides — toggled via .dark-mode class on body */
 body.dark-mode{
   --bg:#0a0c0f;--surface:#111418;--surface2:#181c22;--border:#1e2530;
   --text:#e8edf3;--muted:#5a6478;
-  --accent:#00c2ff;--accent2:#f5c842;--accent3:#00c2ff;
-  --green:#00e88a;--red:#ff4655;--orange:#ff8c42;--purple:#7b61ff;
-  --pos-qb:#7b61ff;--pos-rb:#00e88a;--pos-wr:#00c2ff;--pos-te:#ff8c42;
+  --accent:#e8845a;--accent2:#7ab0d4;--accent3:#e8845a;
+  --green:#3dffa0;--red:#ff4655;--orange:#ff8c42;--purple:#c084fc;
+  --pos-qb:#c084fc;--pos-rb:#3dffa0;--pos-wr:#7ab0d4;--pos-te:#ff8c42;
 }
-body.dark-mode .site-nav{background:rgba(10,12,15,.97);}
+body.dark-mode .site-nav{
+  background:#0a0c0f;
+  border-bottom-color:#1e2530;
+}
+body.dark-mode .nav-btn{color:rgba(255,255,255,0.5);}
+body.dark-mode .nav-btn:hover{color:rgba(255,255,255,0.9);}
+body.dark-mode .nav-btn.active{background:var(--accent);color:#000;}
+body.dark-mode .nav-drawer{background:#0d1117;border-left-color:#1e2530;}
+body.dark-mode .nav-drawer .nav-btn{border-bottom-color:#1e2530;}
+body.dark-mode .year-bar{background:var(--surface);}
+body.dark-mode .year-tab.active{background:var(--surface2);color:var(--accent);border-color:var(--border);}
+body.dark-mode .hero{background:var(--bg);border-bottom-color:var(--border);}
+body.dark-mode #heroTitle{color:var(--text);}
+body.dark-mode #heroTitle span{color:var(--accent);}
+body.dark-mode .filter-btn{background:var(--surface2);border-color:var(--border);}
+body.dark-mode .filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+body.dark-mode .sort-select{background:var(--surface2);border-color:var(--border);}
+body.dark-mode .modal{background:var(--surface);border-color:var(--border);box-shadow:0 24px 80px rgba(0,0,0,0.7);}
+body.dark-mode .modal-overlay{background:rgba(0,0,0,0.88);}
+body.dark-mode .modal-stat-item{background:var(--bg);}
+body.dark-mode .marker-item{background:var(--bg);}
+body.dark-mode .close-btn{background:var(--surface2);border-color:var(--border);}
+body.dark-mode .global-search-input{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);}
+body.dark-mode .global-search-results{background:var(--surface2);border-color:var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+body.dark-mode .global-search-result-item:hover{background:var(--surface);}
+body.dark-mode .format-btn{background:var(--bg);border-color:var(--border);}
+body.dark-mode .format-btn.active{background:var(--accent2);color:#000;}
+body.dark-mode .glossary-index{background:var(--surface);}
+body.dark-mode .glossary-search{background:var(--bg);border-color:var(--border);}
+body.dark-mode .glossary-cat-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+body.dark-mode .explorer-sidebar{background:var(--surface);}
+body.dark-mode .explorer-year-btn.active{background:var(--surface2);color:var(--accent);border-color:var(--accent);}
+body.dark-mode .explorer-pos-btn.active[data-pos="QB"]{background:var(--pos-qb);color:#000;border-color:var(--pos-qb);}
+body.dark-mode .explorer-pos-btn.active[data-pos="RB"]{background:var(--pos-rb);color:#000;border-color:var(--pos-rb);}
+body.dark-mode .explorer-pos-btn.active[data-pos="WR"]{background:var(--pos-wr);color:#000;border-color:var(--pos-wr);}
+body.dark-mode .explorer-pos-btn.active[data-pos="TE"]{background:var(--pos-te);color:#000;border-color:var(--pos-te);}
+body.dark-mode thead th{background:var(--surface2);}
+body.dark-mode tbody tr:hover{background:var(--surface2);}
+body.dark-mode .tf-card{background:var(--bg);}
+body.dark-mode .outcomes-table th{background:var(--surface2);}
+body.dark-mode .share-modal-box{background:var(--surface);}
+body.dark-mode .share-action-btn{background:var(--surface2);}
+body.dark-mode .comp-search-input{background:var(--bg);}
+body.dark-mode .comp-dropdown{background:var(--surface2);}
+body.dark-mode .comp-dropdown-item:hover{background:var(--surface);}
+body.dark-mode .theme-toggle{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);}
+body.dark-mode .theme-toggle:hover{color:#fff;border-color:rgba(255,255,255,0.5);}
+body.dark-mode .bg-qb{background:color-mix(in srgb,var(--pos-qb) 20%,transparent);color:var(--pos-qb);}
+body.dark-mode .bg-rb{background:color-mix(in srgb,var(--pos-rb) 20%,transparent);color:var(--pos-rb);}
+body.dark-mode .bg-wr{background:color-mix(in srgb,var(--pos-wr) 20%,transparent);color:var(--pos-wr);}
+body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent);color:var(--pos-te);}
 
 /* ---- THEME TOGGLE ---- */
 .theme-toggle{background:none;border:1px solid var(--border);color:var(--muted);font-size:15px;padding:5px 9px;border-radius:6px;cursor:pointer;transition:all .15s;flex-shrink:0;}
@@ -603,7 +653,7 @@ td{padding:10px 14px;white-space:nowrap;}
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;">
     <div class="nav-updated" id="navUpdated"></div>
-    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">☀</button>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -3530,18 +3580,22 @@ setTimeout(loadNFLLookup, 500);
 // DARK / LIGHT MODE
 // ============================================================
 const themeToggle = document.getElementById('themeToggle');
-let isDark = true;
+let isDark = false;
 
 function applyTheme(dark) {
   isDark = dark;
-  document.body.classList.toggle('light-mode', !dark);
-  themeToggle.textContent = dark ? '\u2600' : '\u263e';
+  document.body.classList.toggle('dark-mode', dark);
+  themeToggle.textContent = dark ? '☀' : '🌙';
+  themeToggle.style.color = dark ? 'rgba(255,255,255,0.6)' : '';
+  themeToggle.style.borderColor = dark ? 'rgba(255,255,255,0.2)' : '';
   try { localStorage.setItem('tms-theme', dark ? 'dark' : 'light'); } catch(e){}
 }
 
+themeToggle.addEventListener('click', () => applyTheme(!isDark));
+
 try {
   const saved = localStorage.getItem('tms-theme');
-  if(saved === 'light') applyTheme(false);
+  if(saved === 'dark') applyTheme(true);
 } catch(e){}
 
 themeToggle.addEventListener('click', () => applyTheme(!isDark));
