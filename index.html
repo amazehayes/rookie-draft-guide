@@ -3593,12 +3593,18 @@ function applyTheme(dark) {
 
 themeToggle.addEventListener('click', () => applyTheme(!isDark));
 
+// v2 redesign: default is light. Clear any stale dark preference from old version.
 try {
   const saved = localStorage.getItem('tms-theme');
-  if(saved === 'dark') applyTheme(true);
-} catch(e){}
-
-themeToggle.addEventListener('click', () => applyTheme(!isDark));
+  const version = localStorage.getItem('tms-theme-version');
+  if(version !== '2') {
+    localStorage.setItem('tms-theme', 'light');
+    localStorage.setItem('tms-theme-version', '2');
+    applyTheme(false);
+  } else {
+    applyTheme(saved === 'dark');
+  }
+} catch(e){ applyTheme(false); }
 
 // ============================================================
 // LAST UPDATED DATE
