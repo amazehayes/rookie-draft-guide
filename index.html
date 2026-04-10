@@ -1426,7 +1426,7 @@ function renderCards(){
         <!-- Top: tag if exists, else nothing -->
         <div class="card-header">
           ${tag
-            ? `<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:${tag.color};background:${tag.color}18;border:1.5px solid ${tag.color}55;border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`
+            ? `<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:#fff;background:${tag.color};border:1.5px solid ${tag.color};border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`
             : ''}
         </div>
         <div class="card-bottom">
@@ -3321,7 +3321,7 @@ function explorerRender() {
           ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:2" onerror="this.style.display='none'">` : ''}
           <div class="card-body">
             <div class="card-header">
-              ${tag?`<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:${tag.color};background:${tag.color}18;border:1.5px solid ${tag.color}55;border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`:''}
+              ${tag?`<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:#fff;background:${tag.color};border:1.5px solid ${tag.color};border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`:''}
             </div>
             <div class="card-bottom">
               <div class="card-name">${p.name}</div>
