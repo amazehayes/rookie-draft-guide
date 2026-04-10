@@ -210,6 +210,15 @@ body.dark-mode .comp-dropdown{background:var(--surface2);}
 body.dark-mode .comp-dropdown-item:hover{background:var(--surface);}
 body.dark-mode .theme-toggle{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);}
 body.dark-mode .theme-toggle:hover{color:#fff;border-color:rgba(255,255,255,0.5);}
+/* Dark mode tag color resets — brighter on dark bg */
+body.dark-mode [style*="color:#2a6e42"]{color:#3dffa0 !important;}
+body.dark-mode [style*="background:#2a6e42"]{background:rgba(61,255,160,0.15) !important;border-color:rgba(61,255,160,0.4) !important;}
+body.dark-mode [style*="color:#8b2a1e"]{color:#ff6b5b !important;}
+body.dark-mode [style*="background:#8b2a1e"]{background:rgba(255,70,85,0.15) !important;border-color:rgba(255,70,85,0.4) !important;}
+body.dark-mode [style*="color:#9a6200"]{color:#f5c842 !important;}
+body.dark-mode [style*="background:#9a6200"]{background:rgba(245,200,66,0.15) !important;border-color:rgba(245,200,66,0.4) !important;}
+body.dark-mode [style*="color:#1a4d6b"]{color:#7ab0d4 !important;}
+body.dark-mode [style*="background:#1a4d6b"]{background:rgba(122,176,212,0.15) !important;border-color:rgba(122,176,212,0.4) !important;}
 body.dark-mode .bg-qb{background:color-mix(in srgb,var(--pos-qb) 20%,transparent);color:var(--pos-qb);}
 body.dark-mode .bg-rb{background:color-mix(in srgb,var(--pos-rb) 20%,transparent);color:var(--pos-rb);}
 body.dark-mode .bg-wr{background:color-mix(in srgb,var(--pos-wr) 20%,transparent);color:var(--pos-wr);}
@@ -1093,50 +1102,50 @@ function getTag(p) {
                        (p.careerPYd<8500 || (p.careerYPG<225 && p.years!=null && p.years<6));
     const runs = p.careerRuYd!=null && p.careerRuYd>=1000;
     if(hasPff && pff>=6 && round===1 && hasVolume)
-      return {label:'Greatest Prospect Since...', color:'#16A34A', icon:'🏆'};
+      return {label:'Greatest Prospect Since...', color:'#2a6e42', icon:'🏆'};
     if(hasPff && ((pff<6 && runs && round===1) || (pff>=6 && runs && round===1 && lackVolume)))
-      return {label:'Iffy, But He Runs', color:'#F59E0B', icon:'🏃'};
+      return {label:'Iffy, But He Runs', color:'#9a6200', icon:'🏃'};
     if(hasPff && ((pff<6 && !runs && round===1) || (pff>=6 && round===1 && lackVolume)))
-      return {label:'N.F.L. = Not For Long', color:'#DC2626', icon:'⚠️'};
+      return {label:'N.F.L. = Not For Long', color:'#8b2a1e', icon:'⚠️'};
     return null;
   }
 
   if(pos==='RB'){
     if(markers>=7 && round!=null && round<6 && round>3)
-      return {label:'Late-Round Target', color:'#1687A3', icon:'🎯'};
+      return {label:'Late-Round Target', color:'#1a4d6b', icon:'🎯'};
     if(markers>=3 && p.careerBA!=null && p.careerBA>=0.09 &&
        p.careerYACO!=null && p.careerYACO>3.75 &&
        p.bestYPRR!=null && p.bestYPRR>1.5 &&
        p.best1D!=null && p.best1D>0.3)
-      return {label:'Fine, I\'ll Do It Myself', color:'#16A34A', icon:'💪'};
+      return {label:'Fine, I\'ll Do It Myself', color:'#2a6e42', icon:'💪'};
     if(p.careerMTF!=null && p.careerMTF>=0.35 && round!==8)
-      return {label:'Try To Tackle Me', color:'#16A34A', icon:'⚡'};
+      return {label:'Try To Tackle Me', color:'#2a6e42', icon:'⚡'};
     return null;
   }
 
   if(pos==='WR'){
     if(hasPff && pff>=11 && pff>(markers*2) && round!=null && round<=5)
-      return {label:'The McConkey List', color:'#16A34A', icon:'🏆'};
+      return {label:'The McConkey List', color:'#2a6e42', icon:'🏆'};
     if(hasPff && (pff*2)<=markers && round!=null && round<=2 && markers>3)
-      return {label:"The N'Keal List", color:'#DC2626', icon:'⚠️'};
+      return {label:"The N'Keal List", color:'#8b2a1e', icon:'⚠️'};
     if(p.firstYPTPA!=null && p.firstYPTPA===p.bestYPTPA &&
        p.firstMSYards!=null && p.firstMSYards===p.bestMSYards &&
        p.firstPPG!=null && p.firstPPG===p.bestPPG && round!=null && round<=3)
-      return {label:'Phreshman Phenom', color:'#DC2626', icon:'⚠️'};
+      return {label:'Phreshman Phenom', color:'#8b2a1e', icon:'⚠️'};
     if(round!=null && round<=3 && p.careerYPRRzone!=null && p.careerYPRRzone>=3)
-      return {label:'Zone Crusher', color:'#16A34A', icon:'💥'};
+      return {label:'Zone Crusher', color:'#2a6e42', icon:'💥'};
     if(round!=null && round<=3 && p.careerYPRRzone!=null && p.careerYPRRzone<2.25)
-      return {label:'Crushed by Zone', color:'#DC2626', icon:'🔒'};
+      return {label:'Crushed by Zone', color:'#8b2a1e', icon:'🔒'};
     return null;
   }
 
   if(pos==='TE'){
     if(hasPff && pff>=7 && (markers>=10 || grade>=85))
-      return {label:'The Bowers List', color:'#1687A3', icon:'🏆'};
+      return {label:'The Bowers List', color:'#1a4d6b', icon:'🏆'};
     if(markers>=10 || grade>=85)
-      return {label:'Analytical Darling', color:'#16A34A', icon:'⭐'};
+      return {label:'Analytical Darling', color:'#2a6e42', icon:'⭐'};
     if(hasPff && pff>=7 && (round==null || round<=5))
-      return {label:'You Have My Attention', color:'#16A34A', icon:'✏️'};
+      return {label:'You Have My Attention', color:'#2a6e42', icon:'✏️'};
     return null;
   }
   return null;
@@ -1417,7 +1426,7 @@ function renderCards(){
         <!-- Top: tag if exists, else nothing -->
         <div class="card-header">
           ${tag
-            ? `<div style="font-size:12px;font-weight:700;color:${tag.color};background:${tag.color}33;border:1px solid ${tag.color}88;border-radius:5px;padding:4px 10px;display:inline-block;width:fit-content;letter-spacing:.3px">${tag.icon} ${tag.label}</div>`
+            ? `<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:${tag.color};background:${tag.color}18;border:1.5px solid ${tag.color}55;border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`
             : ''}
         </div>
         <div class="card-bottom">
@@ -3312,7 +3321,7 @@ function explorerRender() {
           ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:2" onerror="this.style.display='none'">` : ''}
           <div class="card-body">
             <div class="card-header">
-              ${tag?`<div style="font-size:12px;font-weight:700;color:${tag.color};background:${tag.color}33;border:1px solid ${tag.color}88;border-radius:5px;padding:4px 10px;display:inline-block;width:fit-content;letter-spacing:.3px">${tag.icon} ${tag.label}</div>`:''}
+              ${tag?`<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:${tag.color};background:${tag.color}18;border:1.5px solid ${tag.color}55;border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`:''}
             </div>
             <div class="card-bottom">
               <div class="card-name">${p.name}</div>
