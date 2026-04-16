@@ -3712,24 +3712,24 @@ globalInput.addEventListener('keydown', e => {
 // ── Comp variable definitions per position (translated from R) ───────────────
 const COMP_VARS = {
   QB: {
-    withGrade:    ['ht','wt','grade','pff','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
-    withoutGrade: ['ht','wt','markers','pff','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
-    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,pff:1,careerPYd:1,careerPTD:1,careerINT:1,careerCMP:1,careerRuYd:1.3}
+    withGrade:    ['ht','wt','overall','grade','careerAcc','careerBTT','careerTWP','careerSackPct','bestAcc','bestBTT','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
+    withoutGrade: ['ht','wt','overall','markers','careerAcc','careerBTT','careerTWP','careerSackPct','bestAcc','bestBTT','careerPYd','careerPTD','careerINT','careerCMP','careerRuYd'],
+    weights: {ht:0.7,wt:0.7,overall:2.0,grade:1.5,markers:1.5,careerAcc:1.2,careerBTT:1.2,careerTWP:1,careerSackPct:1,bestAcc:1.2,bestBTT:1.2,careerPYd:0.8,careerPTD:0.8,careerINT:0.8,careerCMP:1,careerRuYd:1}
   },
   RB: {
-    withGrade:    ['ht','wt','grade','bestTotalYds','bestRec','bestPPG','burst','dash'],
-    withoutGrade: ['ht','wt','markers','bestTotalYds','bestRec','bestPPG','burst','dash'],
-    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,bestTotalYds:1,bestRec:1,bestPPG:1,burst:1,dash:1}
+    withGrade:    ['ht','wt','overall','grade','careerBA','careerMTF','career1D','careerYACO','careerYPRR','careerTPRR','bestBA','bestMTF','bestYPRR','bestTPRR','bestTotalYds','bestRec','bestPPG','burst','dash'],
+    withoutGrade: ['ht','wt','overall','markers','careerBA','careerMTF','career1D','careerYACO','careerYPRR','careerTPRR','bestBA','bestMTF','bestYPRR','bestTPRR','bestTotalYds','bestRec','bestPPG','burst','dash'],
+    weights: {ht:0.7,wt:0.7,overall:2.0,grade:1.5,markers:1.5,careerBA:1.2,careerMTF:1.2,career1D:1,careerYACO:1,careerYPRR:1.2,careerTPRR:1,bestBA:1.2,bestMTF:1.2,bestYPRR:1.2,bestTPRR:1,bestTotalYds:0.8,bestRec:0.8,bestPPG:0.8,burst:0.8,dash:0.8}
   },
   WR: {
-    withGrade:    ['ht','wt','grade','boy20','boy30','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
-    withoutGrade: ['ht','wt','markers','boy20','boy30','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
-    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,boy20:1,boy30:1,pff:1,bestYPTPA:1,bestMSYards:1,bestPPG:1,burst:1,dash:1,wass:1}
+    withGrade:    ['ht','wt','overall','grade','careerYPRR','careerTPRR','career1DRR','careerYACR','careerMTF','bestYPRR','bestTPRR','best1DRR','bestYACR','boy20','boy30','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    withoutGrade: ['ht','wt','overall','markers','careerYPRR','careerTPRR','career1DRR','careerYACR','careerMTF','bestYPRR','bestTPRR','best1DRR','bestYACR','boy20','boy30','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    weights: {ht:0.7,wt:0.7,overall:2.0,grade:1.5,markers:1.5,careerYPRR:1.3,careerTPRR:1.2,career1DRR:1,careerYACR:1,careerMTF:1,bestYPRR:1.3,bestTPRR:1.2,best1DRR:1,bestYACR:1,boy20:1,boy30:1,bestYPTPA:0.8,bestMSYards:0.8,bestPPG:0.8,burst:0.7,dash:0.7,wass:0.7}
   },
   TE: {
-    withGrade:    ['ht','wt','grade','boy15','boy20','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
-    withoutGrade: ['ht','wt','markers','boy15','boy20','pff','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
-    weights: {ht:0.8,wt:0.8,grade:1.5,markers:1.5,boy15:1,boy20:1,pff:1,bestYPTPA:1,bestMSYards:1,bestPPG:1,burst:1,dash:1,wass:1}
+    withGrade:    ['ht','wt','overall','grade','careerYPRR','careerTPRR','career1DRR','careerYACR','careerMTF','bestYPRR','bestTPRR','best1DRR','bestYACR','boy15','boy20','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    withoutGrade: ['ht','wt','overall','markers','careerYPRR','careerTPRR','career1DRR','careerYACR','careerMTF','bestYPRR','bestTPRR','best1DRR','bestYACR','boy15','boy20','bestYPTPA','bestMSYards','bestPPG','burst','dash','wass'],
+    weights: {ht:0.7,wt:0.7,overall:2.0,grade:1.5,markers:1.5,careerYPRR:1.3,careerTPRR:1.2,career1DRR:1,careerYACR:1,careerMTF:1,bestYPRR:1.3,bestTPRR:1.2,best1DRR:1,bestYACR:1,boy15:1,boy20:1,bestYPTPA:0.8,bestMSYards:0.8,bestPPG:0.8,burst:0.7,dash:0.7,wass:0.7}
   }
 };
 
@@ -3751,7 +3751,7 @@ function computeComps(player) {
   const weights = cfg.weights;
   const targetYear = player.year || 2026;
 
-  // Candidates: same pos, strictly earlier year, drafted (round not null/8)
+  // Candidates: same pos, strictly earlier year, drafted (round not null/8), must have PFF data
   const candidates = [];
   Object.entries(yearCache).forEach(([yr, players]) => {
     if(Number(yr) >= targetYear) return;
@@ -3760,24 +3760,32 @@ function computeComps(player) {
       if(p.round == null || p.round === 8) return;
       if(hasGrade && p.grade == null) return;
       if(!hasGrade && p.markers == null) return;
+      if(p.pff == null) return; // must have PFF data
       candidates.push({...p, year: Number(yr)});
     });
   });
+
+  // For the target player, use projected_overall as fallback if overall is null
+  const target = {...player};
+  if(target.overall == null && target.projected_overall != null) {
+    target.overall = target.projected_overall;
+  }
   if(!candidates.length) return [];
 
   // Joint z-score normalization across [target, ...candidates]
-  const pool = [player, ...candidates];
+  const pool = [target, ...candidates];
   const zp = {};
   vars.forEach(k => { zp[k] = zScoreParams(pool.map(p => p[k])); });
 
   const z = (v, k) => (v == null || isNaN(v)) ? 0 : (v - zp[k].mean) / zp[k].std;
-  const targetVec = vars.map(k => z(player[k], k));
+  const targetVec = vars.map(k => z(target[k], k));
 
   candidates.forEach(p => {
     let dist = 0;
     vars.forEach((k, i) => {
       const d = z(p[k], k) - targetVec[i];
-      dist += (weights[k] || 1) * d * d;
+      const contrib = (weights[k] || 1) * d * d;
+      dist += Math.min(contrib, 4); // cap any single variable at 4 to prevent outlier dominance
     });
     p._dist = Math.sqrt(dist);
     p._sim = Math.round(1 / (1 + p._dist) * 1000) / 10;
