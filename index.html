@@ -595,10 +595,10 @@ td{padding:10px 14px;white-space:nowrap;}
 /* MARKER CHECKLIST */
 .marker-checklist{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
 .marker-item{display:flex;align-items:flex-start;gap:7px;padding:7px 9px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);}
-.marker-item.hit{border-color:rgba(61,255,160,.2);background:rgba(61,255,160,.03);}
+.marker-item.hit{border-color:rgba(42,110,66,.25);background:rgba(42,110,66,.07);}
 .marker-icon{font-size:14px;flex-shrink:0;width:16px;text-align:center;margin-top:1px;}
 .marker-text{font-size:13px;color:var(--muted);line-height:1.4;letter-spacing:.3px;}
-.marker-item.hit .marker-text{color:rgba(240,237,230,.6);}
+.marker-item.hit .marker-text{color:var(--text);}
 .marker-actual{font-family:'DM Mono',monospace;font-weight:500;font-size:14px;margin-top:2px;}
 /* UTILS */
 .school-logo{width:28px;height:28px;object-fit:contain;flex-shrink:0;opacity:.9;}
@@ -2136,7 +2136,7 @@ function renderTargetsFades(players, format) {
 
   const miniCard = ({p, reason}, type) => {
     const col = type === 'target' ? 'var(--green)' : 'var(--red)';
-    const borderAlpha = type === 'target' ? 'rgba(0,232,138,.3)' : 'rgba(255,70,85,.3)';
+    const borderAlpha = type === 'target' ? 'rgba(42,110,66,.35)' : 'rgba(184,54,42,.35)';
     const posCol = posColor(p.pos);
     const g = p.grade || 0;
     const lg = letterGrade(g,p.finalGrade);
@@ -2730,7 +2730,7 @@ function renderBreakdown() {
   }));
 
   // Chart 2: Positional breakdown — filtered by bkPosFilter
-  const POS_COLORS = {QB:'rgba(123,97,255,.8)',RB:'rgba(0,232,138,.8)',WR:'rgba(0,194,255,.8)',TE:'rgba(255,140,66,.8)'};
+  const POS_COLORS = {QB:'rgba(106,59,160,.9)',RB:'rgba(42,110,66,.9)',WR:'rgba(26,61,107,.9)',TE:'rgba(192,98,42,.9)'};
   const allPosDatasets = [
     {label:'QB', key:'qbAvg', color:POS_COLORS.QB},
     {label:'RB', key:'rbAvg', color:POS_COLORS.RB},
