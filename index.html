@@ -215,7 +215,7 @@ body.dark-mode [style*="color:#2a6e42"]{color:#3dffa0 !important;}
 body.dark-mode [style*="background:#2a6e42"]{background:rgba(61,255,160,0.15) !important;border-color:rgba(61,255,160,0.4) !important;}
 body.dark-mode [style*="color:#8b2a1e"]{color:#ff6b5b !important;}
 body.dark-mode [style*="background:#8b2a1e"]{background:rgba(255,70,85,0.15) !important;border-color:rgba(255,70,85,0.4) !important;}
-body.dark-mode [style*="color:#9a6200"]{color:#f5c842 !important;}
+body.dark-mode [style*="color:#9a6200"]{color:#b8442c !important;}
 body.dark-mode [style*="background:#9a6200"]{background:rgba(245,200,66,0.15) !important;border-color:rgba(245,200,66,0.4) !important;}
 body.dark-mode [style*="color:#1a4d6b"]{color:#7ab0d4 !important;}
 body.dark-mode [style*="background:#1a4d6b"]{background:rgba(122,176,212,0.15) !important;border-color:rgba(122,176,212,0.4) !important;}
@@ -976,7 +976,7 @@ td{padding:10px 14px;white-space:nowrap;}
 <script>
 const HEADSHOT_BASE='headshots/JPEG/';
 const HEADSHOT_PNG='headshots/PNG/';
-const POS_COLORS={QB:'#c084fc',RB:'#3dffa0',WR:'#e8ff47',TE:'#ff6b35'};
+const POS_COLORS={QB:'#6a3ba0',RB:'#2a6e42',WR:'#1a3d6b',TE:'#b8442c'};
 const SCHOOL_OPACITY = {"Abilene Christian":0.45,"Air Force":0.45,"Akron":0.55,"Alabama":0.9,"Alabama State":0.28,"Appalachian State":0.28,"Arizona":0.35,"Arizona State":0.35,"Arkansas":0.35,"Arkansas State":0.28,"Ashland":0.55,"Auburn":0.9,"BYU":0.55,"Ball State":0.45,"Baylor":0.9,"Boise State":0.45,"Boston College":0.35,"Bowling Green":0.35,"Buffalo":0.9,"California":0.45,"Central Arkansas":0.45,"Central Michigan":0.45,"Charlotte":0.35,"Cincinnati":0.28,"Citadel":0.35,"Clemson":0.9,"Coastal Carolina":0.35,"Colorado":0.28,"Colorado State":0.35,"Cornell":0.45,"Dayton":0.45,"Delaware":0.45,"Drake":0.45,"Duke":0.9,"East Carolina":0.28,"East Central (OK)":0.28,"Eastern Illinois":0.45,"Eastern Michigan":0.45,"Eastern Washington":0.35,"Florida":0.9,"Florida Atlantic":0.55,"Florida International":0.35,"Florida State":0.55,"Fordham":0.35,"Fresno State":0.35,"Georgia":0.35,"Georgia Southern":0.35,"Georgia State":0.55,"Georgia Tech":0.35,"Grambling":0.28,"Harvard":0.45,"Hawaii":0.55,"Hillsdale":0.28,"Houston":0.55,"Idaho":0.35,"Illinois":0.9,"Illinois State":0.35,"Incarnate Word":0.35,"Indiana":0.9,"Indiana State":0.45,"Iowa":0.28,"Iowa State":0.9,"Jacksonville State":0.35,"Kansas":0.35,"Kansas State":0.45,"Kent State":0.28,"Kentucky":0.55,"Kentucky Wesleyan":0.45,"LSU":0.45,"Liberty":0.35,"Louisiana":0.45,"Louisiana Tech":0.45,"Louisville":0.45,"Maine":0.28,"Malone":0.45,"Marshall":0.35,"Maryland":0.45,"Massachusetts":0.45,"Memphis":0.45,"Miami (FL)":0.35,"Miami (OH)":0.28,"Michigan":0.45,"Michigan State":0.9,"Middle Tennessee":0.45,"Minnesota":0.45,"Minnesota St":0.45,"Mississippi":0.9,"Mississippi State":0.45,"Missouri":0.28,"Missouri State":0.55,"Monmouth":0.45,"Montana":0.45,"Montana State":0.45,"Mount Union":0.45,"Murray State":0.35,"Navy":0.45,"Nebraska":0.55,"Nevada":0.45,"New Hampshire":0.35,"New Mexico":0.35,"New Mexico State":0.45,"North Carolina":0.45,"North Carolina A&T":0.28,"North Carolina State":0.35,"North Dakota State":0.28,"North Texas":0.45,"Northern Illinois":0.35,"Northern Iowa":0.28,"Northwestern":0.45,"Notre Dame":0.45,"Ohio":0.45,"Ohio State":0.35,"Oklahoma":0.9,"Oklahoma State":0.9,"Old Dominion":0.45,"Oregon":0.9,"Oregon State":0.28,"Penn State":0.9,"Pennsylvania":0.28,"Pittsburgh":0.45,"Portland State":0.35,"Princeton":0.45,"Purdue":0.35,"Rhode Island":0.35,"Rice":0.35,"Richmond":0.45,"Rutgers":0.45,"SMU":0.9,"Saginaw Valley State":0.35,"San Diego State":0.28,"San Jose State":0.28,"South Alabama":0.28,"South Carolina":0.35,"South Carolina State":0.45,"South Dakota State":0.35,"South Florida":0.45,"Southern Illinois":0.35,"Southern Mississippi":0.28,"Stanford":0.45,"Stetson":0.45,"Syracuse":0.9,"TCU":0.9,"Temple":0.45,"Tennessee":0.9,"Texas":0.9,"Texas A&M":0.9,"Texas Southern":0.28,"Texas State":0.45,"Texas Tech":0.35,"Toledo":0.35,"Towson":0.35,"Troy":0.35,"Tulane":0.55,"Tulsa":0.35,"UAB":0.28,"UCF":0.35,"UCLA":0.45,"UC-Davis":0.45,"UConn":0.45,"UL Monroe":0.45,"UNLV":0.28,"USC":0.45,"UTEP":0.28,"UTSA":0.55,"Utah":0.9,"Utah State":0.45,"Vanderbilt":0.35,"Virginia":0.28,"Virginia State":0.35,"Virginia Tech":0.55,"Wake Forest":0.28,"Washington":0.55,"Washington State":0.45,"Weber State":0.45,"West Virginia":0.45,"Western Kentucky":0.35,"Western Michigan":0.35,"Western Oregon":0.35,"William & Mary":0.28,"Wisconsin":0.35,"Wyoming":0.28,"Youngstown State":0.45};
 const SCHOOL_COLORS = {"Abilene Christian":["#502080","#9e84b9"],"Air Force":["#003090","#728dc1"],"Akron":["#001040","#727b95"],"Alabama":["#901030","#c17b8d"],"Alabama State":["#e0b020","#edd384"],"Appalachian State":["#f0c000","#f6dc72"],"Arizona":["#b00010","#d3727b"],"Arizona State":["#f0c010","#f6dc7b"],"Arkansas":["#a02030","#ca848d"],"Arkansas State":["#c00020","#dc7284"],"Ashland":["#503090","#9e8dc1"],"Auburn":["#e06000","#eda772"],"BYU":["#0040b0","#7295d3"],"Ball State":["#b00020","#d37284"],"Baylor":["#104030","#7b958d"],"Boise State":["#0030a0","#728dca"],"Boston College":["#802030","#b9848d"],"Bowling Green":["#f05000","#f69e72"],"Buffalo":["#0050b0","#729ed3"],"California":["#001040","#727b95"],"Central Arkansas":["#402080","#9584b9"],"Central Michigan":["#400020","#957284"],"Charlotte":["#005030","#729e8d"],"Cincinnati":["#e00020","#ed7284"],"Citadel":["#70a0d0","#b0cae5"],"Clemson":["#f06000","#f6a772"],"Coastal Carolina":["#006070","#72a7b0"],"Colorado":["#c0b070","#dcd3b0"],"Colorado State":["#004020","#729584"],"Cornell":["#b02020","#d38484"],"Dayton":["#d00030","#e5728d"],"Delaware":["#005090","#729ec1"],"Drake":["#005090","#729ec1"],"Duke":["#005090","#729ec1"],"East Carolina":["#f0c020","#f6dc84"],"East Central (OK)":["#f05020","#f69e84"],"Eastern Illinois":["#103090","#7b8dc1"],"Eastern Michigan":["#006030","#72a78d"],"Eastern Washington":["#c01030","#dc7b8d"],"Florida":["#0020a0","#7284ca"],"Florida Atlantic":["#003060","#728da7"],"Florida International":["#c09030","#dcc18d"],"Florida State":["#702040","#b08495"],"Fordham":["#800030","#b9728d"],"Fresno State":["#b01020","#d37b84"],"Georgia":["#b00020","#d37284"],"Georgia Southern":["#001040","#727b95"],"Georgia State":["#0030a0","#728dca"],"Georgia Tech":["#b0a060","#d3caa7"],"Grambling":["#f0b010","#f6d37b"],"Harvard":["#a01030","#ca7b8d"],"Hawaii":["#005030","#729e8d"],"Hillsdale":["#001040","#727b95"],"Houston":["#c01020","#dc7b84"],"Idaho":["#f0b010","#f6d37b"],"Illinois":["#f05000","#f69e72"],"Illinois State":["#c03040","#dc8d95"],"Incarnate Word":["#d03030","#e58d8d"],"Indiana":["#900010","#c1727b"],"Indiana State":["#004090","#7295c1"],"Iowa":["#FFCD00","#ffe372"],"Iowa State":["#f0c020","#f6dc84"],"Jacksonville State":["#c00000","#dc7272"],"Kansas":["#0050b0","#729ed3"],"Kansas State":["#300050","#8d729e"],"Kent State":["#e0a000","#edca72"],"Kentucky":["#0030a0","#728dca"],"Kentucky Wesleyan":["#302080","#8d84b9"],"LSU":["#401070","#957bb0"],"Liberty":["#b02020","#d38484"],"Louisiana":["#c01010","#dc7b7b"],"Louisiana Tech":["#003080","#728db9"],"Louisville":["#c00010","#dc727b"],"Maine":["#70b0e0","#b0d3ed"],"Malone":["#003070","#728db0"],"Marshall":["#00b040","#72d395"],"Maryland":["#c01020","#dc7b84"],"Massachusetts":["#801010","#b97b7b"],"Memphis":["#004090","#7295c1"],"Miami (FL)":["#f07020","#f6b084"],"Miami (OH)":["#c01030","#dc7b8d"],"Michigan":["#f0c000","#f6dc72"],"Michigan State":["#103030","#7b8d8d"],"Middle Tennessee":["#0060b0","#72a7d3"],"Minnesota":["#500020","#9e7284"],"Minnesota St":["#400050","#95729e"],"Mississippi":["#c01020","#dc7b84"],"Mississippi State":["#501020","#9e7b84"],"Missouri":["#f0b020","#f6d384"],"Missouri State":["#500000","#9e7272"],"Monmouth":["#001040","#727b95"],"Montana":["#a01040","#ca7b95"],"Montana State":["#b09050","#d3c19e"],"Mount Union":["#602080","#a784b9"],"Murray State":["#f0c000","#f6dc72"],"Navy":["#b0a070","#d3cab0"],"Nebraska":["#e01030","#ed7b8d"],"Nevada":["#001040","#727b95"],"New Hampshire":["#002050","#72849e"],"New Mexico":["#c00020","#dc7284"],"New Mexico State":["#701010","#b07b7b"],"North Carolina":["#70a0d0","#b0cae5"],"North Carolina A&T":["#f0b020","#f6d384"],"North Carolina State":["#c00000","#dc7272"],"North Dakota State":["#f0b020","#f6d384"],"North Texas":["#008030","#72b98d"],"Northern Illinois":["#c01020","#dc7b84"],"Northern Iowa":["#f0c000","#f6dc72"],"Northwestern":["#402090","#9584c1"],"Notre Dame":["#002040","#728495"],"Ohio":["#104030","#7b958d"],"Ohio State":["#b00020","#d37284"],"Oklahoma":["#900000","#c17272"],"Oklahoma State":["#f05000","#f69e72"],"Old Dominion":["#003060","#728da7"],"Oregon":["#009040","#72c195"],"Oregon State":["#d04000","#e59572"],"Penn State":["#001040","#727b95"],"Pennsylvania":["#001050","#727b9e"],"Pittsburgh":["#003090","#728dc1"],"Portland State":["#104030","#7b958d"],"Princeton":["#f06010","#f6a77b"],"Purdue":["#c0b080","#dcd3b9"],"Rhode Island":["#60a0d0","#a7cae5"],"Rice":["#002050","#72849e"],"Richmond":["#002050","#72849e"],"Rutgers":["#c00020","#dc7284"],"SMU":["#a00000","#ca7272"],"Saginaw Valley State":["#c01030","#dc7b8d"],"San Diego State":["#a01020","#ca7b84"],"San Jose State":["#f0b010","#f6d37b"],"South Alabama":["#002050","#72849e"],"South Carolina":["#700000","#b07272"],"South Carolina State":["#900020","#c17284"],"South Dakota State":["#f0d000","#f6e572"],"South Florida":["#006040","#72a795"],"Southern Illinois":["#602030","#a7848d"],"Southern Mississippi":["#f0c020","#f6dc84"],"Stanford":["#801010","#b97b7b"],"Stetson":["#005040","#729e95"],"Syracuse":["#f04010","#f6957b"],"TCU":["#401070","#957bb0"],"Temple":["#a01030","#ca7b8d"],"Tennessee":["#f08000","#f6b972"],"Texas":["#a05030","#ca9e8d"],"Texas A&M":["#500000","#9e7272"],"Texas Southern":["#800030","#b9728d"],"Texas State":["#501010","#9e7b7b"],"Texas Tech":["#d02010","#e5847b"],"Toledo":["#f0c000","#f6dc72"],"Towson":["#f0b030","#f6d38d"],"Troy":["#802030","#b9848d"],"Tulane":["#006040","#72a795"],"Tulsa":["#103090","#7b8dc1"],"UAB":["#e00030","#ed728d"],"UCF":["#b0a060","#d3caa7"],"UCLA":["#2070a0","#84b0ca"],"UC-Davis":["#002050","#72849e"],"UConn":["#002040","#728495"],"UL Monroe":["#800020","#b97284"],"UNLV":["#c00020","#dc7284"],"USC":["#902030","#c1848d"],"UTEP":["#f08010","#f6b97b"],"UTSA":["#002040","#728495"],"Utah":["#b00000","#d37272"],"Utah State":["#002030","#72848d"],"Vanderbilt":["#c0a070","#dccab0"],"Virginia":["#f06010","#f6a77b"],"Virginia State":["#a07000","#cab072"],"Virginia Tech":["#602030","#a7848d"],"Wake Forest":["#9E7E38","#c9b891"],"Washington":["#300060","#8d72a7"],"Washington State":["#a00020","#ca7284"],"Weber State":["#402080","#9584b9"],"West Virginia":["#002050","#72849e"],"Western Kentucky":["#e03030","#ed8d8d"],"Western Michigan":["#f0d000","#f6e572"],"Western Oregon":["#e03030","#ed8d8d"],"William & Mary":["#f0b020","#f6d384"],"Wisconsin":["#a00000","#ca7272"],"Wyoming":["#f0c020","#f6dc84"],"Youngstown State":["#e01030","#ed7b8d"]};
 const POS_MAX={QB:17,RB:12,WR:14,TE:14};
@@ -987,7 +987,7 @@ const PLAYERS=[{"pos":"QB","name":"Joey Aguilar","school":"Tennessee","conf":"SE
 // Historical class averages (2010-2025) for class ranking
 
 // ---- HELPERS ----
-function posColor(pos){return POS_COLORS[pos]||'#e8ff47';}
+function posColor(pos){return POS_COLORS[pos]||'var(--muted)';}
 
 // Adjusted markers formula (post-draft, given round + overall pick)
 // Returns {adj, missing} — both adjusted for draft slot
@@ -1068,18 +1068,18 @@ function logoSrc(school){
 function letterGrade(g, isFinal){
   if(g==null||g===0)return{l:'—',c:'var(--muted)'};
   if(isFinal===false)return{l:'—',c:gradeColor(g)};
-  if(g>=97)return{l:'A+',c:'#3dffa0'};
-  if(g>=93)return{l:'A', c:'#3dffa0'};
-  if(g>=90)return{l:'A-',c:'#3dffa0'};
-  if(g>=87)return{l:'B+',c:'#e8ff47'};
-  if(g>=83)return{l:'B', c:'#e8ff47'};
-  if(g>=80)return{l:'B-',c:'#e8ff47'};
+  if(g>=97)return{l:'A+',c:'var(--green)'};
+  if(g>=93)return{l:'A', c:'var(--green)'};
+  if(g>=90)return{l:'A-',c:'var(--green)'};
+  if(g>=87)return{l:'B+',c:'#b07d2a'};
+  if(g>=83)return{l:'B', c:'#b07d2a'};
+  if(g>=80)return{l:'B-',c:'#b07d2a'};
   if(g>=77)return{l:'C+',c:'#ffaa30'};
   if(g>=73)return{l:'C', c:'#ffaa30'};
   if(g>=70)return{l:'C-',c:'#ffaa30'};
-  if(g>=67)return{l:'D+',c:'#ff6b35'};
-  if(g>=63)return{l:'D', c:'#ff6b35'};
-  if(g>=60)return{l:'D-',c:'#ff6b35'};
+  if(g>=67)return{l:'D+',c:'#c0622a'};
+  if(g>=63)return{l:'D', c:'#c0622a'};
+  if(g>=60)return{l:'D-',c:'#c0622a'};
   return{l:'F',c:'#ff4f6b'};
 }
 
@@ -1666,7 +1666,7 @@ function openModal(p){
             statSq(p.nfl_seasons||0,'NFL Seasons')+
             statSq(p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—','Career PPG')+
             statSq(p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—','Best PPG')+
-            statSq(p.nfl_top5||0,'Top-5 Szns','#00c2ff')+
+            statSq(p.nfl_top5||0,'Top-5 Szns','var(--accent2)')+
             statSq(p.nfl_top12||0,'Top-12 Szns','var(--pos-rb)')+
             statSq(p.nfl_top24||0,'Top-24 Szns','var(--accent2)')+
             statSq(p.nfl_top36||0,'Top-36 Szns','var(--orange)')+
@@ -2711,7 +2711,7 @@ function renderBreakdown() {
           const ratio = d.avg / maxAvg;
           return `rgba(0,194,255,${0.3 + ratio*0.7})`;
         }),
-        borderColor: byYear.map(d => d.year === activeYear ? '#f5c842' : 'transparent'),
+        borderColor: byYear.map(d => d.year === activeYear ? 'var(--accent)' : 'transparent'),
         borderWidth: 2, borderRadius: 4,
       }]
     },
@@ -2723,8 +2723,8 @@ function renderBreakdown() {
         tooltip:{callbacks:{label:ctx=>'Avg: '+ctx.parsed.y.toFixed(1)}}
       },
       scales: {
-        x:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'}},
-        y:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'},min:0}
+        x:{ticks:{color:'#8c8070',font:{family:'DM Mono',size:9}},grid:{color:'rgba(224,216,204,.6)'}},
+        y:{ticks:{color:'#8c8070',font:{family:'DM Mono',size:9}},grid:{color:'rgba(224,216,204,.6)'},min:0}
       }
     }
   }));
@@ -2760,8 +2760,8 @@ function renderBreakdown() {
         title:{display:true,text:'Average Grade by Position'+(bkPosFilter!=='ALL'?' — '+bkPosFilter:''),color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
       },
       scales: {
-        x:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'}},
-        y:{ticks:{color:'#5a6478',font:{family:'IBM Plex Mono',size:9}},grid:{color:'rgba(30,37,48,.5)'},min:0}
+        x:{ticks:{color:'#8c8070',font:{family:'DM Mono',size:9}},grid:{color:'rgba(224,216,204,.6)'}},
+        y:{ticks:{color:'#8c8070',font:{family:'DM Mono',size:9}},grid:{color:'rgba(224,216,204,.6)'},min:0}
       }
     }
   }));
@@ -3492,7 +3492,7 @@ function renderOutcomes() {
     html += `<td style="color:${noNfl?'var(--muted)':'var(--text)'}">${p.nfl_seasons||'—'}</td>`;
     html += `<td style="font-weight:700;color:${noNfl?'var(--muted)':'var(--accent)'}">${p.nfl_career_ppg!=null?fmt(p.nfl_career_ppg,1):'—'}</td>`;
     html += `<td style="color:${noNfl?'var(--muted)':'var(--accent2)'}">${p.nfl_best_ppg!=null?fmt(p.nfl_best_ppg,1):'—'}</td>`;
-    html += `<td>${nflBadge(p.nfl_top5,'#00c2ff')}</td>`;
+    html += `<td>${nflBadge(p.nfl_top5,'var(--accent2)')}</td>`;
     html += `<td>${nflBadge(p.nfl_top12,'var(--pos-rb)')}</td>`;
     html += `<td>${nflBadge(p.nfl_top24,'var(--accent2)')}</td>`;
     html += `<td>${nflBadge(p.nfl_top36,'var(--orange)')}</td>`;
@@ -3896,9 +3896,9 @@ async function downloadPlayerCard(p) {
         '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">' +
-        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:700;color:'+col+'">'+(p.markers||0)+'</div><div style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Markers</div></div>' +
-        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:700;color:#7b61ff">'+(p.pff!=null?Math.round(p.pff):'--')+'</div><div style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Adv Mkrs</div></div>' +
-        '<div style="background:#0a0c0f;border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:700;color:#f5c842">'+(p.round!=null?'Rd '+p.round:'--')+'</div><div style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Round</div></div>' +
+        '<div style="background:var(--surface2);border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:700;color:'+col+'">'+(p.markers||0)+'</div><div style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Markers</div></div>' +
+        '<div style="background:var(--surface2);border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:700;color:#6a3ba0">'+(p.pff!=null?Math.round(p.pff):'--')+'</div><div style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Adv Mkrs</div></div>' +
+        '<div style="background:var(--surface2);border-radius:6px;padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:700;color:#b8442c">'+(p.round!=null?'Rd '+p.round:'--')+'</div><div style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Round</div></div>' +
       '</div>' +
       '<div style="margin-top:14px;font-size:13px;color:#5a6478;text-align:right;letter-spacing:1px">themarkersystem.com</div>' +
     '</div>';
@@ -4185,7 +4185,7 @@ function runNFLCareerComps(playerId) {
   const comps = dists.map(d => d.c);
 
   // ── Colour palette for comp lines ─────────────────────────────────────────
-  const LINE_COLORS = ['#00c2ff','#f5c842','#00e88a','#ff4655','#c084fc','#ff8c42','#3dffa0','#e8ff47','#ff6b35','#7b61ff'];
+  const LINE_COLORS = ['#1a3d6b','#b8442c','#2a6e42','#b8362a','#6a3ba0','#c0622a','#1a6b4b','#8b2a1e','#4d2060','#0d2b4d'];
 
   // ── Determine chart x-axis range ──────────────────────────────────────────
   const maxYr = Math.max(...comps.flatMap(c => c.seasons.map(s => s.nfl_yr)));
