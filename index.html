@@ -107,16 +107,16 @@ body{font-family:'Sora',sans-serif;font-size:15px;line-height:1.6;background:var
 .explorer-metric-item:last-child{border-bottom:none;}
 .explorer-metric-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .explorer-metric-name{font-size:13px;font-weight:700;color:var(--text);}
-.explorer-metric-vals{font-size:13px;color:var(--accent);font-family:'IBM Plex Mono',monospace;}
+.explorer-metric-vals{font-size:13px;color:var(--accent);font-family:'DM Mono',monospace;}
 .explorer-metric-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;}
 .explorer-metric-remove:hover{color:var(--red);}
 .explorer-input-row{display:flex;gap:6px;align-items:center;margin-top:4px;}
 .explorer-input-wrap{flex:1;display:flex;flex-direction:column;gap:2px;}
 .explorer-input-label{font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
-.explorer-num-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;outline:none;transition:border-color .15s;}
+.explorer-num-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:5px 8px;outline:none;transition:border-color .15s;}
 .explorer-num-input:focus{border-color:var(--accent);}
 .explorer-input-sep{color:var(--muted);font-size:13px;padding-top:16px;}
-.explorer-add-metric{margin:12px 16px;background:none;border:1px dashed var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:9px;border-radius:6px;cursor:pointer;width:calc(100% - 32px);transition:all .15s;text-align:center;}
+.explorer-add-metric{margin:12px 16px;background:none;border:1px dashed var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:9px;border-radius:6px;cursor:pointer;width:calc(100% - 32px);transition:all .15s;text-align:center;}
 .explorer-add-metric:hover{border-color:var(--accent);color:var(--accent);}
 .explorer-metric-picker{background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin:0 16px 8px;padding:8px;max-height:280px;overflow-y:auto;}
 .explorer-metric-picker::-webkit-scrollbar{width:4px;}
@@ -139,13 +139,13 @@ body{font-family:'Sora',sans-serif;font-size:15px;line-height:1.6;background:var
 .explorer-results-body .card-name-row{margin-bottom:16px;}
 .explorer-results-body .grade-bar-wrap{margin-bottom:4px;}
 .explorer-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);gap:8px;}
-.explorer-empty-title{font-family:'Bebas Neue',cursive;font-size:28px;color:var(--border);}
+.explorer-empty-title{font-family:'Fraunces',serif;font-size:28px;color:var(--border);}
 .explorer-table{width:100%;border-collapse:collapse;font-size:13px;}
 .explorer-table th{text-align:left;padding:8px 10px;font-size:13px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap;}
 .explorer-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
 .explorer-table tr:hover td{background:var(--surface2);cursor:pointer;}
 .explorer-sidebar-actions{padding:12px 16px;border-top:1px solid var(--border);margin-top:auto;}
-.explorer-reset-btn{width:100%;background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:8px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.explorer-reset-btn{width:100%;background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:8px;border-radius:6px;cursor:pointer;transition:all .15s;}
 .explorer-reset-btn:hover{border-color:var(--red);color:var(--red);}
 @media(max-width:768px){
   .explorer-layout{flex-direction:column;height:auto;}
@@ -268,7 +268,7 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .comp-mini-sim{font-size:13px;color:var(--muted);margin-top:4px;}
 
 /* ---- PDF EXPORT ---- */
-.pdf-export-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.pdf-export-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
 .pdf-export-btn:hover{border-color:var(--accent2);color:var(--accent2);}
 
 @media(max-width:768px){
@@ -281,9 +281,9 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 /* ---- NFL OUTCOMES ---- */
 .outcomes-controls{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;}
 .outcomes-range-label{font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
-.outcomes-year-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;border-radius:5px;outline:none;}
+.outcomes-year-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:5px 8px;border-radius:5px;outline:none;}
 .outcomes-year-select:focus{border-color:var(--accent);}
-.outcomes-stat{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.outcomes-stat{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;}
 .outcomes-table-wrap{overflow-x:auto;padding:0 0 40px;}
 .outcomes-table{width:100%;border-collapse:collapse;font-size:13px;}
 .outcomes-table th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;background:var(--surface2);font-family:'Sora',sans-serif;}
@@ -298,7 +298,7 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .nfl-badge.zero{background:transparent;color:var(--muted);font-size:13px;}
 .outcomes-summary{display:flex;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .outcomes-summary-item{display:flex;flex-direction:column;gap:2px;}
-.outcomes-summary-val{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);}
+.outcomes-summary-val{font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent);}
 .outcomes-summary-lbl{font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
 @media(max-width:768px){
   .outcomes-controls{padding:10px 12px;gap:8px;}
@@ -330,7 +330,7 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .comparison-search-bar{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
 .comp-search-wrap{position:relative;flex:1;min-width:200px;max-width:260px;}
 .comp-search-label{font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
-.comp-search-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:14px;padding:8px 12px;outline:none;transition:border-color .15s;}
+.comp-search-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:5px;color:var(--text);font-family:'Sora',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color .15s;}
 .comp-search-input:focus{border-color:var(--accent);}
 .comp-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:5px;max-height:220px;overflow-y:auto;z-index:50;display:none;}
 .comp-dropdown.open{display:block;}
@@ -491,40 +491,40 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 }
 
 *{box-sizing:border-box;margin:0;padding:0;}button,a,[onclick]{touch-action:manipulation;}
-body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:14px;min-height:100vh;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;min-height:100vh;overflow-x:hidden;}
 /* HEADER */
 header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px;}
-.logo-title{font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:2px;color:var(--accent);line-height:1;}
+.logo-title{font-family:'Fraunces',serif;font-size:24px;font-weight:700;letter-spacing:.5px;color:#fff;line-height:1;}
 .logo-sub{font-size:13px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:2px;}
-.year-badge{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--accent2);letter-spacing:2px;}
+.year-badge{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:rgba(255,255,255,0.5);letter-spacing:1px;}
 /* HERO */
 .hero{position:relative;padding:32px 40px 24px;background:var(--bg);border-bottom:2px solid var(--text);overflow:hidden;}
 
 #heroTitle{font-family:'Fraunces',serif;font-size:52px;font-weight:900;line-height:1;color:var(--text);}
 #heroTitle span{color:var(--accent);font-style:italic;}
 .hero-bg-text{position:absolute;right:40px;top:50%;transform:translateY(-50%);font-family:'Fraunces',serif;font-weight:900;font-size:200px;color:rgba(26,23,20,0.04);line-height:1;pointer-events:none;user-select:none;letter-spacing:-4px;}
-.hero h1{font-family:'Bebas Neue',cursive;font-size:clamp(42px,6vw,80px);letter-spacing:4px;line-height:.95;margin-bottom:16px;}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(42px,6vw,80px);letter-spacing:4px;line-height:.95;margin-bottom:16px;}
 .hero h1 span{color:var(--accent2);}
 
 .hero-desc{font-size:14px;color:var(--muted);max-width:900px;line-height:1.8;margin-bottom:28px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stat-row{display:flex;gap:28px;flex-wrap:wrap;}
-.stat-pill .val{font-family:'Bebas Neue',cursive;font-size:32px;letter-spacing:2px;line-height:1;}
+.stat-pill .val{font-family:'Fraunces',serif;font-size:32px;letter-spacing:2px;line-height:1;}
 .stat-pill .lbl{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:3px;}
 .stat-pill .sub{font-size:13px;color:var(--accent);margin-top:2px;letter-spacing:1px;}
 /* CONTROLS */
 .controls{padding:14px 32px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:90;}
 .filter-group{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px;}
-.filter-btn{background:none;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:5px 12px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.filter-btn{background:none;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:5px 12px;border-radius:3px;cursor:pointer;transition:all .15s;}
 .filter-btn:hover{color:var(--text);border-color:var(--text);}
 .filter-btn.active{color:var(--bg)!important;background:var(--accent);}
 .filter-btn.active[data-pos="QB"]{background:var(--pos-qb);}
 .filter-btn.active[data-pos="RB"]{background:var(--pos-rb);}
 .filter-btn.active[data-pos="WR"]{background:var(--pos-wr);}
 .filter-btn.active[data-pos="TE"]{background:var(--pos-te);}
-.search-box{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:14px;padding:7px 12px;outline:none;transition:border-color .15s;}
+.search-box{flex:1;min-width:160px;background:var(--surface);border:1.5px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;padding:7px 12px;outline:none;transition:border-color .15s;}
 .search-box:focus{border-color:var(--accent);}
 .search-box::placeholder{color:var(--muted);}
-.sort-select{background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:7px 10px;outline:none;cursor:pointer;}
+.sort-select{background:var(--surface);border:1.5px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:7px 10px;outline:none;cursor:pointer;}
 .view-toggle{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px;}
 .view-btn{background:none;border:none;color:var(--muted);padding:5px 9px;border-radius:3px;cursor:pointer;transition:all .15s;font-size:15px;}
 .view-btn.active{background:var(--accent);color:var(--bg);}
@@ -556,7 +556,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 /* TABLE */
 .table-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid var(--pos-color,var(--accent));background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:10px;}
 .table-avatar img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
-.table-avatar-fallback{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--muted);}
+.table-avatar-fallback{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--muted);}
 .table-name-cell{display:flex;align-items:center;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 thead th{background:var(--surface2);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;font-family:'Sora',sans-serif;}
@@ -576,7 +576,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--pos-color,var(--accent)),transparent);}
 .modal-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--pos-color,var(--accent));background:var(--surface2);}
 .modal-avatar img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
-.modal-avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-weight:800;font-size:24px;color:var(--muted);}
+.modal-avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:800;font-size:24px;color:var(--muted);}
 .modal-pos-badge{font-size:13px;font-weight:700;letter-spacing:2px;padding:3px 8px;border-radius:3px;display:inline-block;margin-bottom:7px;text-transform:uppercase;}
 .modal-name{font-family:'Fraunces',serif;font-size:34px;font-weight:700;letter-spacing:0;line-height:1;margin-bottom:4px;}
 .modal-school{font-size:15px;color:var(--muted);}
@@ -683,7 +683,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <div class="hero-bg-text" id="heroBgText">2026</div>
   <h1 id="heroTitle">2026 <span>ROOKIE DRAFT CLASS</span></h1>
 </div>
-<div class="year-bar" id="gradesYearBar"><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
+<div class="year-bar" id="gradesYearBar"><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
 <div class="controls">
   <div class="filter-group" id="posFilters">
     <button class="filter-btn active" data-pos="ALL">ALL</button>
@@ -722,7 +722,7 @@ td{padding:10px 14px;white-space:nowrap;}
     <option value="draft">NFL Draft Pick</option>
     <option value="age">Age (Youngest)</option>
     <option value="name">Name A–Z</option>
-  </select><button id="sortDirBtn" title="Toggle sort direction" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:6px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">↓ High→Low</button></div>
+  </select><button id="sortDirBtn" title="Toggle sort direction" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;padding:6px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">↓ High→Low</button></div>
   <div class="view-toggle">
     <button class="view-btn active" id="cardViewBtn" title="Cards">▦</button>
     <button class="view-btn" id="tableViewBtn" title="Table">☰</button>
@@ -744,7 +744,7 @@ td{padding:10px 14px;white-space:nowrap;}
 
 <!-- PAGE 2: DYNASTY RANKINGS -->
 <div class="page-section" id="page-rankings">
-  <div class="year-bar" id="rankingsYearBar"><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
+  <div class="year-bar" id="rankingsYearBar"><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
   <div class="format-bar">
     <span class="format-label">Format:</span>
     <button class="format-btn active" data-format="superflex">Superflex / 2QB</button>
@@ -841,7 +841,7 @@ td{padding:10px 14px;white-space:nowrap;}
     </div>
     <div class="glossary-panel" id="glossaryPanel">
       <div class="glossary-placeholder" id="glossaryPlaceholder">
-        <span style="font-family:'Bebas Neue',cursive;font-size:32px;color:var(--border)">GLOSSARY</span>
+        <span style="font-family:'Fraunces',serif;font-size:32px;color:var(--border)">GLOSSARY</span>
         <span>Select a term to read its definition</span>
       </div>
     </div>
@@ -916,8 +916,8 @@ td{padding:10px 14px;white-space:nowrap;}
 <div class="page-section" id="page-outcomes">
   <!-- Tab switcher -->
   <div style="display:flex;border-bottom:1px solid var(--border);background:var(--surface)">
-    <button class="outcomes-tab active" data-tab="table" onclick="switchOutcomesTab('table')" style="background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">Draft Class Outcomes</button>
-    <button class="outcomes-tab" data-tab="comps" onclick="switchOutcomesTab('comps')" style="background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">NFL Career Comps</button>
+    <button class="outcomes-tab active" data-tab="table" onclick="switchOutcomesTab('table')" style="background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">Draft Class Outcomes</button>
+    <button class="outcomes-tab" data-tab="comps" onclick="switchOutcomesTab('comps')" style="background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">NFL Career Comps</button>
   </div>
 
   <!-- Tab 1: Draft Class Outcomes table -->
@@ -956,12 +956,12 @@ td{padding:10px 14px;white-space:nowrap;}
         <div style="flex:1;min-width:200px;max-width:360px;position:relative">
           <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Player</div>
           <input type="text" id="nflCompSearch" placeholder="e.g. Ja'Marr Chase, McMillan..." autocomplete="off"
-            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 12px;outline:none;">
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:8px 12px;outline:none;">
           <div id="nflCompDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:6px;z-index:100;max-height:240px;overflow-y:auto;margin-top:4px"></div>
         </div>
         <div>
           <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Comps to show</div>
-          <select id="nflCompCount" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 10px;border-radius:6px;outline:none">
+          <select id="nflCompCount" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:8px 10px;border-radius:6px;outline:none">
             <option value="3">Top 3</option>
             <option value="5" selected>Top 5</option>
             <option value="10">Top 10</option>
@@ -1468,7 +1468,7 @@ function renderTable(){
     html+='<td style="font-weight:700;color:'+col+'">'+p.markers+'</td>';
     html+='<td style="font-weight:700;color:var(--accent3)">'+(p.pff!=null?Math.round(p.pff):'—')+'</td>';
     html+='<td style="font-weight:700;color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</td>';
-    html+='<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:14px;color:'+lg.c+'">'+lg.l+'</td>';
+    html+='<td style="font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px;color:'+lg.c+'">'+lg.l+'</td>';
     const rowTag=getTag(p);
     html+='<td>'+(rowTag?'<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:13px;font-weight:700;letter-spacing:.5px;white-space:nowrap;color:'+rowTag.color+';background:'+rowTag.color+'18;border:1px solid '+rowTag.color+'44">'+rowTag.icon+' '+rowTag.label+'</span>':'<span style="color:var(--muted);font-size:13px">—</span>')+'</td>';
     html+='<td style="color:var(--muted)">'+(p.overall!=null?'#'+p.overall:'—')+'</td>';
@@ -1644,7 +1644,7 @@ function openModal(p){
       '</div>'+
       '<div style="display:flex;gap:0;flex-shrink:0;border-left:1px solid var(--border)">'+
         '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
-        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'IBM Plex Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
+        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'DM Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">Adv Mkrs</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2)">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div><div class="lbl">Round</div></div>'+
@@ -1693,7 +1693,7 @@ function render(){
 document.querySelectorAll('.filter-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentPos=btn.dataset.pos;render();});
 });
-document.getElementById('searchBox').addEventListener('input',e=>{searchQuery=e.target.value.trim();render();});
+let _sbTimer; document.getElementById('searchBox').addEventListener('input',e=>{clearTimeout(_sbTimer);_sbTimer=setTimeout(()=>{searchQuery=e.target.value.trim();render();},180);});
 document.getElementById('schoolFilter').addEventListener('change',e=>{currentSchool=e.target.value;render();});
 document.getElementById('labelFilter').addEventListener('change',e=>{currentLabel=e.target.value;render();});
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;render();});
@@ -1755,7 +1755,7 @@ async function switchYear(yr) {
   if(!yearCache[yr]) {
     
     try {
-      const res = await fetch('data/' + yr + '.json?v=3');
+      const res = await fetch('data/' + yr + '.json?v=4');
       const _loaded = await res.json();
       _loaded.forEach(p => { if(!p.year) p.year = yr; });
       yearCache[yr] = _loaded;
@@ -1874,10 +1874,10 @@ let glossarySearch = '';
   });
 })();
 
-document.getElementById('glossarySearch').addEventListener('input', e => {
+let _gsTimer; document.getElementById('glossarySearch').addEventListener('input', e => { clearTimeout(_gsTimer); _gsTimer = setTimeout(() => {
   glossarySearch = e.target.value.trim().toLowerCase();
   renderGlossary();
-});
+}, 180); });
 
 function glossMatchesCat(term, catLabel) {
   if(catLabel === 'All') return true;
@@ -1993,7 +1993,7 @@ render();
   for(const yr of toFetch) {
     if(!yearCache[yr]) {
       try {
-        const res = await fetch('data/'+yr+'.json?v=3');
+        const res = await fetch('data/'+yr+'.json?v=4');
         const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }
@@ -2231,7 +2231,7 @@ function renderRankings() {
       // Condensed mobile row + expandable detail
       const detailId = 'rdet-'+i;
       html += '<tr data-det="'+detailId+'" onclick="toggleRankDetail(this.dataset.det,this)" style="cursor:pointer">';
-      html += '<td style="font-family:\'Bebas Neue\',cursive;font-size:17px;color:var(--muted)">'+(i+1)+'</td>';
+      html += '<td style="font-family:\'Fraunces\',serif;font-size:17px;color:var(--muted)">'+(i+1)+'</td>';
       html += '<td style="font-weight:700;font-size:14px">'+p.name+'</td>';
       html += '<td style="color:'+col+';font-weight:700;font-size:13px">'+p.pos+'</td>';
       html += '<td style="color:'+lg.c+';font-weight:700">'+fmt(p.grade,1)+'</td>';
@@ -2250,7 +2250,7 @@ function renderRankings() {
       html += '</div></td></tr>';
     } else {
       html += '<tr onclick="openModalFromList('+i+')" style="cursor:pointer">';
-      html += '<td style="font-family:\'Bebas Neue\',cursive;font-size:19px;color:var(--muted)">'+(i+1)+'</td>';
+      html += '<td style="font-family:\'Fraunces\',serif;font-size:19px;color:var(--muted)">'+(i+1)+'</td>';
       html += '<td style="font-weight:700">'+p.name+'</td>';
       html += '<td><img src="'+logo+'" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">'+p.school+'</td>';
       html += '<td style="color:'+col+';font-weight:700;font-size:13px">'+p.pos+'</td>';
@@ -2290,7 +2290,7 @@ async function getAllPlayers() {
   for(const yr of years) {
     if(!yearCache[yr]) {
       try {
-        const res = await fetch('data/'+yr+'.json?v=3');
+        const res = await fetch('data/'+yr+'.json?v=4');
         const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }
@@ -2670,7 +2670,7 @@ async function loadAndRenderBreakdown() {
   await Promise.all(years.map(async yr => {
     if(!yearCache[yr]) {
       try {
-        const res = await fetch('data/'+yr+'.json?v=3');
+        const res = await fetch('data/'+yr+'.json?v=4');
         const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }
@@ -2719,7 +2719,7 @@ function renderBreakdown() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend:{display:false},
-        title:{display:true,text:'Class Average Grade — Top 50 Prospects (2010–2026)',color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
+        title:{display:true,text:'Class Average Grade — Top 50 Prospects (2010–2026)',color:'var(--muted)',font:{family:'DM Mono',size:11}},
         tooltip:{callbacks:{label:ctx=>'Avg: '+ctx.parsed.y.toFixed(1)}}
       },
       scales: {
@@ -2756,8 +2756,8 @@ function renderBreakdown() {
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend:{labels:{color:'#e8edf3',font:{family:'IBM Plex Mono',size:9}}},
-        title:{display:true,text:'Average Grade by Position'+(bkPosFilter!=='ALL'?' — '+bkPosFilter:''),color:'#e8edf3',font:{family:'IBM Plex Mono',size:11}},
+        legend:{labels:{color:'var(--muted)',font:{family:'DM Mono',size:9}}},
+        title:{display:true,text:'Average Grade by Position'+(bkPosFilter!=='ALL'?' — '+bkPosFilter:''),color:'var(--muted)',font:{family:'DM Mono',size:11}},
       },
       scales: {
         x:{ticks:{color:'#8c8070',font:{family:'DM Mono',size:9}},grid:{color:'rgba(224,216,204,.6)'}},
@@ -3092,7 +3092,7 @@ function buildExplorerYears() {
         explorerYears.add(yr);
         if(!yearCache[yr]) {
           try {
-            const res = await fetch('data/'+yr+'.json?v=3');
+            const res = await fetch('data/'+yr+'.json?v=4');
             const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
           } catch(e) { yearCache[yr] = []; }
         }
@@ -3306,7 +3306,7 @@ function explorerRender() {
             const v = p[f.k];
             return `<div style="min-width:0">
               <div style="font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">${f.l}</div>
-              <div style="font-size:15px;font-weight:700;color:${col};font-family:'IBM Plex Mono',monospace">${explorerFmtDisplay(v,f.fmt)}</div>
+              <div style="font-size:15px;font-weight:700;color:${col};font-family:'DM Mono',monospace">${explorerFmtDisplay(v,f.fmt)}</div>
             </div>`;
           }).join('');
         const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
@@ -3345,7 +3345,7 @@ function explorerRender() {
       const tag = getTag(p);
       const col = posColor(p.pos);
       return `<tr onclick="openModalFromList(${i})">
-        <td style="color:var(--muted);font-family:'Bebas Neue',cursive;font-size:19px">${i+1}</td>
+        <td style="color:var(--muted);font-family:'Fraunces',serif;font-size:19px">${i+1}</td>
         <td><div class="table-name-cell">
           <div class="table-avatar" style="--pos-color:${col}">
             ${hshotImg(p,'','')||''}
@@ -3473,7 +3473,7 @@ function renderOutcomes() {
     const noNfl = !p.has_nfl;
 
     html += `<tr class="${noNfl?'no-nfl':''}" onclick="openOutcomeModal('${(p.pfr_id||'').replace(/'/g,'\\u2019')}','${p.name.replace(/'/g,'\\u2019')}',${p.year})">`;
-    html += `<td style="color:var(--muted);font-family:'Bebas Neue',cursive;font-size:17px">${p.year}</td>`;
+    html += `<td style="color:var(--muted);font-family:'Fraunces',serif;font-size:17px">${p.year}</td>`;
     html += `<td style="font-weight:700">${p.name}</td>`;
     html += `<td style="color:var(--muted);font-size:13px">${p.school||'—'}</td>`;
     html += `<td style="color:${col};font-weight:700;font-size:13px">${p.pos}</td>`;
@@ -3647,7 +3647,7 @@ async function globalSearchGetPlayers(query) {
     await Promise.all(uncached.slice(0, 5).map(async yr => {
       if(!yearCache[yr]) {
         try {
-          const res = await fetch('data/'+yr+'.json?v=3');
+          const res = await fetch('data/'+yr+'.json?v=4');
           const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
           yearCache[yr].forEach(p => {
             if(p.name.toLowerCase().includes(q)) results.push({...p, year: yr});
@@ -3802,7 +3802,7 @@ async function renderModalComps(player) {
   if(toLoad.length) {
     await Promise.all(toLoad.map(async yr => {
       try {
-        const res = await fetch('data/'+yr+'.json?v=3');
+        const res = await fetch('data/'+yr+'.json?v=4');
         const _d = await res.json(); _d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = _d;
       } catch(e) { yearCache[yr] = []; }
     }));
@@ -3891,7 +3891,7 @@ async function downloadPlayerCard(p) {
           '<span style="font-size:13px;color:#5a6478;letter-spacing:1px;text-transform:uppercase">Final Grade</span>' +
           '<span style="font-size:15px;font-weight:700;color:'+lg.c+'">'+fmt(p.grade||0,1)+' <span style="font-size:13px">'+lg.l+'</span></span>' +
         '</div>' +
-        '<div style="height:5px;background:#1e2530;border-radius:3px;overflow:hidden">' +
+        '<div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden">' +
           '<div style="height:100%;width:'+Math.min(p.grade||0,100)+'%;background:'+lg.c+';border-radius:3px"></div>' +
         '</div>' +
       '</div>' +
@@ -4321,7 +4321,7 @@ function runNFLCareerComps(playerId) {
 
           return `<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">
             <div style="width:3px;height:36px;border-radius:2px;background:${lineCol};flex-shrink:0"></div>
-            <div style="font-size:16px;font-weight:700;color:var(--muted);font-family:'IBM Plex Mono',monospace;min-width:20px">${i+1}</div>
+            <div style="font-size:16px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace;min-width:20px">${i+1}</div>
             ${nflHshot(c.pfr_id, 40)}
             <div style="flex:1;min-width:0">
               <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.player}</div>
@@ -4436,7 +4436,8 @@ navOverflowStyle.textContent = `
 document.head.appendChild(navOverflowStyle);
 
 checkNavOverflow();
-window.addEventListener('resize', checkNavOverflow);
+let _resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(checkNavOverflow, 150); });
 
 </script>
 </body>
