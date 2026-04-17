@@ -475,10 +475,10 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
   .tier-cards{grid-template-columns:1fr;}
   .tier-header{flex-wrap:wrap;gap:8px;}
   .tier-range{margin-left:0;}
-  .tc{height:88px;}
+  .tc{height:92px;}
   .tc-rank{width:28px;font-size:9px;}
-  .tc-shot{width:60px;padding:0 6px;}
-  .tc-shot img,.tc-shot-fb{width:52px;height:52px;}
+  .tc-shot{width:68px;padding:0 6px;}
+  .tc-shot img,.tc-shot-fb{width:58px;height:58px;}
   .tc-grade{width:60px;}
   .tc-gval{font-size:17px;}
   .tc-name{font-size:14px;}
@@ -565,15 +565,15 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 .tier-below        .tier-header{border-color:#9a6200;} .tier-below        .tier-badge{background:#9a6200;color:#fff;} .tier-below        .tier-label{color:#9a6200;}
 .tier-poor         .tier-header{border-color:#c4bbb0;} .tier-poor         .tier-badge{background:#8c8070;color:#fff;} .tier-poor         .tier-label{color:#8c8070;}
 .tier-undraftable  .tier-header{border-color:#e0d8cc;} .tier-undraftable  .tier-badge{background:#c4bbb0;color:var(--text);} .tier-undraftable  .tier-label{color:#b0a898;}
-.tc{position:relative;overflow:hidden;border-radius:10px;height:96px;display:flex;align-items:stretch;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);transition:transform .15s,box-shadow .15s;min-width:0;}
+.tc{position:relative;overflow:hidden;border-radius:10px;height:100px;display:flex;align-items:stretch;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);transition:transform .15s,box-shadow .15s;min-width:0;}
 .tc:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,23,20,0.22);}
 .tc-bg{position:absolute;inset:0;z-index:0;}
-.tc-logo{position:absolute;right:72px;top:50%;transform:translateY(-50%);height:56px;width:56px;object-fit:contain;z-index:3;filter:saturate(0) brightness(2);pointer-events:none;}
-.tc-ov{position:absolute;inset:0;z-index:2;background:linear-gradient(to right,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.4) 55%,rgba(0,0,0,0.75) 100%);}
+.tc-logo{position:absolute;right:76px;top:50%;transform:translateY(-50%);height:60px;width:60px;object-fit:contain;z-index:3;filter:drop-shadow(0 1px 4px rgba(0,0,0,0.4));pointer-events:none;}
+.tc-ov{position:absolute;inset:0;z-index:2;background:linear-gradient(to right,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.45) 50%,rgba(0,0,0,0.15) 100%);}
 .tc-rank{position:relative;z-index:3;width:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.45);border-right:1px solid rgba(255,255,255,0.1);}
-.tc-shot{position:relative;z-index:3;width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 8px;}
-.tc-shot img{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:center 15%;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.08);display:block;}
-.tc-shot-fb{width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);}
+.tc-shot{position:relative;z-index:3;width:84px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 8px;}
+.tc-shot img{width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:center 10%;border:2.5px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.08);display:block;}
+.tc-shot-fb{width:72px;height:72px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:rgba(255,255,255,0.6);}
 .tc-info{position:relative;z-index:3;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:0 10px 0 10px;gap:2px;}
 .tc-name{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:#fff;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,0.7);}
 .tc-meta{font-size:11px;color:rgba(255,255,255,0.65);}
@@ -1559,7 +1559,8 @@ function renderTiers(){
         const logoUrl=logoSrc(p.school);
         html+=`<div class="tc" onclick="openModalFromList(${listIndexMap.get(p)??0})">
           <div class="tc-bg" style="background:linear-gradient(135deg,${sc[0]} 0%,${sc[1]} 100%)"></div>
-          <img class="tc-logo" src="${logoUrl||''}" style="opacity:${SCHOOL_OPACITY[p.school]||0.35}" onerror="this.style.display='none'" alt="">
+          <div class="tc-ov"></div>
+          <img class="tc-logo" style="z-index:4" src="${logoUrl||''}" style="opacity:${SCHOOL_OPACITY[p.school]||0.35}" onerror="this.style.display='none'" alt="">
           <div class="tc-ov"></div>
           <div class="tc-rank">#${rank}</div>
           <div class="tc-shot">
