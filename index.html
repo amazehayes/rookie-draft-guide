@@ -568,7 +568,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 .tc{position:relative;overflow:hidden;border-radius:10px;height:96px;display:flex;align-items:stretch;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);transition:transform .15s,box-shadow .15s;min-width:0;}
 .tc:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,23,20,0.22);}
 .tc-bg{position:absolute;inset:0;z-index:0;}
-.tc-logo{position:absolute;right:72px;top:50%;transform:translateY(-50%);height:56px;width:56px;object-fit:contain;z-index:3;opacity:0.5;filter:saturate(0) brightness(2);pointer-events:none;}
+.tc-logo{position:absolute;right:72px;top:50%;transform:translateY(-50%);height:56px;width:56px;object-fit:contain;z-index:3;filter:saturate(0) brightness(2);pointer-events:none;}
 .tc-ov{position:absolute;inset:0;z-index:2;background:linear-gradient(to right,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.4) 55%,rgba(0,0,0,0.75) 100%);}
 .tc-rank{position:relative;z-index:3;width:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.45);border-right:1px solid rgba(255,255,255,0.1);}
 .tc-shot{position:relative;z-index:3;width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 8px;}
@@ -1559,7 +1559,7 @@ function renderTiers(){
         const logoUrl=logoSrc(p.school);
         html+=`<div class="tc" onclick="openModalFromList(${listIndexMap.get(p)??0})">
           <div class="tc-bg" style="background:linear-gradient(135deg,${sc[0]} 0%,${sc[1]} 100%)"></div>
-          <img class="tc-logo" src="${logoUrl||''}" onerror="this.style.display='none'" alt="">
+          <img class="tc-logo" src="${logoUrl||''}" style="opacity:${SCHOOL_OPACITY[p.school]||0.35}" onerror="this.style.display='none'" alt="">
           <div class="tc-ov"></div>
           <div class="tc-rank">#${rank}</div>
           <div class="tc-shot">
