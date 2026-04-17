@@ -568,8 +568,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,15,20,.97);backdrop-
 .tc{position:relative;overflow:hidden;border-radius:10px;height:80px;display:flex;align-items:stretch;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);transition:transform .15s,box-shadow .15s;min-width:0;}
 .tc:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,23,20,0.22);}
 .tc-bg{position:absolute;inset:0;z-index:0;}
-.tc-logo{position:absolute;left:32px;top:50%;transform:translateY(-50%);height:64px;width:64px;object-fit:contain;z-index:1;opacity:0.25;filter:saturate(0) brightness(2);pointer-events:none;}
-.tc-ov{position:absolute;inset:0;z-index:2;background:linear-gradient(to right,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.52) 50%,rgba(0,0,0,0.08) 100%);}
+.tc-logo{position:absolute;left:32px;top:50%;transform:translateY(-50%);height:64px;width:64px;object-fit:contain;z-index:1;opacity:0.55;filter:saturate(0) brightness(2);pointer-events:none;}
+.tc-ov{position:absolute;inset:0;z-index:2;background:linear-gradient(to left,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.45) 45%,rgba(0,0,0,0.05) 100%);}
 .tc-rank{position:relative;z-index:3;width:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.45);border-right:1px solid rgba(255,255,255,0.1);}
 .tc-shot{position:relative;z-index:3;width:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;}
 .tc-shot img{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center 15%;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.08);display:block;}
@@ -1558,7 +1558,7 @@ function renderTiers(){
         const hsUrl=cardHshotUrl(p);
         const logoUrl=logoSrc(p.school);
         html+=`<div class="tc" onclick="openModalFromList(${listIndexMap.get(p)??0})">
-          <div class="tc-bg" style="background:linear-gradient(315deg,${sc[0]} 0%,${sc[1]} 100%)"></div>
+          <div class="tc-bg" style="background:linear-gradient(135deg,${sc[0]} 0%,${sc[1]} 100%)"></div>
           <img class="tc-logo" src="${logoUrl||''}" onerror="this.style.display='none'" alt="">
           <div class="tc-ov"></div>
           <div class="tc-rank">#${rank}</div>
