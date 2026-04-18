@@ -3491,7 +3491,7 @@ function explorerRender() {
               <div style="font-size:15px;font-weight:700;color:${col};font-family:'DM Mono',monospace">${explorerFmtDisplay(v,f.fmt)}</div>
             </div>`;
           }).join('');
-        const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">${filterStats}</div>` : '';
+        const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:10px">${filterStats}</div>` : '';
         return `<div class="player-card" onclick="openModalFromList(${i})">
           <!-- School color bg -->
           <div class="card-bg" style="background:linear-gradient(135deg,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[0]} 0%,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[1]} 100%)"></div>
