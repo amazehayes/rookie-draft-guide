@@ -2253,44 +2253,19 @@ const FADE_LABELS = new Set([
   'Phreshman Phenom'
 ]);
 
-// Round thresholds below which a pick is a "reach"
-const REACH_THRESHOLDS = {1:60, 2:45, 3:35};
-
 function classifyPlayer(p, format) {
-  const grade = p.grade || 0;
-  const rd    = p.round;
   const tag   = getTag(p);
   const label = tag ? tag.label : null;
-  const adjScore = dynastySortForFormat(p, format);
 
-  // Never highlight UDFA (round 8) players
-  if(rd === 8) return null;
+  if(!label) return null;
 
-  // ── FADE checks (run first — fades override targets) ──────────────────────
-  // Negative label
-  if(label && FADE_LABELS.has(label))
+  // ── FADE: negative label only ─────────────────────────────────────────────
+  if(FADE_LABELS.has(label))
     return {type:'fade', reason: tag.icon + ' ' + label};
 
-  // Reach pick: drafted but grade below threshold for that round
-  if(rd && REACH_THRESHOLDS[rd] && grade < REACH_THRESHOLDS[rd])
-    return {type:'fade', reason:'Rd '+rd+' reach ('+grade.toFixed(1)+' grade)'};
-
-  // Overvalued ADP: Rd 1-2 pick, grade < 50, no positive label
-  if(rd && rd <= 2 && grade < 50 && (!label || !POSITIVE_LABELS.has(label)))
-    return {type:'fade', reason:'Rd '+rd+' pick, grade only '+grade.toFixed(1)};
-
-  // ── TARGET checks ─────────────────────────────────────────────────────────
-  // Elite grade
-  if(grade >= 80)
-    return {type:'target', reason:'Elite grade ('+grade.toFixed(1)+')'};
-
-  // Strong grade + positive label
-  if(grade >= 70 && label && POSITIVE_LABELS.has(label))
-    return {type:'target', reason: (tag ? tag.icon+' ' : '') + label};
-
-  // Any label (worth knowing about)
-  if(label && POSITIVE_LABELS.has(label))
-    return {type:'target', reason: (tag ? tag.icon+' ' : '') + label};
+  // ── TARGET: positive label only ───────────────────────────────────────────
+  if(POSITIVE_LABELS.has(label))
+    return {type:'target', reason: tag.icon + ' ' + label};
 
   return null;
 }
