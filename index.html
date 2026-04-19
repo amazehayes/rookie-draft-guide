@@ -3467,45 +3467,43 @@ function explorerRender() {
 
   if(explorerView === 'cards') {
     _lastRenderedList = sorted;
-    body.innerHTML = '<div class="cards-grid" style="padding:0">' +
+    body.innerHTML = '<div class="tier-cards" style="padding:0">' +
       sorted.map((p, i) => {
         const col = posColor(p.pos);
-        const lg = letterGrade(p.grade,p.finalGrade);
+        const gc = tierGradeColor(p.grade||0);
+        const isProxy = p.finalGrade === false;
         const tag = getTag(p);
-        const logo = logoSrc(p.school);
         const mx = POS_MAX[p.pos]||14; const mk = p.markers||0;
-        const pmx = PFF_MAX[p.pos]||10; const pmk = p.pff!=null?Math.round(p.pff):0;
-        let dots='';
-        for(let j=0;j<mx;j++) dots+=`<div style="width:7px;height:7px;border-radius:50%;background:${j<mk?col:'rgba(255,255,255,0.2)'};flex-shrink:0"></div>`;
-        // Build active filter stats grid
-        const filterStats = explorerFilters.map(f => {
-            const v = p[f.k];
-            return `<div style="min-width:0">
-              <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;font-family:'DM Mono',monospace">${f.l}</div>
-              <div style="font-size:14px;font-weight:700;color:${col};font-family:'DM Mono',monospace">${explorerFmtDisplay(v,f.fmt)}</div>
-            </div>`;
-          }).join('');
-        const statsGrid = filterStats.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:8px">${filterStats}</div>` : '';
-        return `<div class="player-card" onclick="openModalFromList(${i})">
-          <div class="card-bg" style="background:linear-gradient(135deg,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[0]} 0%,${(SCHOOL_COLORS[p.school]||['#1a1f28','#111418'])[1]} 100%)"></div>
-          <img src="${logo}" style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);height:90%;width:auto;z-index:1;opacity:${SCHOOL_OPACITY[p.school]||0.30};filter:grayscale(10%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.8) 25%,rgba(0,0,0,0.8) 75%,transparent 100%)" onerror="this.style.display='none'">
-          <div class="card-bg-overlay" style="background:linear-gradient(to right,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.5) 100%)"></div>
-          ${(p.cfr_id||p.pfr_id)?`<img src="${cardHshotUrl(p)}" style="position:absolute;right:8px;bottom:0;height:96%;width:auto;max-width:52%;object-fit:contain;object-position:bottom center;z-index:2" onerror="this.style.display='none'">` : ''}
-          <div class="card-body">
-            <div class="card-header">
-              ${tag?`<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:#fff;background:${tag.color};border:1.5px solid ${tag.color};border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`:''}
-            </div>
-            <div class="card-bottom">
-              <div class="card-name">${safeStr(p.name)}</div>
-              <div class="card-school"><span style="color:${col};font-weight:700">${p.pos}</span> · ${p.school||''} · ${p.year||2026}</div>
-              <div class="card-grade-row">
-                <div class="card-grade-pill" style="color:${lg.c}">${p.grade?fmt(p.grade,1):'—'}${p.finalGrade!==false ? ` <span style="opacity:0.7;font-size:10px">${lg.l}</span>` : ''}</div>
-                <div class="card-grade-pill" style="color:${col}">${mk}/${mx} <span style="opacity:0.6;font-size:10px">MKR</span></div>
-                <div class="card-grade-pill" style="color:rgba(255,255,255,0.8)">${pmk}/${pmx} <span style="opacity:0.6;font-size:10px">ADV</span></div>
-              </div>
-              <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${dots}</div>
-              ${statsGrid}
-            </div>
+        const hsUrl = cardHshotUrl(p);
+        const logoUrl = logoSrc(p.school);
+        const sc = SCHOOL_COLORS[p.school]||['#1a1f28','#111418'];
+        // Filter stat values inline in tc-info
+        const filterStatHtml = explorerFilters.map(f => {
+          const v = p[f.k];
+          return `<div style="display:flex;align-items:baseline;gap:5px;margin-top:2px">
+            <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4)">${f.l}:</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:${col}">${explorerFmtDisplay(v,f.fmt)}</span>
+          </div>`;
+        }).join('');
+        return `<div class="tc" onclick="openModalFromList(${i})">
+          <div class="tc-bg" style="background:linear-gradient(135deg,${sc[0]} 0%,${sc[1]} 100%)"></div>
+          <img class="tc-logo" src="${logoUrl||''}" onerror="this.style.display='none'" alt="">
+          <div class="tc-ov"></div>
+          <div class="tc-shot">
+            ${hsUrl
+              ? `<img src="${hsUrl}" alt="${safeStr(p.name)}" data-fb="${p.pos}" onerror="this.style.display='none';var fb=document.createElement('div');fb.className='tc-shot-fb';fb.textContent=this.dataset.fb;this.parentNode.appendChild(fb);">`
+              : `<div class="tc-shot-fb">${p.pos}</div>`}
+          </div>
+          <div class="tc-info">
+            <div class="tc-name">${safeStr(p.name)}</div>
+            <div class="tc-meta"><span style="color:${col};font-weight:700">${p.pos}</span> · ${p.school||''} · ${p.year||2026}</div>
+            ${tag?`<div class="tc-tag" style="background:${tag.color}">${tag.icon} ${tag.label}</div>`:''}
+            ${filterStatHtml}
+          </div>
+          <div class="tc-grade">
+            <div class="tc-gval" style="color:${gc}">${p.grade!=null?fmt(p.grade,1):'—'}</div>
+            <div class="tc-glbl" style="${isProxy?'color:rgba(255,190,60,0.9);':''}">${isProxy?'PROJ':'GRADE'}</div>
+            <div class="tc-mkr">${mk}/${mx}</div>
           </div>
         </div>`;
       }).join('') + '</div>';
