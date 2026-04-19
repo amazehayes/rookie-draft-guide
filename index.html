@@ -1781,8 +1781,13 @@ function openModal(p){
   const mx=POS_MAX[p.pos]||14;const mk=p.markers||0;
   const pmx=PFF_MAX[p.pos]||10;const pmk=p.pff!=null?Math.round(p.pff):0;
   const markers=evalMarkers(p);
-  const list=getFiltered();
-  // Compute positional + overall grade rank
+  // Use _lastRenderedList if it contains this player (rankings/explorer context),
+  // otherwise fall back to grades page getFiltered()
+  const _contextList = (_lastRenderedList && _lastRenderedList.includes(p))
+    ? _lastRenderedList
+    : getFiltered();
+  const list = _contextList;
+  // Compute positional + overall grade rank within the current context list
   const _gradeList = [...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
   const _overallRank = _gradeList.indexOf(p)+1 || '?';
   const _posCounts = {}; let _posRank = '?';
