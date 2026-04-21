@@ -707,7 +707,7 @@ td{padding:10px 14px;white-space:nowrap;}
 /* ---- LABEL GUIDE MODAL ---- */
 .label-guide-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .label-guide-overlay.open{opacity:1;pointer-events:all;}
-.label-guide-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:95%;max-width:720px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.97);transition:transform .2s;}
+.label-guide-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:95%;max-width:1060px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.97);transition:transform .2s;}
 .label-guide-overlay.open .label-guide-modal{transform:scale(1);}
 .label-guide-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .label-guide-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--text);}
@@ -716,10 +716,19 @@ td{padding:10px 14px;white-space:nowrap;}
 .label-guide-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .label-guide-pos-section{padding:14px 24px 4px;}
 .label-guide-pos-header{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px;}
-.label-guide-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.label-guide-item{display:grid;grid-template-columns:190px 1fr 200px;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);align-items:start;}
 .label-guide-item:last-child{border-bottom:none;}
-.label-guide-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;font-family:'Sora',sans-serif;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#fff;white-space:nowrap;width:190px;flex-basis:190px;justify-content:center;}
-.label-guide-def{font-size:12px;line-height:1.55;color:var(--muted);}
+.label-guide-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;font-family:'Sora',sans-serif;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#fff;width:190px;justify-content:center;white-space:nowrap;}
+.label-guide-def{font-size:11px;line-height:1.6;color:var(--muted);}
+.label-guide-players{border-left:1px solid var(--border);padding-left:14px;}
+.label-guide-players-hdr{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.label-guide-players-list{max-height:180px;overflow-y:auto;}
+.label-guide-players-list::-webkit-scrollbar{width:3px;}
+.label-guide-players-list::-webkit-scrollbar-thumb{background:var(--border);}
+.label-guide-player-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);gap:8px;min-width:0;}
+.label-guide-player-row:last-child{border-bottom:none;}
+.label-guide-player-name{font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.label-guide-player-year{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;}
 .modal-tag-wrap{position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-bottom:12px;}
 .modal-tag-qmark{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:700;cursor:default;flex-shrink:0;position:relative;}
 .modal-tag-tooltip{position:absolute;left:0;top:calc(100% + 6px);z-index:50;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;width:320px;font-size:12px;line-height:1.55;color:var(--muted);box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .15s;white-space:normal;}
@@ -4688,8 +4697,8 @@ const LABEL_GUIDE_SECTIONS = [
   ]},
   {pos:'RB', color:'var(--pos-rb)', labels:[
     {label:'Late-Round Target',         icon:'🎯', color:'#1a4d6b'},
-    {label:"Fine, I'll Do It Myself",   icon:'💪', color:'#2a6e42'},
     {label:'Try To Tackle Me',          icon:'⚡', color:'#2a6e42'},
+    {label:"Fine, I'll Do It Myself",   icon:'💪', color:'#2a6e42'},
   ]},
   {pos:'WR', color:'var(--pos-wr)', labels:[
     {label:'The McConkey List',  icon:'🏆', color:'#2a6e42'},
@@ -4706,15 +4715,45 @@ const LABEL_GUIDE_SECTIONS = [
 
 function openLabelGuide() {
   const body = document.getElementById('labelGuideBody');
+
+  // Build label -> players map from all loaded year caches
+  const allPlayers = [...PLAYERS];
+  Object.entries(yearCache).forEach(([yr, data]) => {
+    if(Number(yr) !== 2026) data.forEach(p => { if(!p.year) p.year = Number(yr); allPlayers.push(p); });
+  });
+
+  const labelMap = {};
+  LABEL_GUIDE_SECTIONS.forEach(sec => sec.labels.forEach(l => { labelMap[l.label] = []; }));
+  allPlayers.forEach(p => {
+    if(!p.grade) return;
+    const tag = getTag(p);
+    if(tag && labelMap[tag.label] !== undefined) {
+      labelMap[tag.label].push({name: p.name, year: p.year || 2026});
+    }
+  });
+  // Sort each list by year desc
+  Object.values(labelMap).forEach(arr => arr.sort((a,b) => b.year - a.year));
+
   body.innerHTML = LABEL_GUIDE_SECTIONS.map(sec => {
     const items = sec.labels.map(l => {
       const entry = GLOSSARY_TERMS.find(g =>
         g.term.includes(l.label) || g.term.includes(l.label.replace(/'/g,'\u2019'))
       );
       const def = entry ? entry.definition : '';
+      const players = labelMap[l.label] || [];
+      const playerRows = players.length
+        ? players.map(p => `<div class="label-guide-player-row">
+            <span class="label-guide-player-name">${safeStr(p.name)}</span>
+            <span class="label-guide-player-year">${p.year}</span>
+          </div>`).join('')
+        : '<div style="color:var(--muted);font-size:12px;font-style:italic">None yet</div>';
       return `<div class="label-guide-item">
-        <div class="label-guide-badge" style="background:${l.color}">${l.icon} ${l.label}</div>
+        <div><div class="label-guide-badge" style="background:${l.color}">${l.icon} ${l.label}</div></div>
         <div class="label-guide-def">${def}</div>
+        <div class="label-guide-players">
+          <div class="label-guide-players-hdr">Players (${players.length})</div>
+          <div class="label-guide-players-list">${playerRows}</div>
+        </div>
       </div>`;
     }).join('');
     return `<div class="label-guide-pos-section">
