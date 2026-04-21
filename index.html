@@ -725,6 +725,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-tag-tooltip{position:absolute;left:0;top:calc(100% + 6px);z-index:50;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;width:320px;font-size:12px;line-height:1.55;color:var(--muted);box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .15s;white-space:normal;}
 .modal-tag-qmark:hover .modal-tag-tooltip{opacity:1;pointer-events:all;}
 @media(max-width:640px){.modal-tag-tooltip{width:260px;left:auto;right:0;}}</style>
+<script data-goatcounter="https://ajh5737.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <nav class="site-nav" id="siteNav">
@@ -1797,18 +1798,18 @@ function openModal(p){
   const markers=evalMarkers(p);
   // Use _lastRenderedList if it contains this player (rankings/explorer context),
   // otherwise fall back to grades page getFiltered()
-  // Match by name+year since player objects may be spread copies (not same reference)
-  const _inList = _lastRenderedList && _lastRenderedList.some(
-    q => q.name === p.name && (q.year||2026) === (p.year||2026)
-  );
-  const list = _inList ? _lastRenderedList : getFiltered();
-  // Compute positional + overall grade rank within the current context list
-  const _gradeList = [...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
-  const _overallRank = _gradeList.findIndex(q => q.name===p.name && (q.year||2026)===(p.year||2026))+1 || '?';
+  // Always rank within the player's own draft class (their year data)
+  const _playerYear = p.year || 2026;
+  const _classData = _playerYear === 2026 ? PLAYERS : (yearCache[_playerYear] || []);
+  // Fall back to getFiltered() only if we're on the grades page (same year, no class data loaded)
+  const list = _classData.length ? _classData : getFiltered();
+  // Compute positional + overall grade rank within the draft class
+  const _gradeList = [...list].filter(q=>q.grade).sort((a,b)=>(b.grade||0)-(a.grade||0));
+  const _overallRank = _gradeList.findIndex(q => q.name===p.name)+1 || '?';
   const _posCounts = {}; let _posRank = '?';
   _gradeList.forEach(q => {
     _posCounts[q.pos] = (_posCounts[q.pos]||0)+1;
-    if(q.name===p.name && (q.year||2026)===(p.year||2026)) _posRank = _posCounts[q.pos];
+    if(q.name===p.name) _posRank = _posCounts[q.pos];
   });
   const rl = p.pos+_posRank+' · #'+_overallRank+' Overall';
   const lg=letterGrade(p.grade,p.finalGrade);
