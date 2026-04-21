@@ -3566,6 +3566,7 @@ let outcomesGradedOnly = true;
 let outcomesGradeMin = 0;
 let outcomesGradeMax = 100;
 let _outcomesGradeTimer;
+let _outcomesRenderedList = [];
 
 async function loadNFLOutcomes() {
   if(NFL_OUTCOMES) return NFL_OUTCOMES;
@@ -3689,6 +3690,8 @@ function renderOutcomes() {
     html += '</tr>';
   });
   document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
+  // Store for modal rank context
+  _outcomesRenderedList = sorted;
 }
 
 function sumItem(val, label) {
@@ -3701,11 +3704,24 @@ function nflBadge(n, col) {
 }
 
 function openOutcomeModal(pfrId, name, year) {
-  // Find player in historical cache and open modal
   const yr = Number(year);
   const data = yr === 2026 ? PLAYERS : (yearCache[yr] || []);
   const p = data.find(x => x.name === name || x.pfr_id === pfrId);
-  if(p) openModal({...p, year: yr});
+  if(!p) return;
+  const player = {...p, year: yr};
+  // Build a list of all outcome players with their cache objects for rank context
+  // Match _outcomesRenderedList entries to full player objects
+  const fullList = _outcomesRenderedList.map(op => {
+    const opYr = Number(op.year);
+    const opData = opYr === 2026 ? PLAYERS : (yearCache[opYr] || []);
+    const full = opData.find(x => x.name === op.name);
+    return full ? {...full, year: opYr} : null;
+  }).filter(Boolean);
+  _lastRenderedList = fullList.length ? fullList : [player];
+  _currentModalIdx = fullList.findIndex(x => x.name === player.name && x.year === player.year);
+  if(_currentModalIdx < 0) _currentModalIdx = 0;
+  openModal(player);
+  updateModalNavArrows();
 }
 
 // Wire position filters
