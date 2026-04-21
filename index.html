@@ -1028,6 +1028,19 @@ td{padding:10px 14px;white-space:nowrap;}
       <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-left:8px;cursor:pointer">
         <input type="checkbox" id="outcomesGradedOnly" checked style="accent-color:var(--accent)"> Graded only
       </label>
+      <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap">Final Grade:</span>
+      <div id="outcomesGradeFilter" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;padding:5px 10px;transition:border-color .15s">
+        <span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Min</span>
+        <input type="number" id="outcomesGradeMin" placeholder="0" min="0" max="100" step="1"
+          style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text);background:none;border:none;outline:none;width:40px;text-align:center">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">—</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Max</span>
+        <input type="number" id="outcomesGradeMax" placeholder="100" min="0" max="100" step="1"
+          style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text);background:none;border:none;outline:none;width:40px;text-align:center">
+        <button id="outcomesGradeClear" onclick="clearOutcomesGradeFilter()" title="Clear grade filter"
+          style="display:none;background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;font-weight:700">×</button>
+      </div>
     </div>
     <div class="outcomes-table-wrap">
       <table class="outcomes-table">
@@ -3550,6 +3563,9 @@ let outcomesPos = 'ALL';
 let outcomesYearFrom = 2010;
 let outcomesYearTo = 2025;
 let outcomesGradedOnly = true;
+let outcomesGradeMin = 0;
+let outcomesGradeMax = 100;
+let _outcomesGradeTimer;
 
 async function loadNFLOutcomes() {
   if(NFL_OUTCOMES) return NFL_OUTCOMES;
@@ -3592,6 +3608,7 @@ function renderOutcomes() {
     if(p.year < outcomesYearFrom || p.year > outcomesYearTo) return false;
     if(outcomesPos !== 'ALL' && p.pos !== outcomesPos) return false;
     if(outcomesGradedOnly && !p.grade) return false;
+    if(p.grade != null && (p.grade < outcomesGradeMin || p.grade > outcomesGradeMax)) return false;
     return true;
   });
 
@@ -3704,6 +3721,38 @@ document.querySelectorAll('.filter-btn[data-opos]').forEach(btn => {
 document.getElementById('outcomesGradedOnly').addEventListener('change', e => {
   outcomesGradedOnly = e.target.checked;
   renderOutcomes();
+});
+
+// Grade filter inputs
+function _applyOutcomesGradeFilter() {
+  const minEl = document.getElementById('outcomesGradeMin');
+  const maxEl = document.getElementById('outcomesGradeMax');
+  const clearBtn = document.getElementById('outcomesGradeClear');
+  const wrap = document.getElementById('outcomesGradeFilter');
+  outcomesGradeMin = minEl.value === '' ? 0 : Math.max(0, Math.min(100, Number(minEl.value)));
+  outcomesGradeMax = maxEl.value === '' ? 100 : Math.max(0, Math.min(100, Number(maxEl.value)));
+  const isActive = outcomesGradeMin > 0 || outcomesGradeMax < 100;
+  if(clearBtn) clearBtn.style.display = isActive ? 'inline' : 'none';
+  if(wrap) wrap.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+  renderOutcomes();
+}
+function clearOutcomesGradeFilter() {
+  document.getElementById('outcomesGradeMin').value = '';
+  document.getElementById('outcomesGradeMax').value = '';
+  outcomesGradeMin = 0; outcomesGradeMax = 100;
+  const clearBtn = document.getElementById('outcomesGradeClear');
+  const wrap = document.getElementById('outcomesGradeFilter');
+  if(clearBtn) clearBtn.style.display = 'none';
+  if(wrap) wrap.style.borderColor = 'var(--border)';
+  renderOutcomes();
+}
+['outcomesGradeMin','outcomesGradeMax'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) {
+    el.addEventListener('input', () => { clearTimeout(_outcomesGradeTimer); _outcomesGradeTimer = setTimeout(_applyOutcomesGradeFilter, 200); });
+    el.addEventListener('focus', () => { const w=document.getElementById('outcomesGradeFilter'); if(w) w.style.borderColor='var(--accent)'; });
+    el.addEventListener('blur',  () => { const w=document.getElementById('outcomesGradeFilter'); if(w) w.style.borderColor=(outcomesGradeMin>0||outcomesGradeMax<100)?'var(--accent)':'var(--border)'; });
+  }
 });
 
 // outcomes page load triggered from main switchPage
