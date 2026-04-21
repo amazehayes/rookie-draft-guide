@@ -1797,17 +1797,18 @@ function openModal(p){
   const markers=evalMarkers(p);
   // Use _lastRenderedList if it contains this player (rankings/explorer context),
   // otherwise fall back to grades page getFiltered()
-  const _contextList = (_lastRenderedList && _lastRenderedList.includes(p))
-    ? _lastRenderedList
-    : getFiltered();
-  const list = _contextList;
+  // Match by name+year since player objects may be spread copies (not same reference)
+  const _inList = _lastRenderedList && _lastRenderedList.some(
+    q => q.name === p.name && (q.year||2026) === (p.year||2026)
+  );
+  const list = _inList ? _lastRenderedList : getFiltered();
   // Compute positional + overall grade rank within the current context list
   const _gradeList = [...list].sort((a,b)=>(b.grade||0)-(a.grade||0));
-  const _overallRank = _gradeList.indexOf(p)+1 || '?';
+  const _overallRank = _gradeList.findIndex(q => q.name===p.name && (q.year||2026)===(p.year||2026))+1 || '?';
   const _posCounts = {}; let _posRank = '?';
   _gradeList.forEach(q => {
     _posCounts[q.pos] = (_posCounts[q.pos]||0)+1;
-    if(q===p) _posRank = _posCounts[q.pos];
+    if(q.name===p.name && (q.year||2026)===(p.year||2026)) _posRank = _posCounts[q.pos];
   });
   const rl = p.pos+_posRank+' · #'+_overallRank+' Overall';
   const lg=letterGrade(p.grade,p.finalGrade);
