@@ -4004,6 +4004,9 @@ function computeComps(player) {
       if(hasGrade && p.grade == null) return;
       if(!hasGrade && p.markers == null) return;
       if(p.pff == null) return; // must have PFF data
+      // Only include candidates within ±1 round of target player
+      const targetRound = player.round || 8;
+      if(Math.abs((p.round||8) - targetRound) > 1) return;
       candidates.push({...p, year: Number(yr)});
     });
   });
