@@ -1928,7 +1928,7 @@ PLAYERS.forEach(p => { if(!p.year) p.year = 2026; });
 let yearCache = {2026: PLAYERS};
 
 // Historical class averages (all years)
-const ALL_CLASS_AVGS = {2001:53.36,2002:38.04,2003:38.22,2004:37.23,2005:40.83,2006:39.33,2007:39.57,2008:36.94,2009:35.53,2010:34.73,2011:33.76,2012:37.87,2013:31.48,2014:39.67,2015:32.89,2016:29.27,2017:31.68,2018:33.98,2019:32.88,2020:32.28,2021:32.45,2022:35.88,2023:35.71,2024:39.51,2025:34.61,2026:31.42};
+const ALL_CLASS_AVGS = {2010:34.73,2011:33.76,2012:37.87,2013:31.48,2014:39.67,2015:32.89,2016:29.27,2017:31.68,2018:33.98,2019:32.88,2020:32.28,2021:32.45,2022:35.88,2023:35.71,2024:39.51,2025:34.61,2026:31.42};
 
 function buildYearTabs() {
   ['gradesYearBar','rankingsYearBar'].forEach(id => {
@@ -2854,7 +2854,7 @@ function getBreakdownData() {
 async function loadAndRenderBreakdown() {
   document.getElementById('bkBody').innerHTML =
     '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);font-size:14px;letter-spacing:1px">Loading all class data...</td></tr>';
-  const years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  const years = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
   await Promise.all(years.map(async yr => {
     if(!yearCache[yr]) {
       try {
@@ -2907,7 +2907,7 @@ function renderBreakdown() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend:{display:false},
-        title:{display:true,text:'Class Average Grade — Top 50 Prospects (2001–2026)',color:'var(--muted)',font:{family:'DM Mono',size:11}},
+        title:{display:true,text:'Class Average Grade — Top 50 Prospects (2010–2026)',color:'var(--muted)',font:{family:'DM Mono',size:11}},
         tooltip:{callbacks:{label:ctx=>'Avg: '+ctx.parsed.y.toFixed(1)}}
       },
       scales: {
