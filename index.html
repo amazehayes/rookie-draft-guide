@@ -1412,7 +1412,7 @@ function evalMarkers(p){
     r.push({label:'Round ≤ 3',                     hit:p.round!=null&&p.round<=3,                 val:p.round!=null?'Rd '+p.round:'—'});
     r.push({label:'Breakout Age (15%) ≤ Yr 2',     hit:p.boy15!=null&&p.boy15<=2,                 val:p.boy15!=null?'Yr '+p.boy15:'—'});
     r.push({label:'Breakout Age (20%) ≤ Yr 3',     hit:p.boy20!=null&&p.boy20<=3,                 val:p.boy20!=null?'Yr '+p.boy20:'—'});
-    r.push({label:'Career YPG ≥ 13',               hit:p.careerYPG!=null&&p.careerYPG>=13,        val:fmt(p.careerYPG,1)+' YPG'});
+    r.push({label:'Career YPR ≥ 13',               hit:p.careerYPR!=null&&p.careerYPR>=13,        val:fmt(p.careerYPR,1)+' YPR'});
     r.push({label:'Last YPTPA ≥ 1.5',              hit:p.lastYPTPA!=null&&p.lastYPTPA>=1.5,       val:fmt(p.lastYPTPA,1)});
     r.push({label:'Best YPTPA ≥ 1.75',             hit:p.bestYPTPA!=null&&p.bestYPTPA>=1.75,      val:fmt(p.bestYPTPA,1)});
     r.push({label:'Best MS Yards ≥ 20%',           hit:p.bestMSYards!=null&&p.bestMSYards>=0.20,  val:p.bestMSYards!=null?(p.bestMSYards*100).toFixed(1)+'%':'—'});
@@ -1787,7 +1787,7 @@ function posStats(p, col) {
   if(p.pos === 'TE') return (
     statSq(f(p.bestYPTPA,3), 'Best YPTPA') +
     statSq(fp(p.bestMSYards), 'Best MS Yards') +
-    statSq(f(p.careerYPG,1), 'Career YPG') +
+    statSq(f(p.careerYPR,1), 'Career YPR') +
     statSq(f(p.careerYPRR,2), 'Career YPRR') +
     statSq(fp(p.careerTPRR), 'Career TPRR') +
     statSq(f(p.avgPassBlock,1), 'Pass Block') +
