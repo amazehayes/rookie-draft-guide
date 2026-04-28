@@ -730,7 +730,7 @@ td{padding:10px 14px;white-space:nowrap;}
 .label-guide-player-row:last-child{border-bottom:none;}
 .label-guide-player-name{font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .label-guide-player-year{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;}
-.modal-tag-wrap{position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-bottom:12px;}
+.modal-tag-wrap{position:relative;display:inline-flex;align-items:center;gap:6px;}
 .modal-tag-qmark{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:700;cursor:default;flex-shrink:0;position:relative;}
 .modal-tag-tooltip{position:absolute;left:0;top:calc(100% + 6px);z-index:50;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;width:320px;font-size:12px;line-height:1.55;color:var(--muted);box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .15s;white-space:normal;}
 .modal-tag-qmark:hover .modal-tag-tooltip{opacity:1;pointer-events:all;}
@@ -1843,7 +1843,10 @@ function openModal(p){
         '<div class="modal-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'')+';color:'+col+'">'+p.pos+'</div>'+
       '</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'">'+rl+'</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px">'+
+          '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'">'+rl+'</div>'+
+          (getTag(p) ? tagHTML(p, true) : '')+
+        '</div>'+
         '<div class="modal-name">'+safeStr(p.name)+'</div>'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
           '<img src="'+logoSrc(p.school)+'" class="school-logo-modal" alt="" onerror="this.style.display=\'none\'">'+
@@ -1852,7 +1855,6 @@ function openModal(p){
         '<div style="font-size:13px;color:var(--muted);margin-bottom:8px">'+
           [p.age?fmtAge(p.age):null, p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':null, p.wt!=null?p.wt+' lbs':null].filter(Boolean).join(' · ')+
         '</div>'+
-        tagHTML(p, true)+
       '</div>'+
       '<div style="display:flex;gap:0;flex-shrink:0;border-left:1px solid var(--border)">'+
         '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
