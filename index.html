@@ -1264,6 +1264,60 @@ function getTag(p) {
   return null;
 }
 
+function getTags(p) {
+  const pos=p.pos, round=p.round, markers=p.markers||0, hasPff=p.pff!=null, pff=p.pff!=null?p.pff:0, grade=p.grade||0;
+  const tags = [];
+
+  if(pos==='QB'){
+    const hasVolume = (p.careerPA>=900 && p.careerPAPG>=28 && p.years!=null && p.years<6) ||
+                      (p.careerPYd>=8500 && p.careerYPG>=225 && p.years!=null && p.years<6);
+    const lackVolume = (p.careerPA<900 || (p.careerPAPG<28 && p.years!=null && p.years<6)) ||
+                       (p.careerPYd<8500 || (p.careerYPG<225 && p.years!=null && p.years<6));
+    const runs = p.careerRuYd!=null && p.careerRuYd>=1000;
+    if(hasPff && pff>=6 && round===1 && hasVolume)
+      tags.push({label:'Greatest Prospect Since...', color:'#2a6e42', icon:'🏆'});
+    if(hasPff && ((pff<6 && runs && round===1) || (pff>=6 && runs && round===1 && lackVolume)))
+      tags.push({label:'Iffy, But He Runs', color:'#9a6200', icon:'🏃'});
+    if(hasPff && ((pff<6 && !runs && round===1) || (pff>=6 && round===1 && lackVolume)))
+      tags.push({label:'N.F.L. = Not For Long', color:'#8b2a1e', icon:'⚠️'});
+  }
+
+  if(pos==='RB'){
+    if(markers>=7 && round!=null && round<6 && round>3)
+      tags.push({label:'Late-Round Target', color:'#1a4d6b', icon:'🎯'});
+    if(p.careerMTF!=null && p.careerMTF>=0.35 && round!=null && round!==8)
+      tags.push({label:'Try To Tackle Me', color:'#2a6e42', icon:'⚡'});
+    if(markers>=3 && round!=null && round<=5 &&
+       p.careerBA!=null && p.careerBA>=0.09 &&
+       p.careerYACO!=null && p.careerYACO>3.75 &&
+       p.bestYPRR!=null && p.bestYPRR>1.5 &&
+       p.best1D!=null && p.best1D>0.3)
+      tags.push({label:"Fine, I'll Do It Myself", color:'#2a6e42', icon:'💪'});
+  }
+
+  if(pos==='WR'){
+    if(hasPff && pff>=11 && pff>(markers*2) && round!=null && round<=5)
+      tags.push({label:'The McConkey List', color:'#2a6e42', icon:'🏆'});
+    if(hasPff && (pff*2)<=markers && round!=null && round<=2 && markers>3)
+      tags.push({label:"The N'Keal List", color:'#8b2a1e', icon:'⚠️'});
+    if(round!=null && round<=3 && p.careerYPRRzone!=null && p.careerYPRRzone>=3)
+      tags.push({label:'Zone Crusher', color:'#2a6e42', icon:'💥'});
+    if(round!=null && round<=3 && p.careerYPRRzone!=null && p.careerYPRRzone<2.25)
+      tags.push({label:'Crushed by Zone', color:'#8b2a1e', icon:'🔒'});
+  }
+
+  if(pos==='TE'){
+    if(hasPff && pff>=7 && (markers>=10 || grade>=85))
+      tags.push({label:'The Bowers List', color:'#1a4d6b', icon:'🏆'});
+    else if(markers>=10 || grade>=85)
+      tags.push({label:'Analytical Darling', color:'#2a6e42', icon:'⭐'});
+    else if(hasPff && pff>=7 && (round==null || round<=5))
+      tags.push({label:'You Have My Attention', color:'#2a6e42', icon:'✏️'});
+  }
+
+  return tags;
+}
+
 function tagHTML(p, showTooltip){
   const t=getTag(p);
   if(!t)return'';
@@ -1276,6 +1330,21 @@ function tagHTML(p, showTooltip){
   const def = entry ? entry.definition : '';
   if(!def) return badge;
   return '<div class="modal-tag-wrap">'+badge+'<div class="modal-tag-qmark">?<div class="modal-tag-tooltip">'+def+'</div></div></div>';
+}
+
+function tagsHTML(p) {
+  const tags = getTags(p);
+  if(!tags.length) return '';
+  return tags.map(t => {
+    const badge='<div class="player-tag" style="color:'+t.color+';background:'+t.color+'18;border-color:'+t.color+'44">'+
+      '<span class="tag-icon">'+t.icon+'</span>'+t.label+'</div>';
+    const entry = GLOSSARY_TERMS.find(g =>
+      g.term.includes(t.label) || g.term.includes(t.label.replace(/'/g,'\u2019'))
+    );
+    const def = entry ? entry.definition : '';
+    if(!def) return badge;
+    return '<div class="modal-tag-wrap">'+badge+'<div class="modal-tag-qmark">?<div class="modal-tag-tooltip">'+def+'</div></div></div>';
+  }).join('');
 }
 
 // ---- DYNASTY SORT ----
@@ -1845,7 +1914,7 @@ function openModal(p){
       '<div style="flex:1;min-width:0">'+
         '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px">'+
           '<div class="modal-pos-badge bg-'+p.pos.toLowerCase()+'">'+rl+'</div>'+
-          (getTag(p) ? tagHTML(p, true) : '')+
+          tagsHTML(p)+
         '</div>'+
         '<div class="modal-name">'+safeStr(p.name)+'</div>'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
