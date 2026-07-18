@@ -1645,7 +1645,7 @@ function renderCards(){
           <div class="card-name">${safeStr(p.name)}</div>
           <div class="card-school"><span style="color:${col};font-weight:700">${p.pos}</span> · ${p.school||''}</div>
           <div class="card-grade-row">
-            <div class="card-grade-pill" style="color:${lg.c}">${g?fmt(g,1):'—'}${p.finalGrade!==false ? ` <span style="opacity:0.7;font-size:10px">${lg.l}</span>` : ''}</div>
+            <div class="card-grade-pill" style="color:${lg.c}">${g?fmt(g,1):'—'}</div>
             <div class="card-grade-pill" style="color:${col}">${mk}/${mx} <span style="opacity:0.6;font-size:10px">MKR</span></div>
             <div class="card-grade-pill" style="color:rgba(255,255,255,0.8)">${pmk}/${pmx} <span style="opacity:0.6;font-size:10px">ADV</span></div>
           </div>
@@ -1747,7 +1747,7 @@ function renderTable(){
   _lastRenderedList=list;
   if(!list.length){document.getElementById('tableBody').innerHTML='';(document.getElementById('emptyState')||{style:{}}).style.display='block';return;}
   (document.getElementById('emptyState')||{style:{}}).style.display='none';
-  document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Markers</th><th>Adv Mkrs</th><th>Grade</th><th>Ltr</th><th>Label</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
+  document.getElementById('tableHead').innerHTML='<tr><th>#</th><th>Player</th><th>School</th><th>Pos</th><th>Age</th><th>Markers</th><th>Adv Mkrs</th><th>Grade</th><th>Label</th><th>Pick</th><th>Ht</th><th>40-Yd</th><th>Speed Score</th><th>Best PPG</th></tr>';
   let html='';
   list.forEach((p,i)=>{
     const col=posColor(p.pos);const lg=letterGrade(p.grade,p.finalGrade);
@@ -1765,7 +1765,6 @@ function renderTable(){
     html+='<td style="font-weight:700;color:'+col+'">'+p.markers+'</td>';
     html+='<td style="font-weight:700;color:var(--accent3)">'+(p.pff!=null?Math.round(p.pff):'—')+'</td>';
     html+='<td style="font-weight:700;color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</td>';
-    html+='<td style="font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px;color:'+lg.c+'">'+lg.l+'</td>';
     const rowTag=getTag(p);
     html+='<td>'+(rowTag?'<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:13px;font-weight:700;letter-spacing:.5px;white-space:nowrap;color:'+rowTag.color+';background:'+rowTag.color+'18;border:1px solid '+rowTag.color+'44">'+rowTag.icon+' '+rowTag.label+'</span>':'<span style="color:var(--muted);font-size:13px">—</span>')+'</td>';
     html+='<td style="color:var(--muted)">'+(p.overall!=null?'#'+p.overall:'—')+'</td>';
@@ -1950,7 +1949,6 @@ function openModal(p){
       '</div>'+
       '<div style="display:flex;gap:0;flex-shrink:0;border-left:1px solid var(--border)">'+
         '<div class="modal-grade-item"><div class="val" style="color:'+gradeColor(p.grade)+'">'+(p.grade?fmt(p.grade,1):'—')+'</div><div class="lbl">Grade</div></div>'+
-        '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+lg.c+';font-family:\'DM Mono\',monospace;font-size:22px;letter-spacing:0">'+lg.l+'</div><div class="lbl">Letter</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">Adv Mkrs</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2);font-size:18px;line-height:1.15">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div>'+(p.overall!=null?'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+ordinal(p.overall)+' ovr</div>':'')+'<div class="lbl">Draft</div></div>'+
@@ -2443,7 +2441,6 @@ function renderTargetsFades(players, format) {
       '</div>'+
       '<div class="tf-card-grade">'+
         '<span class="tf-card-grade-val" style="color:'+lg.c+'">'+fmt(g,1)+'</span>'+
-        '<span style="font-size:13px;font-weight:700;color:'+lg.c+';background:'+lg.c+'22;padding:1px 5px;border-radius:3px">'+lg.l+'</span>'+
       '</div>'+
       '<div class="tf-card-reason" style="color:'+col+'">'+reason+'</div>'+
     '</div>';
@@ -4139,15 +4136,14 @@ function computeComps(player) {
 
   const sorted = candidates.sort((a,b) => a._dist - b._dist);
   const top = sorted.slice(0, 10);
-  top._band = computeCompBand(sorted, pos);
+  top._band = computeCompBand(top, pos);
   return top;
 }
 
-// Outcome band from the 15 nearest comps that have an established NFL career (>=3 seasons).
+// Outcome band from the 10 displayed comps that have an established NFL career (>=3 seasons).
 // Shown only when at least 5 qualify. Ceiling/median by career PPG; hit-rates by position.
-function computeCompBand(sorted, pos) {
-  const sample = sorted.slice(0, 15);
-  const mature = sample.filter(c => c._nfl && (c._nfl.nfl_seasons || 0) >= 3 && c._nfl.nfl_career_ppg != null);
+function computeCompBand(topComps, pos) {
+  const mature = topComps.filter(c => c._nfl && (c._nfl.nfl_seasons || 0) >= 3 && c._nfl.nfl_career_ppg != null);
   if(mature.length < 5) return null;
   mature.sort((a,b) => a._nfl.nfl_career_ppg - b._nfl.nfl_career_ppg);
   const hi = mature[mature.length - 1];
@@ -4236,6 +4232,7 @@ async function renderModalComps(player) {
         '<div class="cmc-main">' +
           '<div class="comp-mini-name">'+safeStr(p.name)+' <span class="cmc-yr">'+p.year+'</span></div>' +
           '<div class="comp-mini-meta">'+(p.school||'')+' \u00b7 Rd '+(p.round||'?')+(p.overall!=null?' \u00b7 #'+p.overall:'')+'</div>' +
+          '<div class="comp-mini-meta">'+(p.ht!=null?Math.floor(p.ht/12)+"'"+(p.ht%12)+'"':'—')+(p.wt!=null?' \u00b7 '+p.wt+' lbs':'')+'</div>' +
           '<div class="cmc-nfl">'+nflLine+'</div>' +
         '</div>' +
         '<div class="cmc-right">' +
@@ -4430,14 +4427,16 @@ async function downloadPlayerCard(p) {
 
   // Grade pill
   const gradeStr = p.grade != null ? fmt(p.grade, 1) : '—';
-  const glblStr = isProxy ? 'PROJ' : lg.l;
+  const glblStr = isProxy ? 'PROJ' : '';
   ctx.font = 'bold 44px "DM Mono", monospace';
   ctx.fillStyle = lg.c;
   ctx.fillText(gradeStr, PX, y + 36);
   const gw = ctx.measureText(gradeStr).width;
-  ctx.font = 'bold 13px "DM Mono", monospace';
-  ctx.fillStyle = isProxy ? 'rgba(255,190,60,0.8)' : 'rgba(255,255,255,0.45)';
-  ctx.fillText(glblStr, PX + gw + 8, y + 36);
+  if(glblStr) {
+    ctx.font = 'bold 13px "DM Mono", monospace';
+    ctx.fillStyle = isProxy ? 'rgba(255,190,60,0.8)' : 'rgba(255,255,255,0.45)';
+    ctx.fillText(glblStr, PX + gw + 8, y + 36);
+  }
   y += 52;
 
   // Marker dots
