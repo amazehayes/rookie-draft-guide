@@ -270,13 +270,34 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 /* ---- COMP CARDS ---- */
 .modal-comps-section{padding:16px 26px 24px;}
 .modal-comps-title{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
-.modal-comps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.comp-mini-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;}
+.modal-comps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.comp-mini-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;transition:all .15s;}
 .comp-mini-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.cmc-body{display:flex;align-items:center;gap:10px;}
+.cmc-main{flex:1;min-width:0;}
 .comp-mini-name{font-weight:700;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.comp-mini-meta{font-size:13px;color:var(--muted);margin-bottom:6px;}
-.comp-mini-grade{font-size:14px;font-weight:700;}
-.comp-mini-sim{font-size:13px;color:var(--muted);margin-top:4px;}
+.cmc-yr{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:400;}
+.comp-mini-meta{font-size:11px;color:var(--muted);}
+.cmc-nfl{font-family:'DM Mono',monospace;font-size:10.5px;color:#3a3a3a;margin-top:4px;}
+.cmc-nfl b{color:var(--text);}
+.cmc-nonfl{color:var(--muted);opacity:.7;}
+.cmc-right{text-align:right;flex-shrink:0;min-width:50px;}
+.cmc-sim{font-family:'DM Mono',monospace;font-size:17px;font-weight:600;line-height:1;color:var(--accent);}
+.cmc-simlbl{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:1px;}
+.cmc-grade{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;line-height:1;margin-top:6px;}
+.modal-comp-band{margin-bottom:12px;}
+.modal-comp-band:empty{display:none;}
+.cb-head{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.cb-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;}
+.cb-cell{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;}
+.cb-l{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.cb-v{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;line-height:1.1;}
+.cb-vs{font-size:12px;color:var(--muted);}
+.cb-s{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.3;}
+.cb-cell.hi .cb-v{color:var(--green,#2a7d4f);}
+.cb-cell.md .cb-v{color:var(--accent);}
+.cb-cell.hr .cb-v{color:var(--orange,#c0622a);}
+.cb-foot{font-size:9.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:7px;text-align:right;opacity:.8;}
 
 /* ---- PDF EXPORT ---- */
 .pdf-export-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
@@ -1961,6 +1982,7 @@ function openModal(p){
     '</div>'+
     '<div class="modal-comps-section" id="modalCompsSection" style="border-top:1px solid var(--border)">'+
       '<div class="modal-comps-title">Historical Comps</div>'+
+      '<div class="modal-comp-band" id="modalCompBand"></div>'+
       '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>'+
     '</div>';
 
@@ -4109,15 +4131,52 @@ function computeComps(player) {
       dist += Math.min(contrib, 4); // cap any single variable at 4 to prevent outlier dominance
     });
     p._dist = Math.sqrt(dist);
-    p._sim = Math.round(1 / (1 + p._dist) * 1000) / 10;
+    // Calibrated absolute similarity: closest comps (dist~2.9) read ~82%, stays comparable across players
+    p._sim = Math.max(1, Math.min(99, Math.round((100 - (p._dist - 1.5) * 12.5) * 10) / 10));
+    // Attach NFL outcome data (from nfl_lookup, keyed name|year)
+    p._nfl = (NFL_LOOKUP && NFL_LOOKUP[p.name + '|' + p.year]) || null;
   });
 
-  return candidates.sort((a,b) => a._dist - b._dist).slice(0, 3);
+  const sorted = candidates.sort((a,b) => a._dist - b._dist);
+  const top = sorted.slice(0, 10);
+  top._band = computeCompBand(sorted, pos);
+  return top;
+}
+
+// Outcome band from the 15 nearest comps that have an established NFL career (>=3 seasons).
+// Shown only when at least 5 qualify. Ceiling/median by career PPG; hit-rates by position.
+function computeCompBand(sorted, pos) {
+  const sample = sorted.slice(0, 15);
+  const mature = sample.filter(c => c._nfl && (c._nfl.nfl_seasons || 0) >= 3 && c._nfl.nfl_career_ppg != null);
+  if(mature.length < 5) return null;
+  mature.sort((a,b) => a._nfl.nfl_career_ppg - b._nfl.nfl_career_ppg);
+  const hi = mature[mature.length - 1];
+  const med = mature[Math.floor(mature.length / 2)];
+  const cell = c => ({
+    name: c.name, year: c.year,
+    ppg: c._nfl.nfl_career_ppg, best: c._nfl.nfl_best_ppg,
+    t12: Math.round(c._nfl.nfl_top12 || 0)
+  });
+  const isTE = pos === 'TE';
+  const fieldA = isTE ? 'nfl_top5' : 'nfl_top12';
+  const fieldB = isTE ? 'nfl_top12' : 'nfl_top24';
+  const hitA = mature.filter(c => (c._nfl[fieldA] || 0) >= 1).length;
+  const hitB = mature.filter(c => (c._nfl[fieldB] || 0) >= 1).length;
+  return {
+    n: mature.length,
+    labelA: isTE ? 'Top-5' : 'Top-12',
+    labelB: isTE ? 'Top-12' : 'Top-24',
+    hitA: Math.round(100 * hitA / mature.length),
+    hitB: Math.round(100 * hitB / mature.length),
+    hi: cell(hi), med: cell(med)
+  };
 }
 
 async function renderModalComps(player) {
   const grid = document.getElementById('modalCompsGrid');
   if(!grid) return;
+
+  if(!NFL_LOOKUP) { try { await loadNFLLookup(); } catch(e) {} }
 
   const toLoad = YEARS.filter(yr => yr !== 2026 && !yearCache[yr]);
   if(toLoad.length) {
@@ -4132,17 +4191,59 @@ async function renderModalComps(player) {
   const comps = computeComps(player);
   if(!comps.length) {
     grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">No historical comps available.</div>';
+    const bandEl = document.getElementById('modalCompBand');
+    if(bandEl) bandEl.innerHTML = '';
     return;
+  }
+
+  // Outcome band (rendered above the grid)
+  const bandEl = document.getElementById('modalCompBand');
+  if(bandEl) {
+    const b = comps._band;
+    if(b) {
+      const cell = (cls, label, main, sub) =>
+        '<div class="cb-cell '+cls+'"><div class="cb-l">'+label+'</div><div class="cb-v">'+main+'</div><div class="cb-s">'+sub+'</div></div>';
+      bandEl.innerHTML =
+        '<div class="cb-head">Projected Outcome Range</div>' +
+        '<div class="cb-row">' +
+          cell('hi', 'Ceiling', fmt(b.hi.ppg,1)+'<span class="cb-vs">/'+fmt(b.hi.best,1)+'</span>', safeStr(b.hi.name)+' \u00b7 '+b.hi.t12+'\u00d7 top-12') +
+          cell('md', 'Median', fmt(b.med.ppg,1)+'<span class="cb-vs">/'+fmt(b.med.best,1)+'</span>', safeStr(b.med.name)+' \u00b7 '+b.med.t12+'\u00d7 top-12') +
+          cell('hr', b.labelA+' hit', b.hitA+'%', 'had a '+b.labelA.toLowerCase()+' season') +
+          cell('hr', b.labelB+' hit', b.hitB+'%', 'had a '+b.labelB.toLowerCase()+' season') +
+        '</div>' +
+        '<div class="cb-foot">career ppg / best-season ppg</div>';
+    } else {
+      bandEl.innerHTML = '';
+    }
   }
 
   window._modalComps = comps;
   grid.innerHTML = comps.map((p, idx) => {
     const lg = letterGrade(p.grade,p.finalGrade);
+    const n = p._nfl;
+    let nflLine;
+    if(n) {
+      const parts = ['<b>'+fmt(n.nfl_career_ppg,1)+'</b> ppg', '<b>'+fmt(n.nfl_best_ppg,1)+'</b> best'];
+      if((n.nfl_top12||0) >= 1) parts.push('<b>'+Math.round(n.nfl_top12)+'</b>\u00d7 top-12');
+      else if((n.nfl_top24||0) >= 1) parts.push('<b>'+Math.round(n.nfl_top24)+'</b>\u00d7 top-24');
+      parts.push(Math.round(n.nfl_seasons||0)+' szn');
+      nflLine = parts.join(' \u00b7 ');
+    } else {
+      nflLine = '<span class="cmc-nonfl">no NFL data</span>';
+    }
     return '<div class="comp-mini-card" onclick="openModal(window._modalComps['+idx+'])">' +
-      '<div class="comp-mini-name">'+safeStr(p.name)+'</div>' +
-      '<div class="comp-mini-meta">'+(p.school||'')+' \u00b7 '+p.year+'</div>' +
-      '<div class="comp-mini-grade" style="color:'+lg.c+'">'+fmt(p.grade,1)+' <span style="font-size:13px;font-weight:400">'+lg.l+'</span></div>' +
-      '<div class="comp-mini-sim">'+p._sim+'% match</div>' +
+      '<div class="cmc-body">' +
+        '<div class="cmc-main">' +
+          '<div class="comp-mini-name">'+safeStr(p.name)+' <span class="cmc-yr">'+p.year+'</span></div>' +
+          '<div class="comp-mini-meta">'+(p.school||'')+' \u00b7 Rd '+(p.round||'?')+(p.overall!=null?' \u00b7 #'+p.overall:'')+'</div>' +
+          '<div class="cmc-nfl">'+nflLine+'</div>' +
+        '</div>' +
+        '<div class="cmc-right">' +
+          '<div class="cmc-sim">'+Math.round(p._sim)+'%</div>' +
+          '<div class="cmc-simlbl">match</div>' +
+          '<div class="cmc-grade" style="color:'+lg.c+'">'+fmt(p.grade,1)+'</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
   }).join('');
 }
