@@ -719,6 +719,9 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-grade-item:last-child{border-right:none;}
 .modal-grade-item .val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;line-height:1;}
 .modal-grade-item .lbl{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:3px;}
+#modalHitRates{display:contents;}
+.modal-grade-item.hitrate{padding:14px 12px;}
+.modal-grade-item.hitrate .lbl{letter-spacing:1px;}
 .modal-body{padding:0;}
 .modal-section{padding:20px 28px;border-bottom:1px solid var(--border);}
 .modal-section-title{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
@@ -2012,19 +2015,14 @@ function gradeHitRateFor(pos, grade) {
 }
 
 function renderModalProjection(p) {
-  const el = document.getElementById('modalProjection');
+  const el = document.getElementById('modalHitRates');
   if(!el || !p) return;
   const hr = gradeHitRateFor(p.pos, p.grade);
-  if(!hr) { el.style.display = 'none'; return; }
-  el.style.display = '';
+  if(!hr) { el.innerHTML = ''; return; }
   el.innerHTML =
-    '<div class="modal-section-title">Grade-Based Projection</div>'+
-    '<div style="font-size:12px;color:var(--muted);margin:-2px 0 10px;line-height:1.5">Historical NFL hit rate for '+p.pos+'s graded <b style="color:var(--text)">'+hr.tierLbl+'</b> (n='+hr.n+', classes 2010\u201322)</div>'+
-    '<div class="modal-stats-grid">'+
-      statSq(hr.t5+'%','Top-5 Hit','var(--accent2)')+
-      statSq(hr.t12+'%','Top-12 Hit','var(--pos-rb)')+
-      statSq(hr.t24+'%','Top-24 Hit','var(--orange)')+
-    '</div>';
+    '<div class="modal-grade-item hitrate" style="border-left:1px solid var(--border)" title="'+hr.n+' historical '+p.pos+'s graded '+hr.tierLbl+'"><div class="val" style="color:var(--accent2);font-size:18px">'+hr.t5+'%</div><div class="lbl">Top-5</div></div>'+
+    '<div class="modal-grade-item hitrate" title="'+hr.n+' historical '+p.pos+'s graded '+hr.tierLbl+'"><div class="val" style="color:var(--pos-rb);font-size:18px">'+hr.t12+'%</div><div class="lbl">Top-12</div></div>'+
+    '<div class="modal-grade-item hitrate" title="'+hr.n+' historical '+p.pos+'s graded '+hr.tierLbl+'"><div class="val" style="color:var(--orange);font-size:18px">'+hr.t24+'%</div><div class="lbl">Top-24</div></div>';
 }
 
 // ============================================================
@@ -2153,6 +2151,7 @@ function openModal(p){
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:'+col+'">'+mk+'/'+mx+'</div><div class="lbl">Markers</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent3)">'+pmk+'/'+pmx+'</div><div class="lbl">Adv Mkrs</div></div>'+
         '<div class="modal-grade-item" style="border-left:1px solid var(--border)"><div class="val" style="color:var(--accent2);font-size:18px;line-height:1.15">'+(p.round!=null?'Rd '+p.round:'UDFA')+'</div>'+(p.overall!=null?'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+ordinal(p.overall)+' ovr</div>':'')+'<div class="lbl">Draft</div></div>'+
+        '<span id="modalHitRates"></span>'+
       '</div>'+
     '</div>'+
     '<div class="modal-body">'+
@@ -2164,7 +2163,6 @@ function openModal(p){
         '<div class="modal-section-title">Advanced Markers ('+pmk+'/'+pmx+')</div>'+
         '<div class="modal-stats-grid">'+pffStats(p,col)+'</div>'+
       '</div>'+
-      '<div class="modal-section" id="modalProjection" style="display:none"></div>'+
       (p.nfl_seasons||p.nfl_top5||p.nfl_top12?
         '<div class="modal-section">'+
           '<div class="modal-section-title">NFL Career Outcomes</div>'+
