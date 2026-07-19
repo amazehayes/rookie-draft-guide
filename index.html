@@ -352,6 +352,47 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 /* ---- PAGE SECTIONS ---- */
 .page-section{display:none;}
 .page-section.active{display:block;}
+/* ---- Track Record / Backtest ---- */
+.bt-wrap{max-width:1080px;margin:0 auto;padding:24px 20px 60px;}
+.bt-head{margin-bottom:22px;}
+.bt-title{font-family:'Fraunces',serif;font-size:26px;margin:0 0 6px;}
+.bt-sub{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 14px;max-width:760px;}
+.bt-controls{display:flex;align-items:center;gap:10px;}
+.bt-ctrl-label{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);}
+.bt-toggle{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;}
+.bt-tog-btn{background:none;border:none;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;padding:5px 14px;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s;}
+.bt-tog-btn.active{background:var(--accent);color:#fff;}
+.bt-section-title{font-family:'Fraunces',serif;font-size:18px;margin:26px 0 6px;border-bottom:2px solid var(--border);padding-bottom:6px;}
+.bt-section-sub{color:var(--muted);font-size:12.5px;line-height:1.55;margin:0 0 12px;max-width:820px;}
+.bt-grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.bt-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;}
+.bt-tgh{font-size:13px;margin-bottom:8px;} .bt-tgh b{font-family:'Fraunces',serif;font-size:15px;}
+.bt-corr{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-left:6px;}
+.bt-tier{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.bt-tl{width:82px;font-family:'DM Mono',monospace;font-size:11px;flex-shrink:0;}
+.bt-tn{color:var(--muted);font-size:9px;margin-left:4px;}
+.bt-tbar{flex:1;height:20px;background:var(--surface2);border-radius:4px;position:relative;overflow:hidden;}
+.bt-tfill{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.bt-tpct{position:absolute;right:7px;top:2px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;}
+.bt-scatter{width:100%;height:auto;margin-top:6px;}
+.bt-stitle{font-family:'Fraunces',serif;font-size:14px;margin-bottom:2px;}
+.bt-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.bt-table th{text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--border);}
+.bt-table th.r{text-align:right;}
+.bt-table td{padding:7px 8px;border-bottom:1px solid var(--border);}
+.bt-tgname{font-weight:600;font-size:12.5px;}
+.bt-tnum{font-family:'DM Mono',monospace;text-align:right;}
+.bt-pol{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:3px;white-space:nowrap;}
+.bt-pg{color:#2a7d4f;background:#2a7d4f18;} .bt-pb{color:#b8362a;background:#b8362a18;} .bt-pc{color:#9a6200;background:#9a620018;}
+.bt-nbwrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.bt-nbcol h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 8px;}
+.bt-nb{background:var(--surface2);border-left:3px solid var(--border);border-radius:6px;padding:8px 11px;margin-bottom:7px;}
+.bt-nb.hit{border-left-color:var(--green);} .bt-nb.miss{border-left-color:var(--red);}
+.bt-nbn{font-weight:700;font-size:13px;}
+.bt-nbm{font-size:10px;color:var(--muted);margin-top:1px;}
+.bt-nbo{font-family:'DM Mono',monospace;font-size:11px;margin-top:3px;}
+.bt-note{background:#9a620012;border:1px solid #9a620033;border-radius:8px;padding:10px 13px;font-size:12px;color:#7a5200;margin-top:10px;line-height:1.5;}
+@media(max-width:800px){.bt-grid4,.bt-nbwrap{grid-template-columns:1fr;}}
 /* ---- DYNASTY RANKINGS PAGE ---- */
 .format-bar{display:flex;gap:6px;padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;flex-wrap:wrap;}
 .format-label{font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-right:6px;}
@@ -779,6 +820,7 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="explorer">Stat Explorer</button>
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
     <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
+    <button class="nav-btn" data-page="backtest">Track Record</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;">
@@ -797,6 +839,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
   <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
+  <button class="nav-btn" data-page="backtest">Track Record</button>
   <button class="nav-btn" data-page="glossary">Glossary</button>
 </div>
 <div class="page-section active" id="page-grades">
@@ -1105,6 +1148,25 @@ td{padding:10px 14px;white-space:nowrap;}
       </div>
     </div>
     <div id="nflCompResults" style="padding:24px;color:var(--muted);font-size:13px">Search for an active NFL player above to see their career comps.</div>
+  </div>
+</div>
+
+<!-- PAGE: TRACK RECORD (BACKTEST) -->
+<div class="page-section" id="page-backtest">
+  <div class="bt-wrap">
+    <div class="bt-head">
+      <h2 class="bt-title">Model Track Record</h2>
+      <p class="bt-sub">How Marker System grades and labels have actually played out in the NFL. Backtested on drafted prospects, classes 2010&ndash;2022 (enough time for a career to develop).</p>
+      <div class="bt-controls">
+        <span class="bt-ctrl-label">Hit threshold:</span>
+        <div class="bt-toggle" id="btToggle">
+          <button class="bt-tog-btn" data-tier="top5">Top-5</button>
+          <button class="bt-tog-btn active" data-tier="top12">Top-12</button>
+          <button class="bt-tog-btn" data-tier="top24">Top-24</button>
+        </div>
+      </div>
+    </div>
+    <div id="btBody"><div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Loading track record&hellip;</div></div>
   </div>
 </div>
 
@@ -1888,6 +1950,67 @@ function posStats(p, col) {
   return '';
 }
 
+// Grade-based projected hit rate: what % of historical prospects at this grade+position
+// hit each tier. Uses classes 2010-2022 (mature). Computed lazily + cached.
+let _gradeHitCache = null;
+function computeGradeHitRates() {
+  if(_gradeHitCache) return _gradeHitCache;
+  const TIERS = [[85,200],[70,85],[55,70],[40,55],[0,40]];
+  const acc = {}; // pos -> tierIdx -> {n, t5, t12, t24}
+  ['QB','RB','WR','TE'].forEach(pos => { acc[pos] = TIERS.map(()=>({n:0,t5:0,t12:0,t24:0})); });
+  for(let yr = 2010; yr <= 2022; yr++) {
+    const players = (yr === 2026) ? PLAYERS : yearCache[yr];
+    if(!players) continue;
+    players.forEach(pl => {
+      if(pl.grade == null || pl.round == null || pl.round === 8) return;
+      if(!acc[pl.pos]) return;
+      const ti = TIERS.findIndex(([lo,hi]) => pl.grade >= lo && pl.grade < hi);
+      if(ti < 0) return;
+      const o = (NFL_LOOKUP && NFL_LOOKUP[pl.name + '|' + yr]) || null;
+      const cell = acc[pl.pos][ti];
+      cell.n++;
+      if(o && (o.nfl_top5||0) >= 1) cell.t5++;
+      if(o && (o.nfl_top12||0) >= 1) cell.t12++;
+      if(o && (o.nfl_top24||0) >= 1) cell.t24++;
+    });
+  }
+  _gradeHitCache = {tiers: TIERS, acc};
+  return _gradeHitCache;
+}
+
+function gradeHitRateFor(pos, grade) {
+  if(grade == null || !['QB','RB','WR','TE'].includes(pos)) return null;
+  const {tiers, acc} = computeGradeHitRates();
+  const ti = tiers.findIndex(([lo,hi]) => grade >= lo && grade < hi);
+  if(ti < 0) return null;
+  const c = acc[pos][ti];
+  if(!c || c.n < 5) return null; // too small to be meaningful
+  const [lo,hi] = tiers[ti];
+  const tierLbl = hi >= 200 ? (lo+'+') : (lo+'\u2013'+(hi-1));
+  return {
+    tierLbl, n: c.n,
+    t5: Math.round(100*c.t5/c.n),
+    t12: Math.round(100*c.t12/c.n),
+    t24: Math.round(100*c.t24/c.n)
+  };
+}
+
+function renderModalProjection(p) {
+  const el = document.getElementById('modalProjection');
+  if(!el || !p) return;
+  const hr = gradeHitRateFor(p.pos, p.grade);
+  if(!hr) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML =
+    '<div class="modal-section-title">Grade-Based Projection</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin:-2px 0 10px;line-height:1.5">Historical NFL hit rate for '+p.pos+'s graded <b style="color:var(--text)">'+hr.tierLbl+'</b> (n='+hr.n+', classes 2010\u201322)</div>'+
+    '<div class="modal-stats-grid">'+
+      statSq(hr.t5+'%','Top-5 Hit','var(--accent2)')+
+      statSq(hr.t12+'%','Top-12 Hit','var(--pos-rb)')+
+      statSq(hr.t24+'%','Top-24 Hit','var(--orange)')+
+    '</div>';
+}
+
 function openModal(p){
   window._currentModalPlayer = p;
   if(!p)return;
@@ -1963,6 +2086,7 @@ function openModal(p){
         '<div class="modal-section-title">Advanced Markers ('+pmk+'/'+pmx+')</div>'+
         '<div class="modal-stats-grid">'+pffStats(p,col)+'</div>'+
       '</div>'+
+      '<div class="modal-section" id="modalProjection" style="display:none"></div>'+
       (p.nfl_seasons||p.nfl_top5||p.nfl_top12?
         '<div class="modal-section">'+
           '<div class="modal-section-title">NFL Career Outcomes</div>'+
@@ -1986,7 +2110,7 @@ function openModal(p){
 
   document.getElementById('modalOverlay').classList.add('open');
   // Render comps after modal opens
-  setTimeout(() => renderModalComps(p), 50);
+  setTimeout(() => { renderModalProjection(p); renderModalComps(p); }, 50);
 }
 
 // closeModal defined above with arrow cleanup
@@ -2363,6 +2487,7 @@ function switchPage(page) {
   if(page === 'glossary') renderGlossary();
   if(page === 'explorer') explorerRender();
   if(page === 'outcomes') loadAndRenderOutcomes();
+  if(page === 'backtest') loadAndRenderBacktest();
 
   // Sync drawer nav
   navDrawer.querySelectorAll('.nav-btn').forEach(b => {
@@ -3703,6 +3828,208 @@ function setOutcomesSort(key) {
   renderOutcomes();
 }
 
+
+// ============================================================
+// TRACK RECORD / BACKTEST
+// ============================================================
+const BT_TAG_POLARITY = {
+  'Greatest Prospect Since...':'good','Iffy, But He Runs':'caution','N.F.L. = Not For Long':'bad',
+  'Late-Round Target':'good','Try To Tackle Me':'good',"Fine, I'll Do It Myself":'good',
+  'The McConkey List':'good',"The N'Keal List":'bad','Zone Crusher':'good','Crushed by Zone':'bad',
+  'The Bowers List':'good','Analytical Darling':'good','You Have My Attention':'good'
+};
+const BT_TAG_POS = {
+  'Greatest Prospect Since...':'QB','Iffy, But He Runs':'QB','N.F.L. = Not For Long':'QB',
+  'Late-Round Target':'RB','Try To Tackle Me':'RB',"Fine, I'll Do It Myself":'RB',
+  'The McConkey List':'WR',"The N'Keal List":'WR','Zone Crusher':'WR','Crushed by Zone':'WR',
+  'The Bowers List':'TE','Analytical Darling':'TE','You Have My Attention':'TE'
+};
+const BT_TIERS = [[85,200,'85+'],[70,85,'70-84'],[55,70,'55-69'],[40,55,'40-54'],[0,40,'<40']];
+const BT_CLASSES = {lo:2010, hi:2022};
+let _btState = 'top12';
+let _btData = null;
+
+function btTint(pct){
+  if(pct>=60) return '#2a7d4f';
+  if(pct>=40) return '#4f8a3d';
+  if(pct>=25) return '#9a8420';
+  if(pct>=12) return '#9a6200';
+  return '#8b2a1e';
+}
+
+function btBuildData() {
+  // Gather all drafted, graded prospects from classes with enough NFL history
+  const rows = [];
+  for(let yr = BT_CLASSES.lo; yr <= BT_CLASSES.hi; yr++) {
+    const players = (yr === 2026) ? PLAYERS : yearCache[yr];
+    if(!players) continue;
+    players.forEach(p => {
+      if(p.grade == null || p.round == null || p.round === 8) return;
+      const o = (NFL_LOOKUP && NFL_LOOKUP[p.name + '|' + yr]) || null;
+      rows.push({p, yr, o});
+    });
+  }
+
+  // Per-position grade tiers + scatter + correlation
+  const gt = {};
+  ['QB','RB','WR','TE'].forEach(pos => {
+    const sub = rows.filter(r => r.p.pos === pos);
+    gt[pos] = BT_TIERS.map(([lo,hi,lbl]) => {
+      const t = sub.filter(r => r.p.grade >= lo && r.p.grade < hi);
+      if(!t.length) return null;
+      const rate = f => Math.round(100 * t.filter(r => r.o && (r.o[f]||0) >= 1).length / t.length);
+      return {lbl, n:t.length, top5:rate('nfl_top5'), top12:rate('nfl_top12'), top24:rate('nfl_top24')};
+    }).filter(Boolean);
+    // scatter: mature careers only
+    const mature = sub.filter(r => r.o && r.o.nfl_career_ppg != null && (r.o.nfl_seasons||0) >= 3);
+    gt[pos+'_scatter'] = mature.map(r => ({g:r.p.grade, ppg:r.o.nfl_career_ppg}));
+    // correlation grade vs career ppg
+    if(mature.length >= 10) {
+      const xs = mature.map(r => r.p.grade), ys = mature.map(r => r.o.nfl_career_ppg);
+      const n = xs.length, mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+      let num=0, dx=0, dy=0;
+      for(let i=0;i<n;i++){ num += (xs[i]-mx)*(ys[i]-my); dx += (xs[i]-mx)**2; dy += (ys[i]-my)**2; }
+      gt[pos+'_r'] = (dx*dy) ? Math.round(num/Math.sqrt(dx*dy)*100)/100 : 0;
+    }
+  });
+
+  // Notable hits/misses (graded 65+, mature career)
+  const scored = rows.filter(r => r.o && r.o.nfl_career_ppg != null && (r.o.nfl_seasons||0) >= 3 && r.p.grade >= 65)
+    .map(r => ({name:r.p.name, pos:r.p.pos, yr:r.yr, grade:Math.round(r.p.grade*10)/10, ppg:Math.round(r.o.nfl_career_ppg*10)/10, t12:Math.round(r.o.nfl_top12||0)}));
+  const hits = [...scored].sort((a,b)=>b.ppg-a.ppg).slice(0,6);
+  const misses = [...scored].sort((a,b)=>a.ppg-b.ppg).slice(0,5);
+
+  // Tag hit rates
+  const tagAgg = {};
+  rows.forEach(r => {
+    getTags(r.p).forEach(tag => {
+      const d = tagAgg[tag.label] || (tagAgg[tag.label] = {n:0, top5:0, top12:0, top24:0, ppg:[]});
+      d.n++;
+      if(r.o) {
+        if((r.o.nfl_top5||0)>=1) d.top5++;
+        if((r.o.nfl_top12||0)>=1) d.top12++;
+        if((r.o.nfl_top24||0)>=1) d.top24++;
+        if(r.o.nfl_career_ppg != null && (r.o.nfl_seasons||0)>=3) d.ppg.push(r.o.nfl_career_ppg);
+      }
+    });
+  });
+  const tags = Object.entries(tagAgg).map(([label,d]) => {
+    const sorted = d.ppg.slice().sort((a,b)=>a-b);
+    const med = sorted.length ? Math.round(sorted[Math.floor(sorted.length/2)]*10)/10 : null;
+    return {tag:label, pol:BT_TAG_POLARITY[label]||'?', n:d.n,
+            top5:Math.round(100*d.top5/d.n), top12:Math.round(100*d.top12/d.n), top24:Math.round(100*d.top24/d.n), medppg:med};
+  });
+
+  return {gt, tags, hits, misses};
+}
+
+function btScatter(pos) {
+  const pts = _btData.gt[pos+'_scatter'];
+  if(!pts || !pts.length) return '';
+  const ppgs = pts.map(p=>p.ppg), ymax = Math.max(...ppgs) * 1.1;
+  const W=300, H=150, PL=26, PB=20;
+  const X = g => PL + (g/100) * (W-PL-6);
+  const Y = v => H-PB - (v/ymax) * (H-PB-6);
+  const dots = pts.map(p => '<circle cx="'+X(p.g).toFixed(0)+'" cy="'+Y(p.ppg).toFixed(0)+'" r="2.2" fill="var(--accent)" opacity="0.5"/>').join('');
+  const n=pts.length, mx=pts.reduce((a,b)=>a+b.g,0)/n, my=pts.reduce((a,b)=>a+b.ppg,0)/n;
+  let num=0, den=0; pts.forEach(p=>{ num+=(p.g-mx)*(p.ppg-my); den+=(p.g-mx)**2; });
+  const b = den?num/den:0, a = my-b*mx;
+  const line = '<line x1="'+X(20).toFixed(0)+'" y1="'+Y(a+b*20).toFixed(0)+'" x2="'+X(95).toFixed(0)+'" y2="'+Y(a+b*95).toFixed(0)+'" stroke="var(--red)" stroke-width="1.5" opacity="0.8"/>';
+  let grid=''; for(let v=0; v<ymax; v+=6){ grid += '<line x1="'+PL+'" y1="'+Y(v).toFixed(0)+'" x2="'+(W-6)+'" y2="'+Y(v).toFixed(0)+'" stroke="var(--border)" stroke-width="0.5"/><text x="'+(PL-4)+'" y="'+(Y(v)+3).toFixed(0)+'" font-size="7" fill="var(--muted)" text-anchor="end">'+v+'</text>'; }
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="bt-scatter">'+grid+dots+line+'<text x="'+(W/2)+'" y="'+(H-4)+'" font-size="7" fill="var(--muted)" text-anchor="middle">College Grade \u2192</text></svg>';
+}
+
+function btTierBars(pos) {
+  const rows = _btData.gt[pos].map(t => {
+    const w = t[_btState];
+    const secondary = _btState === 'top24' ? 'top12' : 'top24';
+    return '<div class="bt-tier">'+
+      '<div class="bt-tl">'+t.lbl+'<span class="bt-tn">n='+t.n+'</span></div>'+
+      '<div class="bt-tbar"><div class="bt-tfill" style="width:'+w+'%;background:'+btTint(w)+'"></div><span class="bt-tpct">'+w+'%</span></div>'+
+    '</div>';
+  }).join('');
+  const r = _btData.gt[pos+'_r'];
+  return '<div class="bt-tgh"><b>'+pos+'</b> <span class="bt-corr">grade \u2194 career PPG r = '+(r!=null?r:'\u2014')+'</span></div>'+rows;
+}
+
+function btRender() {
+  const body = document.getElementById('btBody');
+  if(!body || !_btData) return;
+  const tierLabel = {top5:'top-5', top12:'top-12', top24:'top-24'}[_btState];
+
+  // Grade tier section
+  let html = '<h3 class="bt-section-title">Grade \u2192 NFL Hit Rate</h3>'+
+    '<p class="bt-section-sub">Bar = share of each grade tier that posted at least one '+tierLabel+' fantasy season (PPR). Higher grades produce higher hit rates \u2014 cleanly, at every position.</p>'+
+    '<div class="bt-grid4">'+
+      ['QB','RB','WR','TE'].map(pos => '<div class="bt-card">'+btTierBars(pos)+'</div>').join('')+
+    '</div>';
+
+  // Scatter section
+  html += '<h3 class="bt-section-title">Grade vs. Career Production</h3>'+
+    '<p class="bt-section-sub">Each dot = a drafted prospect with 3+ NFL seasons. Red line = trend. Correlation is strongest at TE ('+(_btData.gt.TE_r||'\u2014')+') and QB ('+(_btData.gt.QB_r||'\u2014')+').</p>'+
+    '<div class="bt-grid4">'+
+      ['QB','RB','WR','TE'].map(pos => '<div class="bt-card"><div class="bt-stitle">'+pos+'</div>'+btScatter(pos)+'</div>').join('')+
+    '</div>';
+
+  // Tag table
+  const polTxt = {good:'BULLISH', bad:'BEARISH', caution:'CAUTION'};
+  const polCls = {good:'bt-pg', bad:'bt-pb', caution:'bt-pc'};
+  const tagsSorted = _btData.tags.slice().sort((a,b) => b[_btState] - a[_btState]);
+  const secondaryTiers = ['top5','top12','top24'].filter(t => t !== _btState);
+  const secHdr = secondaryTiers.map(t => '<th class="r">'+({top5:'Top-5',top12:'Top-12',top24:'Top-24'}[t])+'</th>').join('');
+  html += '<h3 class="bt-section-title">Label Hit Rates</h3>'+
+    '<p class="bt-section-sub">Every tag the model applies, and how those players actually did. Sorted by '+tierLabel+' hit rate.</p>'+
+    '<div class="bt-card"><table class="bt-table">'+
+    '<tr><th>Label</th><th>Pos</th><th>Signal</th><th class="r">n</th><th class="r">'+({top5:'Top-5',top12:'Top-12',top24:'Top-24'}[_btState])+'</th>'+secHdr+'<th class="r">Med PPG</th></tr>'+
+    tagsSorted.map(t => {
+      const med = t.medppg != null ? t.medppg : '\u2014';
+      const secCells = secondaryTiers.map(tt => '<td class="bt-tnum" style="color:var(--muted)">'+t[tt]+'%</td>').join('');
+      return '<tr>'+
+        '<td class="bt-tgname">'+t.tag+'</td>'+
+        '<td class="bt-tnum" style="text-align:left;color:var(--muted)">'+(BT_TAG_POS[t.tag]||'')+'</td>'+
+        '<td><span class="bt-pol '+(polCls[t.pol]||'')+'">'+(polTxt[t.pol]||'')+'</span></td>'+
+        '<td class="bt-tnum">'+t.n+'</td>'+
+        '<td class="bt-tnum" style="color:'+btTint(t[_btState])+';font-weight:600">'+t[_btState]+'%</td>'+
+        secCells+
+        '<td class="bt-tnum">'+med+'</td>'+
+      '</tr>';
+    }).join('')+
+    '</table>'+
+    '</div>';
+
+  body.innerHTML = html;
+}
+
+async function loadAndRenderBacktest() {
+  const body = document.getElementById('btBody');
+  if(!NFL_LOOKUP) { try { await loadNFLLookup(); } catch(e) {} }
+  // Load all needed year files
+  const toLoad = [];
+  for(let yr = BT_CLASSES.lo; yr <= BT_CLASSES.hi; yr++) {
+    if(yr !== 2026 && !yearCache[yr]) toLoad.push(yr);
+  }
+  if(toLoad.length) {
+    await Promise.all(toLoad.map(async yr => {
+      try {
+        const res = await fetch('data/'+yr+'.json?v=4');
+        const d = await res.json(); d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = d;
+      } catch(e) { yearCache[yr] = []; }
+    }));
+  }
+  _btData = btBuildData();
+  btRender();
+}
+
+// Toggle wiring
+document.getElementById('btToggle').addEventListener('click', e => {
+  const btn = e.target.closest('.bt-tog-btn');
+  if(!btn) return;
+  _btState = btn.dataset.tier;
+  document.querySelectorAll('#btToggle .bt-tog-btn').forEach(b => b.classList.toggle('active', b === btn));
+  btRender();
+});
+
+
 function renderOutcomes() {
   if(!NFL_OUTCOMES) return;
 
@@ -4183,6 +4510,10 @@ async function renderModalComps(player) {
       } catch(e) { yearCache[yr] = []; }
     }));
   }
+
+  // Newly-loaded year data may complete the grade-projection sample — refresh it
+  _gradeHitCache = null;
+  renderModalProjection(player);
 
   const comps = computeComps(player);
   if(!comps.length) {
