@@ -703,6 +703,9 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-overlay.open .modal{transform:scale(1);}
 .close-btn{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;z-index:20;}
 .close-btn:hover{color:var(--text);border-color:var(--text);}
+.copylink-btn{position:absolute;top:14px;right:54px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;z-index:20;padding:0;}
+.copylink-btn:hover{color:var(--text);border-color:var(--text);}
+.copylink-btn.copied{color:var(--green);border-color:var(--green);}
 .modal-header{display:flex;align-items:center;gap:18px;padding:22px 26px;border-bottom:1px solid var(--border);position:relative;flex-wrap:wrap;}
 .modal-header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--pos-color,var(--accent)),transparent);}
 .modal-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--pos-color,var(--accent));background:var(--surface2);}
@@ -1894,8 +1897,21 @@ document.addEventListener('keydown', e => {
   }, {passive: true});
 })();
 
+function copyPlayerLink(btn){
+  const p = window._currentModalPlayer;
+  if(!p) return;
+  const url = location.origin + location.pathname + '#player=' + playerSlug(p);
+  const done = () => { const o = btn.textContent; btn.textContent = '✓'; btn.classList.add('copied'); setTimeout(()=>{ btn.textContent = o; btn.classList.remove('copied'); }, 1400); };
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done).catch(()=>{ prompt('Copy this link:', url); });
+  } else {
+    prompt('Copy this link:', url);
+  }
+}
+
 function closeModal(){
   document.getElementById('modalOverlay').classList.remove('open');
+  clearPlayerHash();
   updateModalNavArrows();
   // hide arrows when closed
   const prev = document.getElementById('modalPrev');
@@ -2011,6 +2027,67 @@ function renderModalProjection(p) {
     '</div>';
 }
 
+// ============================================================
+// DEEP-LINKABLE PLAYER URLS  (#player=<name-slug>-<year>)
+// ============================================================
+function playerSlug(p) {
+  if(!p) return '';
+  const base = (p.name || '').toLowerCase()
+    .replace(/[.'']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return base + '-' + (p.year || 2026);
+}
+
+function findPlayerBySlug(slug) {
+  if(!slug) return null;
+  // slug ends in -YYYY
+  const m = slug.match(/^(.*)-(\d{4})$/);
+  if(!m) return null;
+  const nameSlug = m[1], year = Number(m[2]);
+  const pool = (year === 2026) ? PLAYERS : (yearCache[year] || []);
+  return pool.find(p => playerSlug(p) === slug) || null;
+}
+
+let _suppressHashUpdate = false;
+function setPlayerHash(p) {
+  if(_suppressHashUpdate) return;
+  const slug = playerSlug(p);
+  if(!slug) return;
+  if(('#player=' + slug) !== location.hash) {
+    history.pushState({player: slug}, '', '#player=' + slug);
+  }
+}
+function clearPlayerHash() {
+  if(_suppressHashUpdate) return;
+  if(location.hash.startsWith('#player=')) {
+    history.pushState('', '', location.pathname + location.search);
+  }
+}
+
+// Open the player named in the URL hash (if any). Loads that player's year data first.
+async function openPlayerFromHash() {
+  const h = location.hash;
+  if(!h.startsWith('#player=')) return;
+  const slug = decodeURIComponent(h.slice('#player='.length));
+  const m = slug.match(/^(.*)-(\d{4})$/);
+  if(!m) return;
+  const year = Number(m[2]);
+  // Ensure that year's data is loaded
+  if(year !== 2026 && !yearCache[year]) {
+    try {
+      const res = await fetch('data/'+year+'.json?v=4');
+      const d = await res.json(); d.forEach(p => { if(!p.year) p.year = year; }); yearCache[year] = d;
+    } catch(e) { yearCache[year] = []; }
+  }
+  const p = findPlayerBySlug(slug);
+  if(p) {
+    _suppressHashUpdate = true;
+    openModal(p);
+    _suppressHashUpdate = false;
+  }
+}
+
 function openModal(p){
   window._currentModalPlayer = p;
   if(!p)return;
@@ -2051,6 +2128,7 @@ function openModal(p){
 
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
+    '<button class="copylink-btn" onclick="copyPlayerLink(this)" title="Copy link to this player">🔗</button>'+
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+';width:96px;height:96px;">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
@@ -2109,6 +2187,7 @@ function openModal(p){
     '</div>';
 
   document.getElementById('modalOverlay').classList.add('open');
+  setPlayerHash(p);
   // Render comps after modal opens
   setTimeout(() => { renderModalProjection(p); renderModalComps(p); }, 50);
 }
@@ -2417,6 +2496,22 @@ function renderGlossary() {
 buildYearTabs();
 renderHeroStats();
 render();
+
+// Deep-link: open a player modal if the URL has #player=<slug>
+openPlayerFromHash();
+
+// Browser back/forward: sync modal open/close with the URL hash
+window.addEventListener('popstate', () => {
+  const isOpen = document.getElementById('modalOverlay').classList.contains('open');
+  if(location.hash.startsWith('#player=')) {
+    openPlayerFromHash();
+  } else if(isOpen) {
+    // hash was cleared (back button) — close without re-pushing history
+    _suppressHashUpdate = true;
+    closeModal();
+    _suppressHashUpdate = false;
+  }
+});
 
 // Silently prefetch all historical years in the background
 // so comp algorithm and year switching are instant
