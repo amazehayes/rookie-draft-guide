@@ -719,8 +719,13 @@ td{padding:10px 14px;white-space:nowrap;}
 .modal-grade-item:last-child{border-right:none;}
 .modal-grade-item .val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;line-height:1;}
 .modal-grade-item .lbl{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:3px;}
-#modalHitRates{display:contents;}
-.modal-grade-item.hitrate{padding:14px 12px;}
+#modalHitRates{display:flex;flex-shrink:0;}
+.hitrate-group{display:flex;flex-direction:column;border-left:1px solid var(--border);}
+.hitrate-group-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);text-align:center;padding:7px 8px 0;font-weight:600;}
+.hitrate-group-sub{display:block;font-size:9px;letter-spacing:0.5px;font-weight:400;opacity:0.75;margin-top:2px;text-transform:none;}
+.hitrate-items{display:flex;flex:1;}
+.modal-grade-item.hitrate{padding:8px 12px 12px;border-right:1px solid var(--border);}
+.modal-grade-item.hitrate:last-child{border-right:none;}
 .modal-grade-item.hitrate .lbl{letter-spacing:1px;}
 .modal-body{padding:0;}
 .modal-section{padding:20px 28px;border-bottom:1px solid var(--border);}
@@ -761,14 +766,17 @@ td{padding:10px 14px;white-space:nowrap;}
   .cards-grid{grid-template-columns:1fr;}
   .modal-name{font-size:24px;}
   .marker-checklist{grid-template-columns:1fr;}
-  /* Modal grade strip: wrap into rows on mobile so 7 items don't cram */
+  /* Modal grade strip: wrap into rows on mobile so items don't cram */
   .modal-grade-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .modal-grade-strip{display:flex !important;flex-wrap:wrap;width:100%;border-left:none !important;border-top:1px solid var(--border);margin-top:12px;}
-  .modal-grade-strip .modal-grade-item{flex:1 0 25%;border-left:1px solid var(--border) !important;border-top:1px solid var(--border);}
+  .modal-grade-strip > .modal-grade-item{flex:1 0 25%;border-left:1px solid var(--border) !important;border-top:1px solid var(--border);}
   .modal-grade-item{min-width:0;padding:11px 6px;}
   .modal-grade-item .val{font-size:16px;}
   .modal-grade-item .lbl{font-size:9px;letter-spacing:0;white-space:nowrap;}
-  #modalHitRates{display:contents;}
+  #modalHitRates{flex:1 0 100%;}
+  .hitrate-group{border-left:none;border-top:1px solid var(--border);}
+  .hitrate-group-title{padding-top:9px;}
+  .modal-grade-item.hitrate{flex:1;border-top:none;}
   /* Modal header: stack avatar+name above grade strip */
   .modal-header{flex-direction:column;align-items:flex-start;padding:16px;}
   .modal-comps-grid{grid-template-columns:1fr !important;}
@@ -2020,10 +2028,16 @@ function renderModalProjection(p) {
   if(!el || !p) return;
   const hr = gradeHitRateFor(p.pos, p.grade);
   if(!hr) { el.innerHTML = ''; return; }
+  const tip = hr.n+' historical '+p.pos+'s graded '+hr.tierLbl;
   el.innerHTML =
-    '<div class="modal-grade-item hitrate" style="border-left:1px solid var(--border)" title="'+hr.n+' historical '+p.pos+'s graded '+hr.tierLbl+'"><div class="val" style="color:var(--accent2);font-size:18px">'+hr.t5+'%</div><div class="lbl">Top-5</div></div>'+
-    '<div class="modal-grade-item hitrate" title="'+hr.n+' historical '+p.pos+'s graded '+hr.tierLbl+'"><div class="val" style="color:var(--pos-rb);font-size:18px">'+hr.t12+'%</div><div class="lbl">Top-12</div></div>'+
-    '<div class="modal-grade-item hitrate" title="'+hr.n+' historical '+p.pos+'s graded '+hr.tierLbl+'"><div class="val" style="color:var(--orange);font-size:18px">'+hr.t24+'%</div><div class="lbl">Top-24</div></div>';
+    '<div class="hitrate-group" title="'+tip+'">'+
+      '<div class="hitrate-group-title">Grade Hit Rate <span class="hitrate-group-sub">'+p.pos+'s graded '+hr.tierLbl+'</span></div>'+
+      '<div class="hitrate-items">'+
+        '<div class="modal-grade-item hitrate"><div class="val" style="color:var(--accent2);font-size:18px">'+hr.t5+'%</div><div class="lbl">Top-5</div></div>'+
+        '<div class="modal-grade-item hitrate"><div class="val" style="color:var(--pos-rb);font-size:18px">'+hr.t12+'%</div><div class="lbl">Top-12</div></div>'+
+        '<div class="modal-grade-item hitrate"><div class="val" style="color:var(--orange);font-size:18px">'+hr.t24+'%</div><div class="lbl">Top-24</div></div>'+
+      '</div>'+
+    '</div>';
 }
 
 // ============================================================
