@@ -1373,9 +1373,9 @@ function getTags(p) {
     const runs = p.careerRuYd!=null && p.careerRuYd>=1000;
     if(hasPff && pff>=6 && round===1 && hasVolume)
       tags.push({label:'Greatest Prospect Since...', color:'#2a6e42', icon:'🏆'});
-    if(hasPff && ((pff<6 && runs && round===1) || (pff>=6 && runs && round===1 && lackVolume)))
+    else if(hasPff && ((pff<6 && runs && round===1) || (pff>=6 && runs && round===1 && lackVolume)))
       tags.push({label:'Iffy, But He Runs', color:'#9a6200', icon:'🏃'});
-    if(hasPff && ((pff<6 && !runs && round===1) || (pff>=6 && round===1 && lackVolume)))
+    else if(hasPff && ((pff<6 && !runs && round===1) || (pff>=6 && round===1 && lackVolume)))
       tags.push({label:'N.F.L. = Not For Long', color:'#8b2a1e', icon:'⚠️'});
   }
 
@@ -1984,7 +1984,7 @@ function computeGradeHitRates() {
   const TIERS = [[85,200],[70,85],[55,70],[40,55],[0,40]];
   const acc = {}; // pos -> tierIdx -> {n, t5, t12, t24}
   ['QB','RB','WR','TE'].forEach(pos => { acc[pos] = TIERS.map(()=>({n:0,t5:0,t12:0,t24:0})); });
-  for(let yr = 2010; yr <= 2022; yr++) {
+  for(let yr = 2010; yr <= 2025; yr++) {
     const players = (yr === 2026) ? PLAYERS : yearCache[yr];
     if(!players) continue;
     players.forEach(pl => {
@@ -1993,11 +1993,12 @@ function computeGradeHitRates() {
       const ti = TIERS.findIndex(([lo,hi]) => pl.grade >= lo && pl.grade < hi);
       if(ti < 0) return;
       const o = (NFL_LOOKUP && NFL_LOOKUP[pl.name + '|' + yr]) || null;
+      if(!o) return; // only count players with mature NFL outcome data
       const cell = acc[pl.pos][ti];
       cell.n++;
-      if(o && (o.nfl_top5||0) >= 1) cell.t5++;
-      if(o && (o.nfl_top12||0) >= 1) cell.t12++;
-      if(o && (o.nfl_top24||0) >= 1) cell.t24++;
+      if((o.nfl_top5||0) >= 1) cell.t5++;
+      if((o.nfl_top12||0) >= 1) cell.t12++;
+      if((o.nfl_top24||0) >= 1) cell.t24++;
     });
   }
   _gradeHitCache = {tiers: TIERS, acc};
@@ -3951,7 +3952,7 @@ const BT_TAG_POS = {
   'The Bowers List':'TE','Analytical Darling':'TE','You Have My Attention':'TE'
 };
 const BT_TIERS = [[85,200,'85+'],[70,85,'70-84'],[55,70,'55-69'],[40,55,'40-54'],[0,40,'<40']];
-const BT_CLASSES = {lo:2010, hi:2022};
+const BT_CLASSES = {lo:2010, hi:2025};
 let _btState = 'top12';
 let _btData = null;
 
@@ -3981,9 +3982,9 @@ function btBuildData() {
   ['QB','RB','WR','TE'].forEach(pos => {
     const sub = rows.filter(r => r.p.pos === pos);
     gt[pos] = BT_TIERS.map(([lo,hi,lbl]) => {
-      const t = sub.filter(r => r.p.grade >= lo && r.p.grade < hi);
+      const t = sub.filter(r => r.o && r.p.grade >= lo && r.p.grade < hi);
       if(!t.length) return null;
-      const rate = f => Math.round(100 * t.filter(r => r.o && (r.o[f]||0) >= 1).length / t.length);
+      const rate = f => Math.round(100 * t.filter(r => (r.o[f]||0) >= 1).length / t.length);
       return {lbl, n:t.length, top5:rate('nfl_top5'), top12:rate('nfl_top12'), top24:rate('nfl_top24')};
     }).filter(Boolean);
     // scatter: mature careers only
@@ -4008,15 +4009,14 @@ function btBuildData() {
   // Tag hit rates
   const tagAgg = {};
   rows.forEach(r => {
+    if(!r.o) return; // skip players without mature NFL outcome data (e.g. current rookies)
     getTags(r.p).forEach(tag => {
       const d = tagAgg[tag.label] || (tagAgg[tag.label] = {n:0, top5:0, top12:0, top24:0, ppg:[]});
       d.n++;
-      if(r.o) {
-        if((r.o.nfl_top5||0)>=1) d.top5++;
-        if((r.o.nfl_top12||0)>=1) d.top12++;
-        if((r.o.nfl_top24||0)>=1) d.top24++;
-        if(r.o.nfl_career_ppg != null && (r.o.nfl_seasons||0)>=3) d.ppg.push(r.o.nfl_career_ppg);
-      }
+      if((r.o.nfl_top5||0)>=1) d.top5++;
+      if((r.o.nfl_top12||0)>=1) d.top12++;
+      if((r.o.nfl_top24||0)>=1) d.top24++;
+      if(r.o.nfl_career_ppg != null && (r.o.nfl_seasons||0)>=3) d.ppg.push(r.o.nfl_career_ppg);
     });
   });
   const tags = Object.entries(tagAgg).map(([label,d]) => {
