@@ -3141,46 +3141,49 @@ function renderCompStats(players) {
     return filtered.reduce((best, x) => (low ? x.v < best.v : x.v > best.v) ? x : best).i;
   }
 
+  // Transposed layout: each PLAYER is a row, each STAT is a column, so comparing many
+  // stats scrolls sideways instead of stacking dozens of stat-rows down the page.
   function statSection(title, rows, players) {
-    const anyData = rows.some(row => players.some(p => p[row.k] != null));
-    if (!anyData) return '';
+    const activeRows = rows.filter(row => players.some(p => p[row.k] != null));
+    if (!activeRows.length || !players.length) return '';
+
+    // Winner index (into `players`) per stat column
+    const winners = activeRows.map(row => {
+      const vals = players.map(p => p[row.k] != null ? p[row.k] : null);
+      return getBest(vals, row.low);
+    });
 
     let h = `<div style="margin-bottom:24px">
       <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;
         padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);
-        border-top:1px solid var(--border)">${title}</div>`;
+        border-top:1px solid var(--border)">${title}</div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;white-space:nowrap">
+        <thead><tr>
+          <th style="position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;padding:9px 16px;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)">Player</th>`;
+    activeRows.forEach(row => {
+      h += `<th style="text-align:left;padding:9px 12px;font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">${row.l}</th>`;
+    });
+    h += '</tr></thead><tbody>';
 
-    rows.forEach(row => {
-      const vals = players.map(p => p[row.k] != null ? p[row.k] : null);
-      if (vals.every(v => v == null)) return;
-      const bestIdx = getBest(vals, row.low);
-
-      // Bar scale for numeric comparison
-      const nums = vals.map(v => v != null ? parseFloat(v) : null);
-      const maxVal = Math.max(...nums.filter(x => x != null));
-
-      h += `<div style="display:grid;grid-template-columns:${window.innerWidth<640?'80px':'140px'} repeat(${players.length},1fr);
-        border-bottom:1px solid var(--border);align-items:center">
-        <div style="padding:9px 16px;font-size:12px;color:var(--muted);white-space:nowrap">${row.l}</div>`;
-
-      vals.forEach((v, i) => {
-        const isWinner = i === bestIdx;
-        const col = COMP_COLORS[i];
-        const num = nums[i];
-        const barPct = (num != null && maxVal > 0) ? (num / maxVal) * 100 : 0;
-        h += `<div style="padding:9px 12px;position:relative">
-          ${num != null && maxVal > 0 ? `<div style="position:absolute;bottom:0;left:0;height:2px;width:${barPct}%;background:${col};opacity:${isWinner?'1':'0.35'};border-radius:1px"></div>` : ''}
-          <div style="font-size:14px;font-weight:${isWinner?'700':'400'};color:${isWinner?col:'var(--text)'}">
-            ${fv(v, row.fmt)}
-            ${isWinner ? `<span style="font-size:9px;color:${col};margin-left:4px">▲</span>` : ''}
-          </div>
-        </div>`;
+    players.forEach((p, pi) => {
+      const col = COMP_COLORS[pi];
+      h += `<tr>
+        <td style="position:sticky;left:0;z-index:1;background:var(--surface2);padding:9px 16px;font-size:13px;font-weight:700;color:${col};white-space:nowrap">
+          ${safeStr(p.name)}
+          <div style="font-size:10px;color:var(--muted);font-weight:400">${p.year||2026} · ${p.pos}</div>
+        </td>`;
+      activeRows.forEach((row, ri) => {
+        const v = p[row.k] != null ? p[row.k] : null;
+        const isWinner = winners[ri] === pi;
+        h += `<td style="padding:9px 12px;border-left:1px solid var(--border);font-size:13px;font-weight:${isWinner?'700':'400'};color:${isWinner?col:'var(--text)'}">
+          ${fv(v, row.fmt)}${isWinner ? ` <span style="font-size:9px;color:${col}">▲</span>` : ''}
+        </td>`;
       });
-
-      h += '</div>';
+      h += '</tr>';
     });
 
-    h += '</div>';
+    h += '</tbody></table></div></div>';
     return h;
   }
 
@@ -3188,17 +3191,6 @@ function renderCompStats(players) {
   const samePos = positions.length === 1;
 
   let html = `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0 0 8px 8px;overflow:hidden">`;
-
-  // Column headers
-  html += `<div style="display:grid;grid-template-columns:${window.innerWidth<640?'80px':'140px'} repeat(${players.length},1fr);background:var(--surface);border-bottom:2px solid var(--border)">
-    <div style="padding:10px 16px;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Stat</div>`;
-  players.forEach((p, i) => {
-    html += `<div style="padding:10px 12px;border-left:1px solid var(--border)">
-      <div style="font-size:12px;font-weight:700;color:${COMP_COLORS[i]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeStr(p.name)}</div>
-      <div style="font-size:10px;color:var(--muted)">${p.year||2026} · ${p.pos}</div>
-    </div>`;
-  });
-  html += '</div>';
 
   if (samePos && players.length >= 2 && COMP_RADAR_STATS[players[0].pos]) {
     html += `<div style="padding:16px;border-bottom:1px solid var(--border);background:var(--surface)">
@@ -3214,11 +3206,9 @@ function renderCompStats(players) {
   } else {
     positions.forEach(pos => {
       const posPlayers = players.filter(p => p.pos === pos);
-      if (posPlayers.length) {
-        // Pad with nulls so columns align
-        const paddedPlayers = players.map(p => p.pos === pos ? p : {pos});
-        html += statSection(pos + ' Stats', compStatRows(pos), paddedPlayers);
-      }
+      // No padding needed now that stats are columns and players are rows —
+      // each position section just lists the players who are that position.
+      if (posPlayers.length) html += statSection(pos + ' Stats', compStatRows(pos), posPlayers);
     });
   }
 
