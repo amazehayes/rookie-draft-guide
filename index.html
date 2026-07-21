@@ -299,6 +299,19 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .cb-cell.hr .cb-v{color:var(--orange,#c0622a);}
 .cb-foot{font-size:9.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:7px;text-align:right;opacity:.8;}
 
+/* ---- WATCHLIST ---- */
+.watch-star{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color .15s,transform .1s;flex-shrink:0;}
+.watch-star:hover{color:#e0a800;transform:scale(1.15);}
+.watch-star.active{color:#f0b400;}
+.watch-star-dark{color:rgba(255,255,255,0.55);}
+.watch-star-dark:hover{color:#ffce54;}
+.watch-star-dark.active{color:#ffce54;}
+.tc-star{position:absolute;top:6px;right:6px;z-index:4;font-size:15px;}
+.modal-watch-btn{position:absolute;top:14px;right:94px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;z-index:20;}
+.watchlist-toggle-btn{background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;font-weight:700;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.watchlist-toggle-btn:hover{border-color:#f0b400;color:#e0a800;}
+.watchlist-toggle-btn.active{background:#f0b400;border-color:#f0b400;color:#1a1714;}
+
 /* ---- PDF EXPORT ---- */
 .pdf-export-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
 .pdf-export-btn:hover{border-color:var(--accent2);color:var(--accent2);}
@@ -919,6 +932,7 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="view-btn active" id="tierViewBtn" title="Tiers">≡</button>
     <button class="view-btn" id="tableViewBtn" title="Table">☰</button>
   </div>
+  <button class="watchlist-toggle-btn" id="gradesWatchlistBtn">★ Watchlist Only</button>
 </div>
 <div class="main">
   <div id="cardsContainer" class="cards-grid" style="display:none"></div>
@@ -945,6 +959,7 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="format-btn" data-format="1qb">1QB</button>
     <button class="format-btn" data-format="superflex-tep">Superflex + TEP</button>
     <button class="format-btn" data-format="1qb-tep">1QB + TEP</button>
+    <button class="watchlist-toggle-btn" id="rankingsWatchlistBtn" style="margin-left:auto">★ Watchlist Only</button>
   </div>
   <div class="tf-section">
     <button class="tf-toggle open" id="tfToggle">
@@ -1214,48 +1229,6 @@ const PLAYERS=[{"pos":"QB","name":"Joey Aguilar","school":"Tennessee","conf":"SE
 
 // ---- HELPERS ----
 function posColor(pos){return POS_COLORS[pos]||'var(--muted)';}
-
-// Adjusted markers formula (post-draft, given round + overall pick)
-// Returns {adj, missing} — both adjusted for draft slot
-function calcAdjusted(markers, pos, round, overall, missing) {
-  if(markers==null || round==null) return {adj: markers, missing: missing||0};
-  const r = round, m = markers||0;
-  let adj = m, miss = missing||0;
-  if(pos==='QB') {
-    adj -= (r===2?1:0)+(r===3?2:0)+(r===4?3:0)+(r===5?4:0)+(r===6?5:0)+(r===7?6:0)+(r===8?7:0);
-    adj += (overall!=null&&overall<=12)?3:0;
-    adj += (r===1&&overall!=null&&overall>12)?1:0;
-    if(overall!=null&&overall<=12){adj+=1;miss=Math.max(0,miss-1);}
-    if(r===1&&overall!=null&&overall>12){adj+=1;miss=Math.max(0,miss-1);}
-  } else if(pos==='RB') {
-    adj -= (r===4?3:0)+(r===5?4:0)+(r===6?5:0)+(r===7?6:0)+(r===8?7:0);
-    adj += (r===1?3:0)+(r===2?1:0);
-    if(r===1||r===2){adj+=1;miss=Math.max(0,miss-1);}
-  } else if(pos==='WR') {
-    adj -= (r===3?1:0)+(r===4?3:0)+(r===5?4:0)+(r===6?5:0)+(r===7?6:0)+(r===8?7:0);
-    adj += (r===1?3:0)+(r===2?1:0);
-    if(r===1||r===2){adj+=1;miss=Math.max(0,miss-1);}
-  } else if(pos==='TE') {
-    adj -= (r===4?2:0)+(r===5?3:0)+(r===6?4:0)+(r===7?5:0)+(r===8?6:0);
-    adj += (r===1?3:0)+(r===2?1:0);
-    if(r===1||r===2){adj+=1;miss=Math.max(0,miss-1);}
-  }
-  return {adj, missing: miss};
-}
-
-// Final grade from adjusted markers + missing
-function calcFinalGrade(adjMarkers, pos, missing) {
-  const o = missing||0;
-  if(adjMarkers==null) return null;
-  const q = adjMarkers;
-  let grade;
-  if(pos==='QB')      grade = (q+7) / (20-o+7) * 100;
-  else if(pos==='RB') grade = (q+7) / (15-o+7) * 100;
-  else if(pos==='WR') grade = (q+7) / (17-o+7) * 100;
-  else if(pos==='TE') grade = (q+6) / (17-o+6) * 100;
-  else return null;
-  return Math.round(Math.min(100, Math.max(0, grade)) * 10) / 10;
-}
 function safeStr(s){return s?String(s).replace(/'/g,'\u2019'):s;}
 function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
 function fmt(v,d=1){if(v==null||isNaN(v))return'—';return parseFloat(v).toFixed(d);}
@@ -1519,6 +1492,14 @@ let currentPos='ALL',currentSort='rank',sortDir='desc',searchQuery='',viewMode='
 // stays declared where it's used since only their own page's render/restore code touches them.
 let activePage = 'grades';
 
+// Watchlist (starred players), persisted across sessions. Keyed by playerSlug (name+year).
+// Declared early alongside activePage for the same reason — render() runs at top level
+// before most of the script has executed, and renderCards/Tiers/Table read this.
+let watchlist = new Set();
+try { watchlist = new Set(JSON.parse(localStorage.getItem('tms_watchlist')) || []); } catch(e) {}
+let watchlistFilterOnly = false;   // Grades page: show only starred players
+let rankingsWatchlistOnly = false; // Rankings page: show only starred players
+
 // Populate school dropdown (2026 default)
 (function(){
   const schools = [...new Set(PLAYERS.map(p=>p.school).filter(Boolean))].sort();
@@ -1732,7 +1713,8 @@ function renderCards(){
         <div class="card-header">
           ${tag
             ? `<div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:#fff;background:${tag.color};border:1.5px solid ${tag.color};border-radius:4px;padding:3px 9px;display:inline-block;width:fit-content;letter-spacing:.8px;text-transform:uppercase">${tag.icon} ${tag.label}</div>`
-            : ''}
+            : '<span></span>'}
+          ${watchStarHTML(p, true)}
         </div>
         <div class="card-bottom">
           <div class="card-name">${safeStr(p.name)}</div>
@@ -1809,6 +1791,7 @@ function renderTiers(){
           <img class="tc-logo" src="${logoUrl||''}" onerror="this.style.display='none'" alt="">
           <div class="tc-ov"></div>
           <div class="tc-rank">#${rank}</div>
+          <div class="tc-star">${watchStarHTML(p, true)}</div>
           <div class="tc-shot">
             ${hsUrl
               ? `<img src="${hsUrl}" alt="${p.name}" data-fb="${p.pos}" onerror="this.style.display='none';var fb=document.createElement('div');fb.className='tc-shot-fb';fb.textContent=this.dataset.fb;this.parentNode.appendChild(fb);">`
@@ -1847,6 +1830,7 @@ function renderTable(){
     html+='<tr onclick="openModalFromList('+i+')">';
     html+='<td style="color:var(--muted);font-size:13px;font-weight:700">'+(i+1)+'</td>';
     html+='<td><div class="table-name-cell">';
+    html+=watchStarHTML(p, false);
     html+='<div class="table-avatar" style="--pos-color:'+col+'">';
     html+=hshotImg(p,'','')||'';
     html+='<div class="table-avatar-fallback" style="'+(hshotSrc(p)?'display:none':'display:flex')+'">'+p.pos+'</div>';
@@ -2069,6 +2053,32 @@ function playerSlug(p) {
   return base + '-' + (p.year || 2026);
 }
 
+function saveWatchlist() {
+  try { localStorage.setItem('tms_watchlist', JSON.stringify([...watchlist])); } catch(e) {}
+}
+function isWatchlisted(p) { return watchlist.has(playerSlug(p)); }
+function watchStarHTML(p, dark) {
+  const slug = playerSlug(p);
+  const on = watchlist.has(slug);
+  return '<button class="watch-star'+(dark?' watch-star-dark':'')+(on?' active':'')+'" data-slug="'+slug+'" '+
+    'onclick="event.stopPropagation();toggleWatchStar(this,\''+slug+'\')" '+
+    'title="'+(on?'Remove from watchlist':'Add to watchlist')+'">'+(on?'★':'☆')+'</button>';
+}
+function toggleWatchStar(el, slug) {
+  if(watchlist.has(slug)) watchlist.delete(slug); else watchlist.add(slug);
+  saveWatchlist();
+  const on = watchlist.has(slug);
+  // Sync every star for this player currently on screen (card + tier + table + modal can overlap)
+  document.querySelectorAll('.watch-star[data-slug="'+CSS.escape(slug)+'"]').forEach(btn => {
+    btn.classList.toggle('active', on);
+    btn.textContent = on ? '★' : '☆';
+    btn.title = on ? 'Remove from watchlist' : 'Add to watchlist';
+  });
+  if((activePage==='grades' && watchlistFilterOnly) || (activePage==='rankings' && rankingsWatchlistOnly)) {
+    if(activePage==='grades') render(); else renderRankings();
+  }
+}
+
 function findPlayerBySlug(slug) {
   if(!slug) return null;
   // slug ends in -YYYY
@@ -2159,6 +2169,7 @@ function openModal(p){
   document.getElementById('modalContent').innerHTML=
     '<button class="close-btn" onclick="closeModal()">✕</button>'+
     '<button class="copylink-btn" onclick="copyPlayerLink(this)" title="Copy link to this player">🔗</button>'+
+    '<button class="modal-watch-btn watch-star'+(isWatchlisted(p)?' active':'')+'" data-slug="'+playerSlug(p)+'" onclick="toggleWatchStar(this,\''+playerSlug(p)+'\')" title="'+(isWatchlisted(p)?'Remove from watchlist':'Add to watchlist')+'">'+(isWatchlisted(p)?'★':'☆')+'</button>'+
     '<div class="modal-header" style="--pos-color:'+col+'">'+
       '<div class="modal-avatar" style="border-color:'+col+';width:96px;height:96px;">'+
         hshotImg(p,'','width:100%;height:100%;object-fit:cover;object-position:center 20%')+
@@ -2247,6 +2258,11 @@ document.getElementById('sortDirBtn').addEventListener('click',()=>{
 });
 document.getElementById('tierViewBtn').addEventListener('click',()=>{viewMode='tiers';document.getElementById('tierViewBtn').classList.add('active');document.getElementById('tableViewBtn').classList.remove('active');render();});
 document.getElementById('tableViewBtn').addEventListener('click',()=>{viewMode='table';document.getElementById('tableViewBtn').classList.add('active');document.getElementById('tierViewBtn').classList.remove('active');render();});
+document.getElementById('gradesWatchlistBtn').addEventListener('click', () => {
+  watchlistFilterOnly = !watchlistFilterOnly;
+  document.getElementById('gradesWatchlistBtn').classList.toggle('active', watchlistFilterOnly);
+  render();
+});
 document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
@@ -2334,6 +2350,7 @@ function getFiltered() {
       if(currentLabel === '_ANY') { if(!t) return false; }
       else { if(!t || t.label !== currentLabel) return false; }
     }
+    if(watchlistFilterOnly && !isWatchlisted(p)) return false;
     return true;
   }).sort((a,b) => {
     let diff;
@@ -2752,6 +2769,7 @@ function renderRankings() {
   const data = yearCache[activeYear] || PLAYERS;
   const sorted = [...data]
     .filter(p => p.grade)
+    .filter(p => !rankingsWatchlistOnly || isWatchlisted(p))
     .sort((a,b) => dynastySortForFormat(b, currentFormat) - dynastySortForFormat(a, currentFormat));
 
   
@@ -2773,7 +2791,7 @@ function renderRankings() {
       const detailId = 'rdet-'+i;
       html += '<tr data-det="'+detailId+'" onclick="toggleRankDetail(this.dataset.det,this)" style="cursor:pointer">';
       html += '<td style="font-family:\'Fraunces\',serif;font-size:17px;color:var(--muted)">'+(i+1)+'</td>';
-      html += '<td style="font-weight:700;font-size:14px"><span onclick="event.stopPropagation();openModalFromList('+i+')" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(0,0,0,0.2);text-underline-offset:2px">'+safeStr(p.name)+'</span></td>';
+      html += '<td style="font-weight:700;font-size:14px">'+watchStarHTML(p,false)+' <span onclick="event.stopPropagation();openModalFromList('+i+')" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(0,0,0,0.2);text-underline-offset:2px">'+safeStr(p.name)+'</span></td>';
       html += '<td style="color:'+col+';font-weight:700;font-size:13px">'+p.pos+'</td>';
       html += '<td style="color:'+lg.c+';font-weight:700">'+fmt(p.grade,1)+'</td>';
       html += '<td>'+(tag?'<span style="color:'+tag.color+';font-size:13px;font-weight:700">'+tag.icon+'</span>':'—')+'</td>';
@@ -2792,7 +2810,7 @@ function renderRankings() {
     } else {
       html += '<tr onclick="openModalFromList('+i+')" style="cursor:pointer">';
       html += '<td style="font-family:\'Fraunces\',serif;font-size:19px;color:var(--muted)">'+(i+1)+'</td>';
-      html += '<td style="font-weight:700">'+safeStr(p.name)+'</td>';
+      html += '<td style="font-weight:700">'+watchStarHTML(p,false)+' '+safeStr(p.name)+'</td>';
       html += '<td><img src="'+logo+'" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">'+p.school+'</td>';
       html += '<td style="color:'+col+';font-weight:700;font-size:13px">'+p.pos+'</td>';
       html += '<td>'+(p.age ? fmtAge(p.age) : '—')+'</td>';
@@ -2818,12 +2836,58 @@ document.querySelectorAll('.format-btn[data-format]').forEach(b => {
   });
 });
 
+document.getElementById('rankingsWatchlistBtn').addEventListener('click', () => {
+  rankingsWatchlistOnly = !rankingsWatchlistOnly;
+  document.getElementById('rankingsWatchlistBtn').classList.toggle('active', rankingsWatchlistOnly);
+  renderRankings();
+});
+
 // ============================================================
 // PAGE 3: PLAYER COMPARISON
 // ============================================================
 let compPlayers = [null, null, null, null];
 const COMP_COLORS = ['var(--green)','var(--accent2)','var(--accent)','var(--orange)'];
 let allPlayersCache = null;
+let _compRadarChart = null;
+// Curated "headline" stats per position for the radar chart — higher-is-better only,
+// so a bigger shape always reads as "better" with no axis inversion to reason about.
+const COMP_RADAR_STATS = {
+  QB: [
+    {l:'Final Grade', k:'grade',      fmt:'dec'},
+    {l:'Markers',     k:'markers',    fmt:'int'},
+    {l:'Career YPA',  k:'careerYPA',  fmt:'dec'},
+    {l:'Career CMP%', k:'careerCMP',  fmt:'pct'},
+    {l:'True Acc%',   k:'careerAcc',  fmt:'pct'},
+    {l:'Best PPG',    k:'bestPPG',    fmt:'dec'},
+  ],
+  RB: [
+    {l:'Final Grade', k:'grade',      fmt:'dec'},
+    {l:'Markers',     k:'markers',    fmt:'int'},
+    {l:'YPTP',        k:'yptp',       fmt:'dec'},
+    {l:'Career MTF/A',k:'careerMTF',  fmt:'pct'},
+    {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
+    {l:'Best PPG',    k:'bestPPG',    fmt:'dec'},
+  ],
+  WR: [
+    {l:'Final Grade',    k:'grade',        fmt:'dec'},
+    {l:'Markers',        k:'markers',      fmt:'int'},
+    {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
+    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
+    {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
+    {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
+  ],
+  TE: [
+    {l:'Final Grade',    k:'grade',        fmt:'dec'},
+    {l:'Markers',        k:'markers',      fmt:'int'},
+    {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
+    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
+    {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
+    {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
+  ],
+};
+function cssVar(name) {
+  return getComputedStyle(document.body).getPropertyValue(name).trim() || '#888';
+}
 
 async function getAllPlayers() {
   if(allPlayersCache) return allPlayersCache;
@@ -3136,6 +3200,13 @@ function renderCompStats(players) {
   });
   html += '</div>';
 
+  if (samePos && players.length >= 2 && COMP_RADAR_STATS[players[0].pos]) {
+    html += `<div style="padding:16px;border-bottom:1px solid var(--border);background:var(--surface)">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Profile Comparison</div>
+      <div style="height:320px"><canvas id="compRadarChart"></canvas></div>
+    </div>`;
+  }
+
   html += statSection('Overview', UNIVERSAL_STATS, players);
 
   if (samePos) {
@@ -3153,6 +3224,62 @@ function renderCompStats(players) {
 
   html += '</div>';
   document.getElementById('compStats').innerHTML = html;
+
+  if (_compRadarChart) { _compRadarChart.destroy(); _compRadarChart = null; }
+  const radarCanvas = document.getElementById('compRadarChart');
+  if (radarCanvas && samePos && players.length >= 2) {
+    const stats = COMP_RADAR_STATS[players[0].pos] || [];
+    // Each axis is normalized to the best value among the players being compared
+    // (top performer on that stat = 100%), so the shape reads as "who wins where"
+    // regardless of the stat's real-world units.
+    const axisMax = stats.map(s => {
+      const vals = players.map(p => p[s.k]).filter(v => v != null);
+      return vals.length ? Math.max(...vals) : 0;
+    });
+    const gridColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(30,25,20,0.12)';
+    const tickColor = cssVar('--muted');
+    _compRadarChart = new Chart(radarCanvas.getContext('2d'), {
+      type: 'radar',
+      data: {
+        labels: stats.map(s => s.l),
+        datasets: players.map((p, i) => ({
+          label: safeStr(p.name) + ' (' + (p.year||2026) + ')',
+          data: stats.map((s, j) => {
+            const v = p[s.k];
+            return (v == null || !axisMax[j]) ? 0 : Math.round((v / axisMax[j]) * 100);
+          }),
+          borderColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted'),
+          backgroundColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted') + '26',
+          pointBackgroundColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted'),
+          borderWidth: 2,
+        })),
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: tickColor, font: { family: 'DM Mono', size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const stat = stats[ctx.dataIndex];
+                const p = players[ctx.datasetIndex];
+                return ctx.dataset.label + ' — ' + stat.l + ': ' + fv(p[stat.k], stat.fmt);
+              }
+            }
+          }
+        },
+        scales: {
+          r: {
+            min: 0, max: 100,
+            angleLines: { color: gridColor },
+            grid: { color: gridColor },
+            pointLabels: { color: tickColor, font: { family: 'DM Mono', size: 11 } },
+            ticks: { display: false, stepSize: 25 },
+          }
+        }
+      }
+    });
+  }
 }
 
 function buildStatTable(players, rows, fv, getBest) {
@@ -5628,9 +5755,11 @@ function buildStateSearch() {
     if(currentSchool !== 'ALL') params.set('school', currentSchool);
     if(viewMode !== 'tiers') params.set('view', viewMode);
     if(searchQuery) params.set('q', searchQuery);
+    if(watchlistFilterOnly) params.set('watch', '1');
   } else if(activePage === 'rankings') {
     if(activeYear !== 2026) params.set('year', activeYear);
     if(currentFormat !== 'superflex') params.set('format', currentFormat);
+    if(rankingsWatchlistOnly) params.set('watch', '1');
   } else if(activePage === 'comparison') {
     compPlayers.forEach((p,i) => { if(p) params.set('p'+(i+1), playerSlug(p)); });
   } else if(activePage === 'breakdown') {
@@ -5708,9 +5837,13 @@ async function applyURLState(isInitial) {
     const searchBox = document.getElementById('searchBox'); if(searchBox) searchBox.value = searchQuery;
     const tierBtn = document.getElementById('tierViewBtn'); if(tierBtn) tierBtn.classList.toggle('active', viewMode === 'tiers');
     const tableBtn = document.getElementById('tableViewBtn'); if(tableBtn) tableBtn.classList.toggle('active', viewMode === 'table');
+    if(params.has('watch')) watchlistFilterOnly = params.get('watch') === '1';
+    const gWatchBtn = document.getElementById('gradesWatchlistBtn'); if(gWatchBtn) gWatchBtn.classList.toggle('active', watchlistFilterOnly);
   } else if(page === 'rankings') {
     if(params.has('format')) currentFormat = params.get('format');
     document.querySelectorAll('.format-btn[data-format]').forEach(b => b.classList.toggle('active', b.dataset.format === currentFormat));
+    if(params.has('watch')) rankingsWatchlistOnly = params.get('watch') === '1';
+    const rWatchBtn = document.getElementById('rankingsWatchlistBtn'); if(rWatchBtn) rWatchBtn.classList.toggle('active', rankingsWatchlistOnly);
   } else if(page === 'comparison') {
     const slugs = ['p1','p2','p3','p4'].map(k => params.get(k));
     if(slugs.some(Boolean)) {
