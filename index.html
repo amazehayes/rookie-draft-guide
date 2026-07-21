@@ -1514,6 +1514,10 @@ function dynastySortForFormat(p, format) {
 function dynastySort(p) { return superflexBase(p); }
 
 let currentPos='ALL',currentSort='rank',sortDir='desc',searchQuery='',viewMode='tiers',currentLabel='ALL',currentSchool='ALL';
+// Declared early (well before the top-level render() call below) since render() -> syncURL()
+// reads it; every other page-state var (currentFormat, bkPosFilter, outcomesYearFrom, etc.)
+// stays declared where it's used since only their own page's render/restore code touches them.
+let activePage = 'grades';
 
 // Populate school dropdown (2026 default)
 (function(){
@@ -2226,6 +2230,7 @@ function render(){
   if(viewMode==='tiers'){renderTiers();if(_tc)_tc.style.display='flex';if(_cc)_cc.style.display='none';if(_tbl)_tbl.style.display='none';}
   else if(viewMode==='cards'){renderCards();if(_cc)_cc.style.display='grid';if(_tc)_tc.style.display='none';if(_tbl)_tbl.style.display='none';}
   else{renderTable();if(_tbl)_tbl.style.display='block';if(_cc)_cc.style.display='none';if(_tc)_tc.style.display='none';}
+  syncURL();
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn=>{
@@ -2517,20 +2522,16 @@ function renderGlossary() {
     const activeIndexItem = indexEl.querySelectorAll('.glossary-index-item')[activeIdx];
     if(activeIndexItem) activeIndexItem.scrollIntoView({block:'nearest'});
   };
+  syncURL();
 }
 
 buildYearTabs();
 renderHeroStats();
 render();
 
-// Restore last-viewed page on refresh
-try {
-  const saved = localStorage.getItem('tms_active_page');
-  const valid = ['grades','rankings','comparison','explorer','breakdown','outcomes','backtest','glossary'];
-  if(saved && valid.includes(saved) && saved !== 'grades' && document.getElementById('page-'+saved)) {
-    switchPage(saved);
-  }
-} catch(e) {}
+// Page + filter state restore (from ?page=... or, failing that, last-viewed page)
+// happens at the very end of this script, once every page's functions/vars exist —
+// see applyURLState() / the final init block below.
 
 // Deep-link: open a player modal if the URL has #player=<slug>
 openPlayerFromHash();
@@ -2604,9 +2605,7 @@ navDrawer.querySelectorAll('.nav-btn').forEach(b => {
 // ============================================================
 // SITE NAVIGATION
 // ============================================================
-let activePage = 'grades';
-
-function switchPage(page) {
+function switchPage(page, push) {
   activePage = page;
   try { localStorage.setItem('tms_active_page', page); } catch(e) {}
   document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
@@ -2619,15 +2618,19 @@ function switchPage(page) {
   if(page === 'explorer') explorerRender();
   if(page === 'outcomes') loadAndRenderOutcomes();
   if(page === 'backtest') loadAndRenderBacktest();
+  if(page === 'grades') render();
+  if(page === 'comparison') renderComparison();
 
   // Sync drawer nav
   navDrawer.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === page);
   });
+
+  if(push) syncURL('push');
 }
 
 document.querySelectorAll('.nav-btn').forEach(b => {
-  b.addEventListener('click', () => switchPage(b.dataset.page));
+  b.addEventListener('click', () => switchPage(b.dataset.page, true));
 });
 
 // ============================================================
@@ -2803,6 +2806,7 @@ function renderRankings() {
   });
   document.getElementById('rankingsBody').innerHTML = html;
   renderTargetsFades(sorted, currentFormat);
+  syncURL();
 }
 
 document.querySelectorAll('.format-btn[data-format]').forEach(b => {
@@ -2884,6 +2888,7 @@ function renderComparison() {
     container.innerHTML = '';
     document.getElementById('compStats').innerHTML =
       '<div style="text-align:center;padding:48px 24px;color:var(--muted);font-size:13px">Search for players above to compare them side by side.</div>';
+    syncURL();
     return;
   }
 
@@ -2955,6 +2960,7 @@ function renderComparison() {
     </div>`;
 
   renderCompStats(activePlayers);
+  syncURL();
 }
 
 function compStatRows(pos) {
@@ -3372,6 +3378,7 @@ function renderBreakdown() {
     });
   }
   document.getElementById('bkBody').innerHTML = html;
+  syncURL();
 }
 
 function setBkSort(key) {
@@ -3905,6 +3912,7 @@ function explorerRender() {
     }).join('');
     body.innerHTML = `<div style="overflow-x:auto"><table class="explorer-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
   }
+  syncURL();
 }
 
 buildExplorerYears();
@@ -4152,6 +4160,7 @@ function btRender() {
     '</div>';
 
   body.innerHTML = html;
+  syncURL();
 }
 
 function btToggleTag(i) {
@@ -4284,6 +4293,7 @@ function renderOutcomes() {
   document.getElementById('outcomesBody').innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">No players found</td></tr>';
   // Store for modal rank context
   _outcomesRenderedList = sorted;
+  syncURL();
 }
 
 function sumItem(val, label) {
@@ -5096,6 +5106,7 @@ function switchOutcomesTab(tab) {
   document.getElementById('outcomesTabTable').style.display = tab === 'table' ? '' : 'none';
   document.getElementById('outcomesTabComps').style.display = tab === 'comps' ? '' : 'none';
   if (tab === 'comps' && !NFL_CAREER_INDEX) loadNFLCareerIndex();
+  syncURL();
 }
 
 async function loadNFLCareerIndex() {
@@ -5149,12 +5160,15 @@ function setupNFLCompSearch() {
   });
 }
 
+let _selectedNFLPlayerId = null;
 async function selectNFLPlayer(playerId) {
   (document.getElementById('nflCompDropdown')||{style:{}}).style.display = 'none';
   const indexEntry = NFL_CAREER_INDEX.find(p => p.player_id === playerId);
   if (indexEntry) document.getElementById('nflCompSearch').value = indexEntry.player;
+  _selectedNFLPlayerId = playerId;
   await loadNFLCareerComps();
   if (NFL_CAREER_COMPS) runNFLCareerComps(playerId);
+  syncURL();
 }
 
 // Comp variables per position — career profile variables
@@ -5591,6 +5605,187 @@ if(_lgBtn) _lgBtn.addEventListener('click', openLabelGuide);
 const _lgOverlay = document.getElementById('labelGuideOverlay');
 if(_lgOverlay) _lgOverlay.addEventListener('click', e => {
   if(e.target === _lgOverlay) closeLabelGuide();
+});
+
+// ============================================================
+// URL STATE / SHAREABLE-LINK ROUTING
+// Builds a ?page=...&... query string from current app state, and restores
+// state from it on load / back-forward. Lives at the very end of the script
+// so every page's vars & render functions already exist when it runs —
+// calling this earlier (e.g. near the old localStorage-restore code) hits
+// the TDZ for later-declared `let`s and silently no-ops.
+// ============================================================
+function buildStateSearch() {
+  const params = new URLSearchParams();
+  if(activePage !== 'grades') params.set('page', activePage);
+
+  if(activePage === 'grades') {
+    if(activeYear !== 2026) params.set('year', activeYear);
+    if(currentPos !== 'ALL') params.set('pos', currentPos);
+    if(currentSort !== 'rank') params.set('sort', currentSort);
+    if(sortDir !== 'desc') params.set('dir', sortDir);
+    if(currentLabel !== 'ALL') params.set('label', currentLabel);
+    if(currentSchool !== 'ALL') params.set('school', currentSchool);
+    if(viewMode !== 'tiers') params.set('view', viewMode);
+    if(searchQuery) params.set('q', searchQuery);
+  } else if(activePage === 'rankings') {
+    if(activeYear !== 2026) params.set('year', activeYear);
+    if(currentFormat !== 'superflex') params.set('format', currentFormat);
+  } else if(activePage === 'comparison') {
+    compPlayers.forEach((p,i) => { if(p) params.set('p'+(i+1), playerSlug(p)); });
+  } else if(activePage === 'breakdown') {
+    if(bkPosFilter !== 'ALL') params.set('bkpos', bkPosFilter);
+  } else if(activePage === 'outcomes') {
+    if(activeOutcomesTab !== 'table') params.set('tab', activeOutcomesTab);
+    if(activeOutcomesTab === 'comps') {
+      if(_selectedNFLPlayerId) params.set('nfl', _selectedNFLPlayerId);
+    } else {
+      if(outcomesYearFrom !== 2010) params.set('yfrom', outcomesYearFrom);
+      if(outcomesYearTo !== 2025) params.set('yto', outcomesYearTo);
+      if(outcomesPos !== 'ALL') params.set('opos', outcomesPos);
+      if(!outcomesGradedOnly) params.set('graded', '0');
+      if(outcomesGradeMin) params.set('gmin', outcomesGradeMin);
+      if(outcomesGradeMax && outcomesGradeMax !== 100) params.set('gmax', outcomesGradeMax);
+    }
+  } else if(activePage === 'backtest') {
+    if(_btState !== 'top12') params.set('tier', _btState);
+  } else if(activePage === 'explorer') {
+    if(explorerPos !== 'QB') params.set('epos', explorerPos);
+    const yrs = [...explorerYears].sort((a,b) => a-b);
+    if(!(yrs.length === 1 && yrs[0] === 2026)) params.set('eyears', yrs.join(','));
+  } else if(activePage === 'glossary') {
+    if(glossarySearch) params.set('gq', glossarySearch);
+    if(glossaryActiveCat !== 'All') params.set('gcat', glossaryActiveCat);
+  }
+  return params;
+}
+
+function syncURL(mode) {
+  const qs = buildStateSearch().toString();
+  const newSearch = qs ? ('?' + qs) : '';
+  if(newSearch === location.search) return;
+  const newURL = location.pathname + newSearch + location.hash;
+  if(mode === 'push') history.pushState(null, '', newURL);
+  else history.replaceState(null, '', newURL);
+}
+
+const URL_VALID_PAGES = ['grades','rankings','comparison','explorer','breakdown','outcomes','backtest','glossary'];
+
+// Reads ?page=... (falling back to the last-viewed page on first load only)
+// and restores every relevant filter into state + UI before switching pages.
+async function applyURLState(isInitial) {
+  const params = new URLSearchParams(location.search);
+  let page = params.get('page');
+  if(!page && isInitial) {
+    try {
+      const saved = localStorage.getItem('tms_active_page');
+      if(saved && URL_VALID_PAGES.includes(saved)) page = saved;
+    } catch(e) {}
+  }
+  if(!page || !URL_VALID_PAGES.includes(page)) page = 'grades';
+
+  if(page === 'grades' || page === 'rankings') {
+    const yearParam = params.has('year') ? Number(params.get('year')) : null;
+    if(yearParam && YEARS.includes(yearParam) && yearParam !== activeYear) {
+      await switchYear(yearParam);
+    }
+  }
+
+  if(page === 'grades') {
+    if(params.has('pos')) currentPos = params.get('pos');
+    if(params.has('sort')) currentSort = params.get('sort');
+    if(params.has('dir')) sortDir = params.get('dir');
+    if(params.has('label')) currentLabel = params.get('label');
+    if(params.has('school')) currentSchool = params.get('school');
+    if(params.has('view')) viewMode = params.get('view');
+    if(params.has('q')) searchQuery = params.get('q');
+    document.querySelectorAll('#posFilters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === currentPos));
+    const sortSel = document.getElementById('sortSelect'); if(sortSel) sortSel.value = currentSort;
+    const dirBtn = document.getElementById('sortDirBtn'); if(dirBtn) dirBtn.textContent = sortDir === 'desc' ? '↓ High→Low' : '↑ Low→High';
+    const labelSel = document.getElementById('labelFilter'); if(labelSel) labelSel.value = currentLabel;
+    const schoolSel = document.getElementById('schoolFilter');
+    if(schoolSel && [...schoolSel.options].some(o => o.value === currentSchool)) schoolSel.value = currentSchool;
+    const searchBox = document.getElementById('searchBox'); if(searchBox) searchBox.value = searchQuery;
+    const tierBtn = document.getElementById('tierViewBtn'); if(tierBtn) tierBtn.classList.toggle('active', viewMode === 'tiers');
+    const tableBtn = document.getElementById('tableViewBtn'); if(tableBtn) tableBtn.classList.toggle('active', viewMode === 'table');
+  } else if(page === 'rankings') {
+    if(params.has('format')) currentFormat = params.get('format');
+    document.querySelectorAll('.format-btn[data-format]').forEach(b => b.classList.toggle('active', b.dataset.format === currentFormat));
+  } else if(page === 'comparison') {
+    const slugs = ['p1','p2','p3','p4'].map(k => params.get(k));
+    if(slugs.some(Boolean)) {
+      await getAllPlayers();
+      slugs.forEach((slug, i) => {
+        if(!slug) return;
+        const p = allPlayersCache.find(pl => playerSlug(pl) === slug);
+        if(p) {
+          compPlayers[i] = p;
+          const input = document.getElementById('compSearch' + (i + 1));
+          if(input) input.value = safeStr(p.name) + ' (' + (p.year || 2026) + ')';
+        }
+      });
+    }
+  } else if(page === 'breakdown') {
+    if(params.has('bkpos')) bkPosFilter = params.get('bkpos');
+    document.querySelectorAll('.format-btn[data-bkpos]').forEach(b => b.classList.toggle('active', b.dataset.bkpos === bkPosFilter));
+  } else if(page === 'outcomes') {
+    if(params.has('tab')) activeOutcomesTab = params.get('tab');
+    if(params.has('yfrom')) outcomesYearFrom = Number(params.get('yfrom'));
+    if(params.has('yto')) outcomesYearTo = Number(params.get('yto'));
+    if(params.has('opos')) outcomesPos = params.get('opos');
+    if(params.has('graded')) outcomesGradedOnly = params.get('graded') !== '0';
+    document.querySelectorAll('.filter-btn[data-opos]').forEach(b => b.classList.toggle('active', b.dataset.opos === outcomesPos));
+    const fromSel = document.getElementById('outcomesYearFrom'); if(fromSel) fromSel.value = outcomesYearFrom;
+    const toSel = document.getElementById('outcomesYearTo'); if(toSel) toSel.value = outcomesYearTo;
+    const gradedChk = document.getElementById('outcomesGradedOnly'); if(gradedChk) gradedChk.checked = outcomesGradedOnly;
+    if(params.has('gmin')) { const el = document.getElementById('outcomesGradeMin'); if(el) el.value = params.get('gmin'); }
+    if(params.has('gmax')) { const el = document.getElementById('outcomesGradeMax'); if(el) el.value = params.get('gmax'); }
+    _applyOutcomesGradeFilter();
+  } else if(page === 'backtest') {
+    if(params.has('tier')) _btState = params.get('tier');
+    document.querySelectorAll('#btToggle .bt-tog-btn').forEach(b => b.classList.toggle('active', b.dataset.tier === _btState));
+  } else if(page === 'explorer') {
+    if(params.has('epos')) { explorerPos = params.get('epos'); explorerFilters = []; }
+    document.querySelectorAll('.explorer-pos-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === explorerPos));
+    if(params.has('eyears')) {
+      const yrs = params.get('eyears').split(',').map(Number).filter(y => ALL_YEARS.includes(y));
+      if(yrs.length) {
+        await Promise.all(yrs.filter(y => y !== 2026 && !yearCache[y]).map(async yr => {
+          try {
+            const res = await fetch('data/' + yr + '.json?v=4');
+            const d = await res.json(); d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = d;
+          } catch(e) { yearCache[yr] = []; }
+        }));
+        explorerYears = new Set(yrs);
+      }
+    }
+    buildExplorerYears();
+    renderExplorerFilters();
+  } else if(page === 'glossary') {
+    if(params.has('gq')) { glossarySearch = params.get('gq'); const el = document.getElementById('glossarySearch'); if(el) el.value = glossarySearch; }
+    if(params.has('gcat')) {
+      glossaryActiveCat = params.get('gcat');
+      document.querySelectorAll('.glossary-cat-btn').forEach(b => b.classList.toggle('active', b.textContent === glossaryActiveCat));
+    }
+  }
+
+  switchPage(page);
+
+  if(page === 'outcomes' && activeOutcomesTab === 'comps') {
+    switchOutcomesTab('comps');
+    if(!NFL_CAREER_INDEX) await loadNFLCareerIndex();
+    const nflId = params.get('nfl');
+    if(nflId) await selectNFLPlayer(nflId);
+  }
+}
+
+// Initial restore: URL wins if it has ?page=..., else fall back to the
+// last-viewed page from localStorage, else grades (the default).
+applyURLState(true);
+
+// Browser back/forward: re-apply whatever page/filters that history entry encodes.
+window.addEventListener('popstate', () => {
+  applyURLState(false);
 });
 
 </script>
