@@ -2855,36 +2855,66 @@ const COMP_RADAR_STATS = {
   QB: [
     {l:'Final Grade', k:'grade',      fmt:'dec'},
     {l:'Markers',     k:'markers',    fmt:'int'},
-    {l:'Career YPA',  k:'careerYPA',  fmt:'dec'},
     {l:'Career CMP%', k:'careerCMP',  fmt:'pct'},
+    {l:'Career YPA',  k:'careerYPA',  fmt:'dec'},
+    {l:'Career TD',   k:'careerPTD',  fmt:'int'},
+    {l:'Career INT',  k:'careerINT',  fmt:'int', low:true},
     {l:'True Acc%',   k:'careerAcc',  fmt:'pct'},
+    {l:'BTT%',        k:'careerBTT',  fmt:'pct'},
     {l:'Best PPG',    k:'bestPPG',    fmt:'dec'},
   ],
   RB: [
-    {l:'Final Grade', k:'grade',      fmt:'dec'},
-    {l:'Markers',     k:'markers',    fmt:'int'},
-    {l:'YPTP',        k:'yptp',       fmt:'dec'},
-    {l:'Career MTF/A',k:'careerMTF',  fmt:'pct'},
-    {l:'Career YPRR', k:'careerYPRR', fmt:'dec'},
-    {l:'Best PPG',    k:'bestPPG',    fmt:'dec'},
+    {l:'Final Grade', k:'grade',       fmt:'dec'},
+    {l:'Markers',     k:'markers',     fmt:'int'},
+    {l:'YPTP',        k:'yptp',        fmt:'dec'},
+    {l:'Career BA/A', k:'careerBA',    fmt:'pct'},
+    {l:'Career MTF/A',k:'careerMTF',   fmt:'pct'},
+    {l:'Career YPRR', k:'careerYPRR',  fmt:'dec'},
+    {l:'Best Total Yds', k:'bestTotalYds', fmt:'int'},
+    {l:'Speed Score', k:'wass',        fmt:'dec'},
+    {l:'Best PPG',    k:'bestPPG',     fmt:'dec'},
   ],
   WR: [
     {l:'Final Grade',    k:'grade',        fmt:'dec'},
     {l:'Markers',        k:'markers',      fmt:'int'},
     {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
-    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
     {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
+    {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
+    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
+    {l:'Breakout Yr 20%',k:'boy20',        fmt:'int', low:true},
+    {l:'Speed Score',    k:'wass',         fmt:'dec'},
     {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
   ],
   TE: [
     {l:'Final Grade',    k:'grade',        fmt:'dec'},
     {l:'Markers',        k:'markers',      fmt:'int'},
     {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
-    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
     {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
+    {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
+    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
+    {l:'Breakout Yr 15%',k:'boy15',        fmt:'int', low:true},
+    {l:'Burst Score',    k:'burst',        fmt:'dec'},
     {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
   ],
 };
+// Percentile of `value` among all same-position players in the full dataset (yearCache
+// must already be fully loaded — true by the time this page has players to compare,
+// since selecting a player already calls getAllPlayers()). `low` flips direction so a
+// high percentile always means "good," whether the raw stat is better high or low.
+function positionPercentile(pos, key, value, low) {
+  if (value == null) return null;
+  const pool = [];
+  Object.values(yearCache).forEach(arr => {
+    (arr || []).forEach(p => { if (p.pos === pos && p[key] != null) pool.push(p[key]); });
+  });
+  if (pool.length < 2) return null;
+  let worse = 0, equal = 0;
+  pool.forEach(v => {
+    if (low ? v > value : v < value) worse++;
+    else if (v === value) equal++;
+  });
+  return Math.round((worse + equal / 2) / pool.length * 100);
+}
 function cssVar(name) {
   return getComputedStyle(document.body).getPropertyValue(name).trim() || '#888';
 }
@@ -3198,8 +3228,9 @@ function renderCompStats(players) {
   if (samePos && players.length >= 2) {
     if (COMP_RADAR_STATS[players[0].pos]) {
       html += `<div style="padding:16px;border-bottom:1px solid var(--border);background:var(--surface)">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Profile Comparison</div>
-        <div style="height:320px"><canvas id="compRadarChart"></canvas></div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Profile Comparison</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Each axis is percentile rank among every ${players[0].pos} in the full dataset — not just relative to who you picked.</div>
+        <div style="height:400px"><canvas id="compRadarChart"></canvas></div>
       </div>`;
     }
     html += markerHeatmapSection(players);
@@ -3224,14 +3255,11 @@ function renderCompStats(players) {
   if (_compRadarChart) { _compRadarChart.destroy(); _compRadarChart = null; }
   const radarCanvas = document.getElementById('compRadarChart');
   if (radarCanvas && samePos && players.length >= 2) {
-    const stats = COMP_RADAR_STATS[players[0].pos] || [];
-    // Each axis is normalized to the best value among the players being compared
-    // (top performer on that stat = 100%), so the shape reads as "who wins where"
-    // regardless of the stat's real-world units.
-    const axisMax = stats.map(s => {
-      const vals = players.map(p => p[s.k]).filter(v => v != null);
-      return vals.length ? Math.max(...vals) : 0;
-    });
+    const pos = players[0].pos;
+    const stats = COMP_RADAR_STATS[pos] || [];
+    // Each axis is that player's percentile among every same-position player in the
+    // full dataset — so the shape means something on its own (e.g. two mediocre
+    // prospects don't max out an axis just by being the best of the two you picked).
     const gridColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(30,25,20,0.12)';
     const tickColor = cssVar('--muted');
     _compRadarChart = new Chart(radarCanvas.getContext('2d'), {
@@ -3240,10 +3268,7 @@ function renderCompStats(players) {
         labels: stats.map(s => s.l),
         datasets: players.map((p, i) => ({
           label: safeStr(p.name) + ' (' + (p.year||2026) + ')',
-          data: stats.map((s, j) => {
-            const v = p[s.k];
-            return (v == null || !axisMax[j]) ? 0 : Math.round((v / axisMax[j]) * 100);
-          }),
+          data: stats.map(s => positionPercentile(pos, s.k, p[s.k], s.low) ?? 0),
           borderColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted'),
           backgroundColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted') + '26',
           pointBackgroundColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted'),
@@ -3259,7 +3284,9 @@ function renderCompStats(players) {
               label: ctx => {
                 const stat = stats[ctx.dataIndex];
                 const p = players[ctx.datasetIndex];
-                return ctx.dataset.label + ' — ' + stat.l + ': ' + fv(p[stat.k], stat.fmt);
+                const pctl = positionPercentile(pos, stat.k, p[stat.k], stat.low);
+                return ctx.dataset.label + ' — ' + stat.l + ': ' + fv(p[stat.k], stat.fmt) +
+                  (pctl != null ? ' (' + ordinal(pctl) + ' pctl among ' + pos + 's)' : '');
               }
             }
           }
@@ -3269,7 +3296,7 @@ function renderCompStats(players) {
             min: 0, max: 100,
             angleLines: { color: gridColor },
             grid: { color: gridColor },
-            pointLabels: { color: tickColor, font: { family: 'DM Mono', size: 11 } },
+            pointLabels: { color: tickColor, font: { family: 'DM Mono', size: 10.5 } },
             ticks: { display: false, stepSize: 25 },
           }
         }
