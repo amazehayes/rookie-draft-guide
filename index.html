@@ -2854,7 +2854,6 @@ let _compRadarChart = null;
 const COMP_RADAR_STATS = {
   QB: [
     {l:'Final Grade', k:'grade',      fmt:'dec'},
-    {l:'Markers',     k:'markers',    fmt:'int'},
     {l:'Career CMP%', k:'careerCMP',  fmt:'pct'},
     {l:'Career YPA',  k:'careerYPA',  fmt:'dec'},
     {l:'Career TD',   k:'careerPTD',  fmt:'int'},
@@ -2865,7 +2864,6 @@ const COMP_RADAR_STATS = {
   ],
   RB: [
     {l:'Final Grade', k:'grade',       fmt:'dec'},
-    {l:'Markers',     k:'markers',     fmt:'int'},
     {l:'YPTP',        k:'yptp',        fmt:'dec'},
     {l:'Career BA/A', k:'careerBA',    fmt:'pct'},
     {l:'Career MTF/A',k:'careerMTF',   fmt:'pct'},
@@ -2876,10 +2874,11 @@ const COMP_RADAR_STATS = {
   ],
   WR: [
     {l:'Final Grade',    k:'grade',        fmt:'dec'},
-    {l:'Markers',        k:'markers',      fmt:'int'},
     {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
     {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
     {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
+    {l:'YPTPA',          k:'bestYPTPA',    fmt:'dec'},
+    {l:'1DRR',           k:'career1DRR',   fmt:'pct'},
     {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
     {l:'Breakout Yr 20%',k:'boy20',        fmt:'int', low:true},
     {l:'Speed Score',    k:'wass',         fmt:'dec'},
@@ -2887,10 +2886,11 @@ const COMP_RADAR_STATS = {
   ],
   TE: [
     {l:'Final Grade',    k:'grade',        fmt:'dec'},
-    {l:'Markers',        k:'markers',      fmt:'int'},
     {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
     {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
     {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
+    {l:'YPTPA',          k:'bestYPTPA',    fmt:'dec'},
+    {l:'1DRR',           k:'career1DRR',   fmt:'pct'},
     {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
     {l:'Breakout Yr 15%',k:'boy15',        fmt:'int', low:true},
     {l:'Burst Score',    k:'burst',        fmt:'dec'},
