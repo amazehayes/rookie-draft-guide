@@ -381,6 +381,20 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .bt-table th.r{text-align:right;}
 .bt-table td{padding:7px 8px;border-bottom:1px solid var(--border);}
 .bt-tgname{font-weight:600;font-size:12.5px;}
+.bt-trow{cursor:pointer;transition:background .12s;}
+.bt-trow:hover{background:var(--surface2);}
+.bt-caret{width:14px;color:var(--muted);font-size:14px;transition:transform .15s;display:inline-block;}
+.bt-detail td{background:var(--surface2);padding:10px 12px 12px;}
+.bt-chip-head{font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;}
+.bt-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.bt-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface);white-space:nowrap;}
+.bt-chip.hit{border-color:#2a7d4f55;background:#2a7d4f14;}
+.bt-chip.miss{border-color:#b8362a55;background:#b8362a14;}
+.bt-chip-mark{font-weight:700;font-size:10px;}
+.bt-chip.hit .bt-chip-mark{color:#2a7d4f;}
+.bt-chip.miss .bt-chip-mark{color:#b8362a;}
+.bt-chip-yr{color:var(--muted);font-size:10px;}
+.bt-chip-ppg{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);font-weight:600;margin-left:2px;}
 .bt-tnum{font-family:'DM Mono',monospace;text-align:right;}
 .bt-pol{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:3px;white-space:nowrap;}
 .bt-pg{color:#2a7d4f;background:#2a7d4f18;} .bt-pb{color:#b8362a;background:#b8362a18;} .bt-pc{color:#9a6200;background:#9a620018;}
@@ -2509,6 +2523,15 @@ buildYearTabs();
 renderHeroStats();
 render();
 
+// Restore last-viewed page on refresh
+try {
+  const saved = localStorage.getItem('tms_active_page');
+  const valid = ['grades','rankings','comparison','explorer','breakdown','outcomes','backtest','glossary'];
+  if(saved && valid.includes(saved) && saved !== 'grades' && document.getElementById('page-'+saved)) {
+    switchPage(saved);
+  }
+} catch(e) {}
+
 // Deep-link: open a player modal if the URL has #player=<slug>
 openPlayerFromHash();
 
@@ -2585,6 +2608,7 @@ let activePage = 'grades';
 
 function switchPage(page) {
   activePage = page;
+  try { localStorage.setItem('tms_active_page', page); } catch(e) {}
   document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   document.getElementById('page-' + page).classList.add('active');
@@ -4011,11 +4035,16 @@ function btBuildData() {
   rows.forEach(r => {
     if(!r.o) return; // skip players without mature NFL outcome data (e.g. current rookies)
     getTags(r.p).forEach(tag => {
-      const d = tagAgg[tag.label] || (tagAgg[tag.label] = {n:0, top5:0, top12:0, top24:0, ppg:[]});
+      const d = tagAgg[tag.label] || (tagAgg[tag.label] = {n:0, top5:0, top12:0, top24:0, ppg:[], players:[]});
       d.n++;
       if((r.o.nfl_top5||0)>=1) d.top5++;
       if((r.o.nfl_top12||0)>=1) d.top12++;
       if((r.o.nfl_top24||0)>=1) d.top24++;
+      d.players.push({
+        name: r.p.name, yr: r.yr,
+        t5: (r.o.nfl_top5||0)>=1, t12: (r.o.nfl_top12||0)>=1, t24: (r.o.nfl_top24||0)>=1,
+        ppg: r.o.nfl_career_ppg!=null ? Math.round(r.o.nfl_career_ppg*10)/10 : null
+      });
       if(r.o.nfl_career_ppg != null && (r.o.nfl_seasons||0)>=3) d.ppg.push(r.o.nfl_career_ppg);
     });
   });
@@ -4023,7 +4052,8 @@ function btBuildData() {
     const sorted = d.ppg.slice().sort((a,b)=>a-b);
     const med = sorted.length ? Math.round(sorted[Math.floor(sorted.length/2)]*10)/10 : null;
     return {tag:label, pol:BT_TAG_POLARITY[label]||'?', n:d.n,
-            top5:Math.round(100*d.top5/d.n), top12:Math.round(100*d.top12/d.n), top24:Math.round(100*d.top24/d.n), medppg:med};
+            top5:Math.round(100*d.top5/d.n), top12:Math.round(100*d.top12/d.n), top24:Math.round(100*d.top24/d.n), medppg:med,
+            players:d.players};
   });
 
   return {gt, tags, hits, misses};
@@ -4084,13 +4114,27 @@ function btRender() {
   const secondaryTiers = ['top5','top12','top24'].filter(t => t !== _btState);
   const secHdr = secondaryTiers.map(t => '<th class="r">'+({top5:'Top-5',top12:'Top-12',top24:'Top-24'}[t])+'</th>').join('');
   html += '<h3 class="bt-section-title">Label Hit Rates</h3>'+
-    '<p class="bt-section-sub">Every tag the model applies, and how those players actually did. Sorted by '+tierLabel+' hit rate.</p>'+
+    '<p class="bt-section-sub">Every tag the model applies, and how those players actually did. Sorted by '+tierLabel+' hit rate. Click a row to see the players.</p>'+
     '<div class="bt-card"><table class="bt-table">'+
-    '<tr><th>Label</th><th>Pos</th><th>Signal</th><th class="r">n</th><th class="r">'+({top5:'Top-5',top12:'Top-12',top24:'Top-24'}[_btState])+'</th>'+secHdr+'<th class="r">Med PPG</th></tr>'+
-    tagsSorted.map(t => {
+    '<tr><th></th><th>Label</th><th>Pos</th><th>Signal</th><th class="r">n</th><th class="r">'+({top5:'Top-5',top12:'Top-12',top24:'Top-24'}[_btState])+'</th>'+secHdr+'<th class="r">Med PPG</th></tr>'+
+    tagsSorted.map((t, i) => {
       const med = t.medppg != null ? t.medppg : '\u2014';
       const secCells = secondaryTiers.map(tt => '<td class="bt-tnum" style="color:var(--muted)">'+t[tt]+'%</td>').join('');
-      return '<tr>'+
+      const colspan = 8 + secondaryTiers.length;
+      // build the detail row (hidden by default)
+      const hitField = _btState==='top5'?'t5':(_btState==='top24'?'t24':'t12');
+      const pls = t.players.slice().sort((a,b)=> (b[hitField]-a[hitField]) || (a.yr-b.yr));
+      const chips = pls.map(pl => {
+        const isHit = pl[hitField];
+        return '<span class="bt-chip '+(isHit?'hit':'miss')+'">'+
+          '<span class="bt-chip-mark">'+(isHit?'\u2713':'\u2717')+'</span>'+
+          safeStr(pl.name)+' <span class="bt-chip-yr">\''+String(pl.yr).slice(2)+'</span>'+
+          (pl.ppg!=null?' <span class="bt-chip-ppg">'+pl.ppg+'</span>':'')+
+        '</span>';
+      }).join('');
+      const tierName = {top5:'top-5',top12:'top-12',top24:'top-24'}[_btState];
+      return '<tr class="bt-trow" onclick="btToggleTag('+i+')">'+
+        '<td class="bt-caret" id="btCaret'+i+'">\u203a</td>'+
         '<td class="bt-tgname">'+t.tag+'</td>'+
         '<td class="bt-tnum" style="text-align:left;color:var(--muted)">'+(BT_TAG_POS[t.tag]||'')+'</td>'+
         '<td><span class="bt-pol '+(polCls[t.pol]||'')+'">'+(polTxt[t.pol]||'')+'</span></td>'+
@@ -4098,12 +4142,26 @@ function btRender() {
         '<td class="bt-tnum" style="color:'+btTint(t[_btState])+';font-weight:600">'+t[_btState]+'%</td>'+
         secCells+
         '<td class="bt-tnum">'+med+'</td>'+
-      '</tr>';
+      '</tr>'+
+      '<tr class="bt-detail" id="btDetail'+i+'" style="display:none"><td colspan="'+colspan+'">'+
+        '<div class="bt-chip-head">'+t.n+' players \u00b7 green = hit a '+tierName+' season, red = didn\u2019t \u00b7 number = career PPG</div>'+
+        '<div class="bt-chips">'+chips+'</div>'+
+      '</td></tr>';
     }).join('')+
     '</table>'+
     '</div>';
 
   body.innerHTML = html;
+}
+
+function btToggleTag(i) {
+  const d = document.getElementById('btDetail'+i);
+  const c = document.getElementById('btCaret'+i);
+  if(!d) return;
+  const open = d.style.display !== 'none';
+  d.style.display = open ? 'none' : '';
+  if(c) c.textContent = open ? '\u203a' : '\u2039';
+  if(c) c.style.transform = open ? '' : 'rotate(90deg)';
 }
 
 async function loadAndRenderBacktest() {
