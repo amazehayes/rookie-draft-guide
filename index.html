@@ -3009,8 +3009,8 @@ function compStatRows(pos) {
       {l:'Best TPRR',       k:'bestTPRR',       fmt:'pct'},
       {l:'Career 1D/Route', k:'career1DRR',     fmt:'pct'},
       {l:'Career YACR',     k:'careerYACR',     fmt:'dec'},
-      {l:'Career MTF',      k:'careerMTF',      fmt:'dec'},
-      {l:'Career Slot Rate',k:'careerSlot',     fmt:'pct'},
+      {l:'Career MTF',      k:'careerMTF',      fmt:'pct'},
+      {l:'Career Slot Rate',k:'careerSlot',     fmt:'pct', noWinner:true},
       {l:'Best YPTPA',      k:'bestYPTPA',      fmt:'dec'},
       {l:'Best MS Yards%',  k:'bestMSYards',    fmt:'pct'},
       {l:'BOY 20%',         k:'boy20',          fmt:'int', low:true},
@@ -3026,8 +3026,8 @@ function compStatRows(pos) {
       {l:'Best TPRR',       k:'bestTPRR',       fmt:'pct'},
       {l:'Career 1D/Route', k:'career1DRR',     fmt:'pct'},
       {l:'Career YACR',     k:'careerYACR',     fmt:'dec'},
-      {l:'Career MTF',      k:'careerMTF',      fmt:'dec'},
-      {l:'Career Slot Rate',k:'careerSlot',     fmt:'pct'},
+      {l:'Career MTF',      k:'careerMTF',      fmt:'pct'},
+      {l:'Career Slot Rate',k:'careerSlot',     fmt:'pct', noWinner:true},
       {l:'Career YPG',      k:'careerYPG',      fmt:'dec'},
       {l:'Best YPTPA',      k:'bestYPTPA',      fmt:'dec'},
       {l:'Best MS Yards%',  k:'bestMSYards',    fmt:'pct'},
@@ -3052,7 +3052,7 @@ const UNIVERSAL_STATS = [
   {l:'Weight',       k:'wt',      fmt:'wt'},
   {l:'Height',       k:'ht',      fmt:'ht'},
   {l:'BMI',          k:'bmi',     fmt:'dec'},
-  {l:'40-Yard Dash', k:'dash',    fmt:'dec', low:true},
+  {l:'40-Yard Dash', k:'dash',    fmt:'dash2', low:true},
   {l:'Speed Score',  k:'wass',    fmt:'dec'},
   {l:'Burst Score',  k:'burst',   fmt:'dec'},
 ];
@@ -3069,6 +3069,7 @@ function renderCompStats(players) {
     if (f === 'pick')  return v ? '#'+v : '—';
     if (f === 'wt')    return v + ' lbs';
     if (f === 'ht')    return Math.floor(v/12)+"'"+(v%12)+'"';
+    if (f === 'dash2') return window.fmt(v, 2);
     return window.fmt(v, 1);
   };
 
@@ -3084,8 +3085,10 @@ function renderCompStats(players) {
     const activeRows = rows.filter(row => players.some(p => p[row.k] != null));
     if (!activeRows.length || !players.length) return '';
 
-    // Winner index (into `players`) per stat column
+    // Winner index (into `players`) per stat column — skipped for stats where
+    // higher/lower isn't meaningfully "better" (e.g. slot rate is descriptive, not a grade).
     const winners = activeRows.map(row => {
+      if (row.noWinner) return -1;
       const vals = players.map(p => p[row.k] != null ? p[row.k] : null);
       return getBest(vals, row.low);
     });
@@ -3202,13 +3205,6 @@ function renderCompStats(players) {
     html += markerHeatmapSection(players);
   }
 
-  // NFL Outcome Comps loads asynchronously (scans historical comp candidates + NFL
-  // outcome data), so this is just a placeholder — renderCompOutcomeCharts fills it in.
-  html += `<div id="compOutcomeSection" style="padding:16px;border-bottom:1px solid var(--border);background:var(--surface)">
-    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">NFL Outcome Comps</div>
-    <div style="color:var(--muted);font-size:13px">Loading comps…</div>
-  </div>`;
-
   html += statSection('Overview', UNIVERSAL_STATS, players);
 
   if (samePos) {
@@ -3224,7 +3220,6 @@ function renderCompStats(players) {
 
   html += '</div>';
   document.getElementById('compStats').innerHTML = html;
-  renderCompOutcomeCharts(players);
 
   if (_compRadarChart) { _compRadarChart.destroy(); _compRadarChart = null; }
   const radarCanvas = document.getElementById('compRadarChart');
@@ -3281,125 +3276,6 @@ function renderCompStats(players) {
       }
     });
   }
-}
-
-// ── NFL Outcome Comps (Player Comparison page) ──────────────────────────────
-// Reuses computeComps()/computeCompBand() (the same engine behind the player
-// modal's "Projected Outcome Range") for each compared player independently,
-// then charts Ceiling/Median projected PPG and comp hit-rate side by side.
-// Works for mixed-position comparisons too, since each player's comp pool is
-// found within their own position/round — unlike the radar and marker grid,
-// which only make sense when everyone being compared plays the same position.
-let _compOutcomeRenderId = 0;
-let _compOutcomeCharts = [];
-async function renderCompOutcomeCharts(players) {
-  const myId = ++_compOutcomeRenderId;
-  if (!document.getElementById('compOutcomeSection')) return;
-
-  if (!NFL_LOOKUP) { try { await loadNFLLookup(); } catch(e) {} }
-  const toLoad = YEARS.filter(yr => yr !== 2026 && !yearCache[yr]);
-  if (toLoad.length) {
-    await Promise.all(toLoad.map(async yr => {
-      try {
-        const res = await fetch('data/'+yr+'.json?v=4');
-        const d = await res.json(); d.forEach(p => { if(!p.year) p.year = yr; }); yearCache[yr] = d;
-      } catch(e) { yearCache[yr] = []; }
-    }));
-  }
-
-  // A newer comparison (different players, or player search) superseded this call
-  if (myId !== _compOutcomeRenderId) return;
-  const wrap = document.getElementById('compOutcomeSection');
-  if (!wrap) return;
-
-  const results = players.map(p => ({ player: p, band: computeComps(p)._band || null }));
-  const withBand = results.filter(r => r.band);
-
-  _compOutcomeCharts.forEach(c => c.destroy());
-  _compOutcomeCharts = [];
-
-  if (!withBand.length) {
-    wrap.innerHTML = `<div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">NFL Outcome Comps</div>
-      <div style="color:var(--muted);font-size:13px">Not enough historical statistical comps with established (3+ season) NFL careers to project outcomes for these players.</div>`;
-    return;
-  }
-
-  const excluded = results.filter(r => !r.band);
-  wrap.innerHTML = `
-    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">NFL Outcome Comps</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:${excluded.length?'4px':'12px'}">Projected from each player's 10 closest statistical comps among past draft classes (min. 3 NFL seasons).</div>
-    ${excluded.length ? `<div style="font-size:11px;color:var(--orange);margin-bottom:12px">Not shown — too few historical comps with established (3+ season) NFL careers: ${excluded.map(r=>safeStr(r.player.name)).join(', ')}</div>` : ''}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
-      <div style="height:220px"><canvas id="compOutcomePPG"></canvas></div>
-      <div style="height:220px"><canvas id="compOutcomeHit"></canvas></div>
-    </div>`;
-
-  const labels = withBand.map(r => safeStr(r.player.name));
-  const barColors = withBand.map(r => cssVar(['--green','--accent2','--accent','--orange'][players.indexOf(r.player)] || '--muted'));
-  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(30,25,20,0.08)';
-  const tickColor = cssVar('--muted');
-
-  _compOutcomeCharts.push(new Chart(document.getElementById('compOutcomePPG').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Ceiling PPG', data: withBand.map(r => r.band.hi.ppg), backgroundColor: barColors, borderRadius: 4 },
-        { label: 'Median PPG',  data: withBand.map(r => r.band.med.ppg), backgroundColor: barColors.map(c => c+'66'), borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: tickColor, font: { family:'DM Mono', size: 10 } } },
-        title: { display: true, text: 'Projected Career PPG', color: tickColor, font: { family:'DM Mono', size: 11 } },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const b = withBand[ctx.dataIndex].band;
-              const comp = ctx.datasetIndex === 0 ? b.hi : b.med;
-              return ctx.dataset.label + ': ' + fmt(ctx.parsed.y,1) + ' (comp: ' + safeStr(comp.name) + ')';
-            }
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { color: tickColor, font: { family:'DM Mono', size: 10 } }, grid: { display:false } },
-        y: { min:0, ticks: { color: tickColor, font: { family:'DM Mono', size: 9 } }, grid: { color: gridColor } }
-      }
-    }
-  }));
-
-  _compOutcomeCharts.push(new Chart(document.getElementById('compOutcomeHit').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Lower Tier Hit %',  data: withBand.map(r => r.band.hitA), backgroundColor: barColors, borderRadius: 4 },
-        { label: 'Higher Tier Hit %', data: withBand.map(r => r.band.hitB), backgroundColor: barColors.map(c => c+'66'), borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: tickColor, font: { family:'DM Mono', size: 10 } } },
-        title: { display: true, text: 'Comp Hit Rate', color: tickColor, font: { family:'DM Mono', size: 11 } },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const b = withBand[ctx.dataIndex].band;
-              const tierLabel = ctx.datasetIndex === 0 ? b.labelA : b.labelB;
-              return tierLabel + ' hit: ' + ctx.parsed.y + '%';
-            }
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { color: tickColor, font: { family:'DM Mono', size: 10 } }, grid: { display:false } },
-        y: { min:0, max:100, ticks: { color: tickColor, font: { family:'DM Mono', size: 9 }, callback: v => v+'%' }, grid: { color: gridColor } }
-      }
-    }
-  }));
 }
 
 function buildStatTable(players, rows, fv, getBest) {
