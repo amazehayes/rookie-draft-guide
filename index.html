@@ -299,6 +299,55 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .cb-cell.hr .cb-v{color:var(--orange,#c0622a);}
 .cb-foot{font-size:9.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:7px;text-align:right;opacity:.8;}
 
+/* ---- COMPARISON: TORNADO PROFILE ---- */
+.tornado-head{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin-bottom:4px;padding-top:22px;}
+.tornado-side-name{position:relative;font-family:'Fraunces',serif;font-weight:700;font-size:16px;}
+.tornado-crown{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:16px;}
+.tornado-vs{
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tornado-score{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;padding:10px 4px 16px;}
+.tornado-score-num{font-family:'DM Mono',monospace;font-size:34px;font-weight:800;line-height:1;}
+.tornado-score-num.a{text-align:right;}
+.tornado-score-num.b{text-align:left;}
+.tornado-score-num-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.tornado-score-num-lbl.a{text-align:right;}
+.tornado-score-num-lbl.b{text-align:left;}
+.tornado-group-label{
+  text-align:center;font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);padding:16px 0 8px;border-top:1px solid var(--border);margin-top:6px;
+}
+.tornado-group:first-child .tornado-group-label{border-top:none;margin-top:0;}
+.tornado-row{display:grid;grid-template-columns:60px 1fr 128px 1fr 60px;gap:10px;align-items:center;padding:7px 0;}
+.tornado-val{font-family:'DM Mono',monospace;white-space:nowrap;}
+.tornado-val.a{text-align:right;}
+.tornado-val.b{text-align:left;}
+.tornado-pctl{font-size:13px;font-weight:800;}
+.tornado-raw{font-size:9.5px;color:var(--muted);font-weight:500;margin-top:1px;}
+.tornado-val.lose .tornado-pctl{color:var(--muted)!important;font-weight:400;}
+.tornado-label{text-align:center;font-size:11.5px;color:var(--text);font-weight:500;}
+.tornado-track{position:relative;height:20px;display:flex;}
+.tornado-track.a{justify-content:flex-end;}
+.tornado-track.b{justify-content:flex-start;}
+.tornado-bar{position:relative;height:100%;min-width:2px;}
+.tornado-bar.a{border-radius:4px 0 0 4px;}
+.tornado-bar.b{border-radius:0 4px 4px 0;}
+.tornado-bar.a::after{
+  content:'';position:absolute;left:-8px;top:0;bottom:0;width:0;
+  border-top:10px solid transparent;border-bottom:10px solid transparent;border-right:8px solid;
+}
+.tornado-bar.b::after{
+  content:'';position:absolute;right:-8px;top:0;bottom:0;width:0;
+  border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:8px solid;
+}
+.tornado-bar.lose{opacity:.3;}
+@media(max-width:640px){
+  .tornado-row{grid-template-columns:44px 1fr 96px 1fr 44px;gap:6px;}
+  .tornado-raw{display:none;}
+}
+
 /* ---- WATCHLIST ---- */
 .watch-star{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color .15s,transform .1s;flex-shrink:0;}
 .watch-star:hover{color:#e0a800;transform:scale(1.15);}
@@ -2848,54 +2897,84 @@ document.getElementById('rankingsWatchlistBtn').addEventListener('click', () => 
 let compPlayers = [null, null, null, null];
 const COMP_COLORS = ['var(--green)','var(--accent2)','var(--accent)','var(--orange)'];
 let allPlayersCache = null;
-let _compRadarChart = null;
-// Curated "headline" stats per position for the radar chart — higher-is-better only,
-// so a bigger shape always reads as "better" with no axis inversion to reason about.
-const COMP_RADAR_STATS = {
-  QB: [
-    {l:'Final Grade', k:'grade',      fmt:'dec'},
-    {l:'Career CMP%', k:'careerCMP',  fmt:'pct'},
-    {l:'Career YPA',  k:'careerYPA',  fmt:'dec'},
-    {l:'Career TD',   k:'careerPTD',  fmt:'int'},
-    {l:'Career INT',  k:'careerINT',  fmt:'int', low:true},
-    {l:'True Acc%',   k:'careerAcc',  fmt:'pct'},
-    {l:'BTT%',        k:'careerBTT',  fmt:'pct'},
-    {l:'Best PPG',    k:'bestPPG',    fmt:'dec'},
-  ],
-  RB: [
-    {l:'Final Grade', k:'grade',       fmt:'dec'},
-    {l:'YPTP',        k:'yptp',        fmt:'dec'},
-    {l:'Career BA/A', k:'careerBA',    fmt:'pct'},
-    {l:'Career MTF/A',k:'careerMTF',   fmt:'pct'},
-    {l:'Career YPRR', k:'careerYPRR',  fmt:'dec'},
-    {l:'Best Total Yds', k:'bestTotalYds', fmt:'int'},
-    {l:'Speed Score', k:'wass',        fmt:'dec'},
-    {l:'Best PPG',    k:'bestPPG',     fmt:'dec'},
-  ],
-  WR: [
-    {l:'Final Grade',    k:'grade',        fmt:'dec'},
-    {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
-    {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
-    {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
-    {l:'YPTPA',          k:'bestYPTPA',    fmt:'dec'},
-    {l:'1DRR',           k:'career1DRR',   fmt:'pct'},
-    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
-    {l:'Breakout Yr 20%',k:'boy20',        fmt:'int', low:true},
-    {l:'Speed Score',    k:'wass',         fmt:'dec'},
-    {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
-  ],
-  TE: [
-    {l:'Final Grade',    k:'grade',        fmt:'dec'},
-    {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
-    {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
-    {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
-    {l:'YPTPA',          k:'bestYPTPA',    fmt:'dec'},
-    {l:'1DRR',           k:'career1DRR',   fmt:'pct'},
-    {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
-    {l:'Breakout Yr 15%',k:'boy15',        fmt:'int', low:true},
-    {l:'Burst Score',    k:'burst',        fmt:'dec'},
-    {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
-  ],
+// Curated stats per position for the tornado/diverging-bar profile comparison, split into
+// Production (on-field output) and Athleticism (combine testing) sections. Higher-is-better
+// only via the `low` flag — positionPercentile() inverts direction so a high percentile
+// always means "good," whether the raw stat is better high (YPA) or low (INT, 40 time).
+const COMP_TORNADO_STATS = {
+  QB: {
+    production: [
+      {l:'Final Grade', k:'grade',      fmt:'dec'},
+      {l:'Career CMP%', k:'careerCMP',  fmt:'pct'},
+      {l:'Career YPA',  k:'careerYPA',  fmt:'dec'},
+      {l:'Career TD',   k:'careerPTD',  fmt:'int'},
+      {l:'Career INT',  k:'careerINT',  fmt:'int', low:true},
+      {l:'True Acc%',   k:'careerAcc',  fmt:'pct'},
+      {l:'BTT%',        k:'careerBTT',  fmt:'pct'},
+      {l:'Best PPG',    k:'bestPPG',    fmt:'dec'},
+    ],
+    athleticism: [
+      {l:'BMI',           k:'bmi',  fmt:'dec'},
+      {l:'40-Yard Dash',  k:'dash', fmt:'dash2', low:true},
+      {l:'Speed Score',   k:'wass', fmt:'dec'},
+      {l:'Burst Score',   k:'burst',fmt:'dec'},
+    ],
+  },
+  RB: {
+    production: [
+      {l:'Final Grade',    k:'grade',       fmt:'dec'},
+      {l:'YPTP',           k:'yptp',        fmt:'dec'},
+      {l:'Career BA/A',    k:'careerBA',    fmt:'pct'},
+      {l:'Career MTF/A',   k:'careerMTF',   fmt:'pct'},
+      {l:'Career YPRR',    k:'careerYPRR',  fmt:'dec'},
+      {l:'Best Total Yds', k:'bestTotalYds',fmt:'int'},
+      {l:'Best PPG',       k:'bestPPG',     fmt:'dec'},
+    ],
+    athleticism: [
+      {l:'BMI',           k:'bmi',  fmt:'dec'},
+      {l:'40-Yard Dash',  k:'dash', fmt:'dash2', low:true},
+      {l:'Speed Score',   k:'wass', fmt:'dec'},
+      {l:'Burst Score',   k:'burst',fmt:'dec'},
+    ],
+  },
+  WR: {
+    production: [
+      {l:'Final Grade',    k:'grade',        fmt:'dec'},
+      {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
+      {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
+      {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
+      {l:'YPTPA',          k:'bestYPTPA',    fmt:'dec'},
+      {l:'1DRR',           k:'career1DRR',   fmt:'pct'},
+      {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
+      {l:'Breakout Yr 20%',k:'boy20',        fmt:'int', low:true},
+      {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
+    ],
+    athleticism: [
+      {l:'BMI',           k:'bmi',  fmt:'dec'},
+      {l:'40-Yard Dash',  k:'dash', fmt:'dash2', low:true},
+      {l:'Speed Score',   k:'wass', fmt:'dec'},
+      {l:'Burst Score',   k:'burst',fmt:'dec'},
+    ],
+  },
+  TE: {
+    production: [
+      {l:'Final Grade',    k:'grade',        fmt:'dec'},
+      {l:'Career YPRR',    k:'careerYPRR',   fmt:'dec'},
+      {l:'Career TPRR',    k:'careerTPRR',   fmt:'pct'},
+      {l:'Career YACR',    k:'careerYACR',   fmt:'dec'},
+      {l:'YPTPA',          k:'bestYPTPA',    fmt:'dec'},
+      {l:'1DRR',           k:'career1DRR',   fmt:'pct'},
+      {l:'Best MS Yards%', k:'bestMSYards',  fmt:'pct'},
+      {l:'Breakout Yr 15%',k:'boy15',        fmt:'int', low:true},
+      {l:'Best PPG',       k:'bestPPG',      fmt:'dec'},
+    ],
+    athleticism: [
+      {l:'BMI',           k:'bmi',  fmt:'dec'},
+      {l:'40-Yard Dash',  k:'dash', fmt:'dash2', low:true},
+      {l:'Speed Score',   k:'wass', fmt:'dec'},
+      {l:'Burst Score',   k:'burst',fmt:'dec'},
+    ],
+  },
 };
 // Percentile of `value` among all same-position players in the full dataset (yearCache
 // must already be fully loaded — true by the time this page has players to compare,
@@ -2914,9 +2993,6 @@ function positionPercentile(pos, key, value, low) {
     else if (v === value) equal++;
   });
   return Math.round((worse + equal / 2) / pool.length * 100);
-}
-function cssVar(name) {
-  return getComputedStyle(document.body).getPropertyValue(name).trim() || '#888';
 }
 
 async function getAllPlayers() {
@@ -3168,6 +3244,68 @@ function renderCompStats(players) {
     return h;
   }
 
+  // Same-position, exactly-two-player "who wins" profile — diverging bars anchored at a
+  // shared center line, split into Production and Athleticism, with a crown for whoever
+  // wins more categories. Bars only have two directions to diverge in, so this only makes
+  // sense for exactly two players; 3-4 player comparisons rely on the marker checklist and
+  // stat tables below instead.
+  function tornadoSection(players) {
+    if (players.length !== 2) return '';
+    const pos = players[0].pos;
+    const cfg = COMP_TORNADO_STATS[pos];
+    if (!cfg) return '';
+    const [p1, p2] = players;
+    const col1 = COMP_COLORS[0], col2 = COMP_COLORS[1];
+    let winsA = 0, winsB = 0;
+
+    const buildGroup = (title, rows) => {
+      const activeRows = rows.filter(row =>
+        positionPercentile(pos, row.k, p1[row.k], row.low) != null ||
+        positionPercentile(pos, row.k, p2[row.k], row.low) != null);
+      if (!activeRows.length) return '';
+      let rowsHtml = '';
+      activeRows.forEach(row => {
+        const pa = positionPercentile(pos, row.k, p1[row.k], row.low);
+        const pb = positionPercentile(pos, row.k, p2[row.k], row.low);
+        const bothScored = pa != null && pb != null;
+        const aWins = bothScored && pa > pb;
+        const bWins = bothScored && pb > pa;
+        if (bothScored) { if (aWins) winsA++; else if (bWins) winsB++; }
+        rowsHtml += `<div class="tornado-row">
+          <div class="tornado-val a ${aWins?'win':''}" style="color:${col1}">
+            <div class="tornado-pctl">${pa!=null?pa:'—'}</div><div class="tornado-raw">${fv(p1[row.k], row.fmt)}</div>
+          </div>
+          <div class="tornado-track a"><div class="tornado-bar a ${bWins?'lose':''}" style="width:${pa||0}%;background:${col1};color:${col1}"></div></div>
+          <div class="tornado-label">${row.l}</div>
+          <div class="tornado-track b"><div class="tornado-bar b ${aWins?'lose':''}" style="width:${pb||0}%;background:${col2};color:${col2}"></div></div>
+          <div class="tornado-val b ${bWins?'win':''}" style="color:${col2}">
+            <div class="tornado-pctl">${pb!=null?pb:'—'}</div><div class="tornado-raw">${fv(p2[row.k], row.fmt)}</div>
+          </div>
+        </div>`;
+      });
+      return `<div class="tornado-group"><div class="tornado-group-label">${title}</div>${rowsHtml}</div>`;
+    };
+
+    const bodyHtml = buildGroup('Production', cfg.production) + buildGroup('Athleticism', cfg.athleticism);
+    if (!bodyHtml) return '';
+
+    const crownA = winsA > winsB ? '<span class="tornado-crown">👑</span>' : '';
+    const crownB = winsB > winsA ? '<span class="tornado-crown">👑</span>' : '';
+
+    return `<div style="padding:16px;border-bottom:1px solid var(--border);background:var(--surface)">
+      <div class="tornado-head">
+        <div class="tornado-side-name" style="color:${col1}">${crownA}${safeStr(p1.name)}</div>
+        <div class="tornado-vs">VS</div>
+        <div class="tornado-side-name" style="color:${col2}">${crownB}${safeStr(p2.name)}</div>
+      </div>
+      <div class="tornado-score">
+        <div><div class="tornado-score-num a" style="color:${col1}">${winsA}</div><div class="tornado-score-num-lbl a">categories won</div></div>
+        <div><div class="tornado-score-num b" style="color:${col2}">${winsB}</div><div class="tornado-score-num-lbl b">categories won</div></div>
+      </div>
+      ${bodyHtml}
+    </div>`;
+  }
+
   // Same-position "why the grades differ" grid: every marker the model checks for this
   // position, hit/miss per player. Only meaningful when comparing the same position.
   function markerHeatmapSection(players) {
@@ -3225,14 +3363,10 @@ function renderCompStats(players) {
 
   let html = `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0 0 8px 8px;overflow:hidden">`;
 
+  if (samePos && players.length === 2) {
+    html += tornadoSection(players);
+  }
   if (samePos && players.length >= 2) {
-    if (COMP_RADAR_STATS[players[0].pos]) {
-      html += `<div style="padding:16px;border-bottom:1px solid var(--border);background:var(--surface)">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Profile Comparison</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Each axis is percentile rank among every ${players[0].pos} in the full dataset — not just relative to who you picked.</div>
-        <div style="height:400px"><canvas id="compRadarChart"></canvas></div>
-      </div>`;
-    }
     html += markerHeatmapSection(players);
   }
 
@@ -3251,58 +3385,6 @@ function renderCompStats(players) {
 
   html += '</div>';
   document.getElementById('compStats').innerHTML = html;
-
-  if (_compRadarChart) { _compRadarChart.destroy(); _compRadarChart = null; }
-  const radarCanvas = document.getElementById('compRadarChart');
-  if (radarCanvas && samePos && players.length >= 2) {
-    const pos = players[0].pos;
-    const stats = COMP_RADAR_STATS[pos] || [];
-    // Each axis is that player's percentile among every same-position player in the
-    // full dataset — so the shape means something on its own (e.g. two mediocre
-    // prospects don't max out an axis just by being the best of the two you picked).
-    const gridColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(30,25,20,0.12)';
-    const tickColor = cssVar('--muted');
-    _compRadarChart = new Chart(radarCanvas.getContext('2d'), {
-      type: 'radar',
-      data: {
-        labels: stats.map(s => s.l),
-        datasets: players.map((p, i) => ({
-          label: safeStr(p.name) + ' (' + (p.year||2026) + ')',
-          data: stats.map(s => positionPercentile(pos, s.k, p[s.k], s.low) ?? 0),
-          borderColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted'),
-          backgroundColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted') + '26',
-          pointBackgroundColor: cssVar(['--green','--accent2','--accent','--orange'][i] || '--muted'),
-          borderWidth: 2,
-        })),
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom', labels: { color: tickColor, font: { family: 'DM Mono', size: 11 } } },
-          tooltip: {
-            callbacks: {
-              label: ctx => {
-                const stat = stats[ctx.dataIndex];
-                const p = players[ctx.datasetIndex];
-                const pctl = positionPercentile(pos, stat.k, p[stat.k], stat.low);
-                return ctx.dataset.label + ' — ' + stat.l + ': ' + fv(p[stat.k], stat.fmt) +
-                  (pctl != null ? ' (' + ordinal(pctl) + ' pctl among ' + pos + 's)' : '');
-              }
-            }
-          }
-        },
-        scales: {
-          r: {
-            min: 0, max: 100,
-            angleLines: { color: gridColor },
-            grid: { color: gridColor },
-            pointLabels: { color: tickColor, font: { family: 'DM Mono', size: 10.5 } },
-            ticks: { display: false, stepSize: 25 },
-          }
-        }
-      }
-    });
-  }
 }
 
 function buildStatTable(players, rows, fv, getBest) {
