@@ -300,51 +300,51 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .cb-foot{font-size:9.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:7px;text-align:right;opacity:.8;}
 
 /* ---- COMPARISON: TORNADO PROFILE ---- */
-.tornado-head{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin-bottom:4px;padding-top:22px;}
-.tornado-side-name{position:relative;font-family:'Fraunces',serif;font-weight:700;font-size:16px;}
-.tornado-crown{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:16px;}
+.tornado-head{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:2px;padding-top:15px;}
+.tornado-side-name{position:relative;font-family:'Fraunces',serif;font-weight:700;font-size:13.5px;}
+.tornado-crown{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:13px;}
 .tornado-vs{
-  font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;
-  width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.5px;
+  width:22px;height:22px;border-radius:50%;border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.tornado-score{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;padding:10px 4px 16px;}
-.tornado-score-num{font-family:'DM Mono',monospace;font-size:34px;font-weight:800;line-height:1;}
+.tornado-score{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;padding:4px 4px 8px;}
+.tornado-score-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:800;line-height:1;}
 .tornado-score-num.a{text-align:right;}
 .tornado-score-num.b{text-align:left;}
-.tornado-score-num-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.tornado-score-num-lbl{font-size:8.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:1px;}
 .tornado-score-num-lbl.a{text-align:right;}
 .tornado-score-num-lbl.b{text-align:left;}
 .tornado-group-label{
-  text-align:center;font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--muted);padding:16px 0 8px;border-top:1px solid var(--border);margin-top:6px;
+  text-align:center;font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);padding:7px 0 4px;border-top:1px solid var(--border);margin-top:2px;
 }
 .tornado-group:first-child .tornado-group-label{border-top:none;margin-top:0;}
-.tornado-row{display:grid;grid-template-columns:60px 1fr 128px 1fr 60px;gap:10px;align-items:center;padding:7px 0;}
-.tornado-val{font-family:'DM Mono',monospace;white-space:nowrap;}
+.tornado-row{display:grid;grid-template-columns:82px 1fr 118px 1fr 82px;gap:8px;align-items:center;padding:2px 0;}
+.tornado-val{font-family:'DM Mono',monospace;white-space:nowrap;line-height:1.3;}
 .tornado-val.a{text-align:right;}
 .tornado-val.b{text-align:left;}
-.tornado-pctl{font-size:13px;font-weight:800;}
-.tornado-raw{font-size:9.5px;color:var(--muted);font-weight:500;margin-top:1px;}
+.tornado-pctl{display:inline;font-size:11.5px;font-weight:800;}
+.tornado-raw{display:inline;font-size:9px;color:var(--muted);font-weight:500;}
 .tornado-val.lose .tornado-pctl{color:var(--muted)!important;font-weight:400;}
-.tornado-label{text-align:center;font-size:11.5px;color:var(--text);font-weight:500;}
-.tornado-track{position:relative;height:20px;display:flex;}
+.tornado-label{text-align:center;font-size:10.5px;color:var(--text);font-weight:500;line-height:1.2;}
+.tornado-track{position:relative;height:12px;display:flex;}
 .tornado-track.a{justify-content:flex-end;}
 .tornado-track.b{justify-content:flex-start;}
 .tornado-bar{position:relative;height:100%;min-width:2px;}
-.tornado-bar.a{border-radius:4px 0 0 4px;}
-.tornado-bar.b{border-radius:0 4px 4px 0;}
+.tornado-bar.a{border-radius:3px 0 0 3px;}
+.tornado-bar.b{border-radius:0 3px 3px 0;}
 .tornado-bar.a::after{
-  content:'';position:absolute;left:-8px;top:0;bottom:0;width:0;
-  border-top:10px solid transparent;border-bottom:10px solid transparent;border-right:8px solid;
+  content:'';position:absolute;left:-6px;top:0;bottom:0;width:0;
+  border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:6px solid;
 }
 .tornado-bar.b::after{
-  content:'';position:absolute;right:-8px;top:0;bottom:0;width:0;
-  border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:8px solid;
+  content:'';position:absolute;right:-6px;top:0;bottom:0;width:0;
+  border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid;
 }
 .tornado-bar.lose{opacity:.3;}
 @media(max-width:640px){
-  .tornado-row{grid-template-columns:44px 1fr 96px 1fr 44px;gap:6px;}
+  .tornado-row{grid-template-columns:60px 1fr 90px 1fr 60px;gap:5px;}
   .tornado-raw{display:none;}
 }
 
@@ -3273,13 +3273,13 @@ function renderCompStats(players) {
         if (bothScored) { if (aWins) winsA++; else if (bWins) winsB++; }
         rowsHtml += `<div class="tornado-row">
           <div class="tornado-val a ${aWins?'win':''}" style="color:${col1}">
-            <div class="tornado-pctl">${pa!=null?pa:'—'}</div><div class="tornado-raw">${fv(p1[row.k], row.fmt)}</div>
+            <div class="tornado-pctl">${pa!=null?pa:'—'}</div> <div class="tornado-raw">(${fv(p1[row.k], row.fmt)})</div>
           </div>
           <div class="tornado-track a"><div class="tornado-bar a ${bWins?'lose':''}" style="width:${pa||0}%;background:${col1};color:${col1}"></div></div>
           <div class="tornado-label">${row.l}</div>
           <div class="tornado-track b"><div class="tornado-bar b ${aWins?'lose':''}" style="width:${pb||0}%;background:${col2};color:${col2}"></div></div>
           <div class="tornado-val b ${bWins?'win':''}" style="color:${col2}">
-            <div class="tornado-pctl">${pb!=null?pb:'—'}</div><div class="tornado-raw">${fv(p2[row.k], row.fmt)}</div>
+            <div class="tornado-pctl">${pb!=null?pb:'—'}</div> <div class="tornado-raw">(${fv(p2[row.k], row.fmt)})</div>
           </div>
         </div>`;
       });
