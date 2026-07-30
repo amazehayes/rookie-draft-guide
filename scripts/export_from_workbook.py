@@ -178,9 +178,26 @@ def main():
         if args.check:
             check_against_existing(year, records, out_dir)
         else:
+            preserve_existing_adj_markers(records, out_dir / f"{year}.json")
             out_path = out_dir / f"{year}.json"
             out_path.write_text(json.dumps(records, indent=2), encoding="utf-8")
             print(f"{year}: wrote {len(records)} records to {out_path}")
+
+
+def preserve_existing_adj_markers(records, existing_path):
+    """adjMarkers is hand-curated on the Final Rankings tab and only covers a
+    subset of prospects. Never overwrite an existing site value with nothing —
+    if the workbook lookup came up empty, keep whatever is already published."""
+    if not existing_path.exists():
+        return
+    existing = json.loads(existing_path.read_text(encoding="utf-8"))
+    existing_by_key = {(p.get("cfr_id") or f"{p.get('pos')}:{p.get('name')}"): p for p in existing}
+    for p in records:
+        if "adjMarkers" not in p:
+            key = p.get("cfr_id") or f"{p.get('pos')}:{p.get('name')}"
+            old = existing_by_key.get(key)
+            if old and "adjMarkers" in old:
+                p["adjMarkers"] = old["adjMarkers"]
 
 
 def check_against_existing(year, records, out_dir):
