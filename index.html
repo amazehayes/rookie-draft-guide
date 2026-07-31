@@ -4873,14 +4873,17 @@ function computeComps(player) {
   return top;
 }
 
-// Outcome band from the 10 displayed comps that have an established NFL career (>=3 seasons).
-// Shown only when at least 5 qualify. Ceiling/median by career PPG; hit-rates by position.
+// Outcome band from the 10 displayed comps — always based on whichever of those 10 have
+// any NFL data, regardless of how many seasons they've played (a comp who's only played
+// 1 season still counts; nfl_career_ppg is already whatever they've done through that many
+// seasons). Shown only when at least 5 have NFL data at all. Ceiling/median by career PPG;
+// hit-rates by position.
 function computeCompBand(topComps, pos) {
-  const mature = topComps.filter(c => c._nfl && (c._nfl.nfl_seasons || 0) >= 3 && c._nfl.nfl_career_ppg != null);
-  if(mature.length < 5) return null;
-  mature.sort((a,b) => a._nfl.nfl_career_ppg - b._nfl.nfl_career_ppg);
-  const hi = mature[mature.length - 1];
-  const med = mature[Math.floor(mature.length / 2)];
+  const withData = topComps.filter(c => c._nfl && c._nfl.nfl_career_ppg != null);
+  if(withData.length < 5) return null;
+  withData.sort((a,b) => a._nfl.nfl_career_ppg - b._nfl.nfl_career_ppg);
+  const hi = withData[withData.length - 1];
+  const med = withData[Math.floor(withData.length / 2)];
   const cell = c => ({
     name: c.name, year: c.year,
     ppg: c._nfl.nfl_career_ppg, best: c._nfl.nfl_best_ppg,
@@ -4889,14 +4892,14 @@ function computeCompBand(topComps, pos) {
   const isTE = pos === 'TE';
   const fieldA = isTE ? 'nfl_top5' : 'nfl_top12';
   const fieldB = isTE ? 'nfl_top12' : 'nfl_top24';
-  const hitA = mature.filter(c => (c._nfl[fieldA] || 0) >= 1).length;
-  const hitB = mature.filter(c => (c._nfl[fieldB] || 0) >= 1).length;
+  const hitA = withData.filter(c => (c._nfl[fieldA] || 0) >= 1).length;
+  const hitB = withData.filter(c => (c._nfl[fieldB] || 0) >= 1).length;
   return {
-    n: mature.length,
+    n: withData.length,
     labelA: isTE ? 'Top-5' : 'Top-12',
     labelB: isTE ? 'Top-12' : 'Top-24',
-    hitA: Math.round(100 * hitA / mature.length),
-    hitB: Math.round(100 * hitB / mature.length),
+    hitA: Math.round(100 * hitA / withData.length),
+    hitB: Math.round(100 * hitB / withData.length),
     hi: cell(hi), med: cell(med)
   };
 }
