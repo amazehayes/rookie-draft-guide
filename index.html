@@ -905,6 +905,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <div class="nav-links">
     <button class="nav-btn active" data-page="grades">Player Grades</button>
     <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
+    <button class="nav-btn" data-page="board">Dynasty Board</button>
     <button class="nav-btn" data-page="comparison">Player Comparison</button>
     <button class="nav-btn" data-page="explorer">Stat Explorer</button>
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
@@ -924,6 +925,7 @@ td{padding:10px 14px;white-space:nowrap;}
 <div class="nav-drawer" id="navDrawer">
   <button class="nav-btn active" data-page="grades">Player Grades</button>
   <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
+  <button class="nav-btn" data-page="board">Dynasty Board</button>
   <button class="nav-btn" data-page="comparison">Player Comparison</button>
   <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
@@ -1032,6 +1034,40 @@ td{padding:10px 14px;white-space:nowrap;}
   <div class="main">
     <div class="table-wrap"><table><thead id="rankingsHead"></thead><tbody id="rankingsBody"></tbody></table></div>
   </div>
+</div>
+
+<!-- PAGE: DYNASTY BOARD -->
+<div class="page-section" id="page-board">
+  <div class="hero">
+    <div class="hero-bg-text">BOARD</div>
+    <h1>Dynasty <span>Board</span></h1>
+  </div>
+  <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);font-size:12px;line-height:1.6;color:var(--muted)">
+    Every active NFL player's <strong style="color:var(--text)">Marker System Final Grade</strong>, carried forward and adjusted week to week by real career production, then blended with KeepTradeCut consensus. <span style="color:var(--text)">QB and RB lean 75% on the market</span> — the model can't see trades, depth-chart moves, or coaching changes. <span style="color:var(--text)">WR and TE stay closer to the model's own read</span>, and TE is the one position where it beats the market outright. Nobody — including the market — can order the top WRs cleanly; treat any WR1&ndash;12 sequence as rough. <span id="boardUpdated"></span>
+  </div>
+  <div class="outcomes-controls">
+    <div class="filter-group">
+      <button class="filter-btn active" data-boardpos="ALL">All</button>
+      <button class="filter-btn" data-boardpos="QB" style="color:var(--pos-qb)">QB</button>
+      <button class="filter-btn" data-boardpos="RB" style="color:var(--pos-rb)">RB</button>
+      <button class="filter-btn" data-boardpos="WR" style="color:var(--pos-wr)">WR</button>
+      <button class="filter-btn" data-boardpos="TE" style="color:var(--pos-te)">TE</button>
+    </div>
+    <div class="filter-group" style="margin-left:8px">
+      <button class="filter-btn active" data-boardtier="ALL">All Tiers</button>
+      <button class="filter-btn" data-boardtier="elite">Elite</button>
+      <button class="filter-btn" data-boardtier="startable">Startable</button>
+      <button class="filter-btn" data-boardtier="replacement">Replacement</button>
+    </div>
+    <input type="text" class="search-box" id="boardSearch" placeholder="Search player..." style="max-width:220px;margin-left:auto">
+  </div>
+  <div class="outcomes-table-wrap">
+    <table class="outcomes-table">
+      <thead id="boardHead"></thead>
+      <tbody id="boardBody"></tbody>
+    </table>
+  </div>
+  <div class="empty-state" id="boardEmptyState" style="display:none">No players match your filters.</div>
 </div>
 
 <!-- PAGE 3: PLAYER COMPARISON -->
@@ -2675,6 +2711,7 @@ function switchPage(page, push) {
   document.getElementById('page-' + page).classList.add('active');
 
   if(page === 'rankings') renderRankings();
+  if(page === 'board') loadAndRenderBoard();
   if(page === 'breakdown') loadAndRenderBreakdown();
   if(page === 'glossary') renderGlossary();
   if(page === 'explorer') explorerRender();
@@ -4613,6 +4650,130 @@ async function loadAndRenderOutcomes() {
 }
 
 buildOutcomesYearSelects();
+
+// ============================================================
+// DYNASTY BOARD (marker-system career pipeline, via Cloudflare R2)
+// ============================================================
+const MARKER_SYSTEM_BASE = 'https://pub-de07866230e4413793fbe856464ca3a7.r2.dev/marker-system/';
+const BOARD_NUM_FIELDS = ['week','age','v1','grade','dynasty','exp_elite5','ktc_val','blended','model_rank','ktc_rank','final_rank','w_model','horizon','games'];
+let DYNASTY_BOARD = null;
+let boardPos = 'ALL';
+let boardTier = 'ALL';
+let boardSearchTerm = '';
+let boardSort = 'blended';
+let boardSortDir = 'desc';
+
+function parseMarkerCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).filter(Boolean).map(line => {
+    const cells = line.split(',');
+    const o = {};
+    headers.forEach((h,i) => { o[h] = cells[i] !== undefined ? cells[i].trim() : ''; });
+    return o;
+  });
+}
+
+async function loadAndRenderBoard() {
+  if(!DYNASTY_BOARD) {
+    document.getElementById('boardBody').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Loading dynasty board...</td></tr>';
+    try {
+      const csvRes = await fetch(MARKER_SYSTEM_BASE + 'dynasty_blended.csv');
+      const text = await csvRes.text();
+      const rows = parseMarkerCSV(text);
+      rows.forEach(r => { BOARD_NUM_FIELDS.forEach(f => { r[f] = r[f] === '' ? null : parseFloat(r[f]); }); });
+      DYNASTY_BOARD = rows;
+      fetch(MARKER_SYSTEM_BASE + 'manifest.json').then(r => r.json()).then(man => {
+        const el = document.getElementById('boardUpdated');
+        if(el && man.updated) el.textContent = '· Board last updated ' + man.updated.slice(0,10);
+      }).catch(() => {});
+    } catch(e) {
+      DYNASTY_BOARD = [];
+      document.getElementById('boardBody').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Could not load dynasty board data.</td></tr>';
+      return;
+    }
+  }
+  renderBoard();
+}
+
+function boardTierBadge(tier) {
+  const map = { elite:{l:'Elite',c:'var(--green)'}, startable:{l:'Startable',c:'var(--accent2)'}, replacement:{l:'Replacement',c:'var(--muted)'} };
+  const t = map[tier] || {l:tier||'—',c:'var(--muted)'};
+  return `<span style="display:inline-flex;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:.5px;color:${t.c};background:${t.c}18;border:1px solid ${t.c}44">${t.l}</span>`;
+}
+
+function setBoardSort(key) {
+  if(boardSort === key) { boardSortDir = boardSortDir === 'desc' ? 'asc' : 'desc'; }
+  else { boardSort = key; boardSortDir = 'desc'; }
+  renderBoard();
+}
+
+function renderBoard() {
+  if(!DYNASTY_BOARD) return;
+  let data = DYNASTY_BOARD.filter(p => {
+    if(boardPos !== 'ALL' && p.position !== boardPos) return false;
+    if(boardTier !== 'ALL' && p.tier !== boardTier) return false;
+    if(boardSearchTerm && !(p.player||'').toLowerCase().includes(boardSearchTerm)) return false;
+    return true;
+  });
+  const sortVal = p => { const v = p[boardSort]; return v == null ? -999 : v; };
+  data = data.sort((a,b) => { const diff = sortVal(b) - sortVal(a); return boardSortDir === 'desc' ? diff : -diff; });
+
+  const arr = k => k === boardSort ? (boardSortDir === 'desc' ? ' ↓' : ' ↑') : '';
+  const th = (k, label, col='') =>
+    `<th class="${boardSort===k?'sorted':''}" style="cursor:pointer;${col?'color:'+col:''}" onclick="setBoardSort('${k}')">${label}${arr(k)}</th>`;
+
+  document.getElementById('boardHead').innerHTML = '<tr><th>#</th><th>Player</th><th>Pos</th>' +
+    th('age','Age') + '<th>Tier</th>' + th('v1','Final Grade') + th('grade','Current Grade') +
+    th('dynasty','Dynasty') + th('blended','Blended') + th('model_rank','Model Rk') + th('ktc_rank','KTC Rk') + '</tr>';
+
+  if(!data.length) {
+    document.getElementById('boardBody').innerHTML = '';
+    document.getElementById('boardEmptyState').style.display = 'block';
+    return;
+  }
+  document.getElementById('boardEmptyState').style.display = 'none';
+
+  let html = '';
+  data.forEach((p,i) => {
+    const col = posColor(p.position);
+    html += '<tr>';
+    html += `<td style="color:var(--muted);font-size:13px;font-weight:700">${i+1}</td>`;
+    html += `<td style="font-weight:600">${safeStr(p.player)}</td>`;
+    html += `<td style="color:${col};font-weight:700;font-size:13px">${p.position}</td>`;
+    html += `<td>${p.age!=null?fmtAge(p.age):'—'}</td>`;
+    html += `<td>${boardTierBadge(p.tier)}</td>`;
+    html += `<td style="color:${gradeColor(p.v1)}">${p.v1!=null?fmt(p.v1,1):'—'}</td>`;
+    html += `<td style="color:${gradeColor(p.grade)}">${p.grade!=null?fmt(p.grade,1):'—'}</td>`;
+    html += `<td style="color:${gradeColor(p.dynasty)}">${p.dynasty!=null?fmt(p.dynasty,1):'—'}</td>`;
+    html += `<td style="font-weight:700;color:var(--accent)">${p.blended!=null?fmt(p.blended,1):'—'}</td>`;
+    html += `<td style="color:var(--muted)">${p.model_rank!=null?p.position+Math.round(p.model_rank):'—'}</td>`;
+    html += `<td style="color:var(--muted)">${p.ktc_rank!=null?(p.ktc_slug?`<a href="https://keeptradecut.com/dynasty-rankings/players/${p.ktc_slug}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)" onclick="event.stopPropagation()">${p.position+Math.round(p.ktc_rank)}</a>`:p.position+Math.round(p.ktc_rank)):'—'}</td>`;
+    html += '</tr>';
+  });
+  document.getElementById('boardBody').innerHTML = html;
+}
+
+document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-boardpos]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    boardPos = btn.dataset.boardpos;
+    renderBoard();
+  });
+});
+document.querySelectorAll('.filter-btn[data-boardtier]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-boardtier]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    boardTier = btn.dataset.boardtier;
+    renderBoard();
+  });
+});
+(function(){
+  const el = document.getElementById('boardSearch');
+  if(el) el.addEventListener('input', () => { boardSearchTerm = el.value.trim().toLowerCase(); renderBoard(); });
+})();
 
 // ============================================================
 // NFL OUTCOMES ENRICHMENT
