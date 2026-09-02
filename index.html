@@ -409,7 +409,8 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 /* ---- SITE NAV ---- */
 .site-nav{position:sticky;top:0;z-index:100;background:#1a1714;border-bottom:3px solid var(--accent);padding:0 24px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
-.nav-links{display:flex;gap:2px;flex-shrink:0;}
+.nav-links{display:flex;gap:2px;flex-shrink:0;visibility:hidden;}
+.nav-ready .nav-links{visibility:visible;}
 .nav-btn{background:none;border:none;color:rgba(255,255,255,0.55);font-family:'Sora',sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:6px 7px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .nav-btn:hover{color:rgba(255,255,255,0.9);}
 .nav-btn.active{background:var(--accent);color:#fff;}
@@ -6121,8 +6122,15 @@ document.head.appendChild(navOverflowStyle);
 // The very first checkNavOverflow() call above runs synchronously mid-script, before the
 // browser has done its first layout/paint pass -- scrollWidth/clientWidth reads at that
 // point aren't trustworthy, so it can wrongly conclude the full link row fits (or doesn't).
-// `load` fires only after a real render has happened; re-check there, and again on resize.
-window.addEventListener('load', checkNavOverflow);
+// .nav-links starts visibility:hidden (see CSS) specifically so an early wrong reading is
+// never actually painted -- it only stays reserved, invisible layout space. `load` fires
+// after a real render has happened, so THAT check is trustworthy; only then do we add
+// .nav-ready and let the (by-then-correct) .nav-overflow state decide what's visible, in
+// one step, with nothing wrong ever flashing on screen first.
+window.addEventListener('load', () => {
+  checkNavOverflow();
+  document.getElementById('siteNav').classList.add('nav-ready');
+});
 let _navOverflowResizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_navOverflowResizeTimer);
