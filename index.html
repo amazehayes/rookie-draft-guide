@@ -386,6 +386,13 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .outcomes-table td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
 .outcomes-table tr:hover td{background:var(--surface2);cursor:pointer;}
 .outcomes-table tr.no-nfl td{opacity:.45;}
+.trends-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px;}
+@media(max-width:860px){.trends-grid{grid-template-columns:1fr;}}
+.trends-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px 10px;}
+.trends-panel-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.trends-panel-sub{color:var(--muted);font-weight:500;letter-spacing:.5px;}
+.trends-canvas-wrap{position:relative;height:260px;}
+.trends-empty-panel{color:var(--muted);font-size:12px;font-style:italic;padding:30px 0;text-align:center;}
 .nfl-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;border-radius:4px;font-size:13px;font-weight:700;padding:0 5px;}
 .nfl-badge.gold{background:rgba(245,200,66,.2);color:var(--accent2);border:1px solid rgba(245,200,66,.3);}
 .nfl-badge.silver{background:rgba(90,100,120,.2);color:var(--muted);border:1px solid rgba(90,100,120,.2);}
@@ -909,6 +916,7 @@ td{padding:10px 14px;white-space:nowrap;}
     <button class="nav-btn" data-page="comparison">Player Comparison</button>
     <button class="nav-btn" data-page="explorer">Stat Explorer</button>
     <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
+    <button class="nav-btn" data-page="trends">Rookie Trends</button>
     <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
     <button class="nav-btn" data-page="backtest">Track Record</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
@@ -929,6 +937,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <button class="nav-btn" data-page="comparison">Player Comparison</button>
   <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
+    <button class="nav-btn" data-page="trends">Rookie Trends</button>
   <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
   <button class="nav-btn" data-page="backtest">Track Record</button>
   <button class="nav-btn" data-page="glossary">Glossary</button>
@@ -1112,6 +1121,26 @@ td{padding:10px 14px;white-space:nowrap;}
   </div>
   <div class="breakdown-table-wrap">
     <table class="bk-table"><thead id="bkHead"></thead><tbody id="bkBody"></tbody></table>
+  </div>
+</div>
+
+<!-- PAGE: ROOKIE TRENDS -->
+<div class="page-section" id="page-trends">
+  <div class="hero">
+    <div class="hero-bg-text" id="trendsHeroBgText">2025</div>
+    <h1 id="trendsHeroTitle">2025 <span>ROOKIE TRENDS</span></h1>
+  </div>
+  <div class="year-bar" id="trendsYearBar"><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
+  <div style="padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div class="view-toggle">
+      <button class="view-btn active" id="trendsWeekBtn">By Week</button>
+      <button class="view-btn" id="trendsYearBtn">By Year</button>
+    </div>
+    <span id="trendsSubtitle" style="color:var(--muted);font-size:12px"></span>
+  </div>
+  <div class="main">
+    <div class="trends-grid" id="trendsGrid"></div>
+    <div class="empty-state" id="trendsEmptyState" style="display:none">No weekly trace data for this class yet.</div>
   </div>
 </div>
 
@@ -2706,6 +2735,7 @@ function switchPage(page, push) {
 
   if(page === 'rankings') renderRankings();
   if(page === 'board') loadAndRenderBoard();
+  if(page === 'trends') loadAndRenderTrends();
   if(page === 'breakdown') loadAndRenderBreakdown();
   if(page === 'glossary') renderGlossary();
   if(page === 'explorer') explorerRender();
@@ -4786,6 +4816,189 @@ document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
   const el = document.getElementById('boardSearch');
   if(el) el.addEventListener('input', () => { boardSearchTerm = el.value.trim().toLowerCase(); renderBoard(); });
 })();
+
+// ============================================================
+// ROOKIE TRENDS (weekly in-season trace, by-week or by-year view)
+// ============================================================
+const TRENDS_YEARS = Array.from({length:16}, (_,i) => 2010+i); // 2010-2025 (2026 season hasn't happened yet)
+const TRENDS_LINE_COLORS = ['#c0392b','#2980b9','#2a9d8f','#8e44ad','#d68910','#16a085','#e63946','#3a86ff','#fb8500','#6a3ba0'];
+const TRENDS_POS = ['QB','RB','WR','TE'];
+const TRENDS_TOP_N = 10;
+let trendsClass = 2025;
+let trendsView = 'week'; // 'week' | 'year'
+const trendsWeekCache = {};   // year -> {QB:[{player,pick,final,games,pts:[[wk,score],...]}], RB:[...], ...}
+let CAREER_YEARLY = null;     // full career_grade_yearly.csv, loaded once
+let ROOKIE_YEAR_BY_PID = null;
+let trendsCharts = [];
+
+function buildTrendsYearBar() {
+  const bar = document.getElementById('trendsYearBar');
+  if(!bar || bar.dataset.built) return;
+  TRENDS_YEARS.slice().reverse().forEach(yr => {
+    const btn = document.createElement('button');
+    btn.className = 'year-tab' + (yr === trendsClass ? ' active' : '');
+    btn.textContent = yr;
+    btn.dataset.yr = yr;
+    btn.addEventListener('click', () => {
+      trendsClass = yr;
+      bar.querySelectorAll('.year-tab').forEach(b => b.classList.toggle('active', Number(b.dataset.yr) === yr));
+      document.getElementById('trendsHeroBgText').textContent = yr;
+      document.getElementById('trendsHeroTitle').innerHTML = yr + ' <span>ROOKIE TRENDS</span>';
+      loadAndRenderTrends();
+    });
+    bar.appendChild(btn);
+  });
+  bar.dataset.built = '1';
+}
+
+async function loadRookieTraces(year) {
+  if(trendsWeekCache[year]) return trendsWeekCache[year];
+  const byPos = {QB:[],RB:[],WR:[],TE:[]};
+  try {
+    const res = await fetch(MARKER_SYSTEM_BASE + 'rookie_traces_' + year + '.csv');
+    if(!res.ok) throw new Error('no data');
+    const rows = parseMarkerCSV(await res.text());
+    const byPlayer = {};
+    rows.forEach(r => {
+      const week = parseFloat(r.week), score = r.score === '' ? null : parseFloat(r.score);
+      if(!TRENDS_POS.includes(r.position) || score == null) return;
+      const key = r.position + '|' + r.player;
+      if(!byPlayer[key]) byPlayer[key] = {player: r.player, position: r.position, pick: parseFloat(r.pick), pts: []};
+      byPlayer[key].pts.push([week, score]);
+    });
+    Object.values(byPlayer).forEach(p => {
+      p.pts.sort((a,b) => a[0]-b[0]);
+      p.final = p.pts.length ? p.pts[p.pts.length-1][1] : null;
+      byPos[p.position].push(p);
+    });
+    TRENDS_POS.forEach(pos => byPos[pos].sort((a,b) => (b.final||0)-(a.final||0)));
+  } catch(e) { /* leave empty */ }
+  trendsWeekCache[year] = byPos;
+  return byPos;
+}
+
+async function loadCareerYearly() {
+  if(CAREER_YEARLY) return CAREER_YEARLY;
+  const res = await fetch(MARKER_SYSTEM_BASE + 'career_grade_yearly.csv');
+  const rows = parseMarkerCSV(await res.text());
+  rows.forEach(r => { r.year=parseFloat(r.year); r.exp=parseFloat(r.exp); r.v1=parseFloat(r.v1); r.grade=parseFloat(r.grade); r.games=parseFloat(r.games); });
+  CAREER_YEARLY = rows;
+  ROOKIE_YEAR_BY_PID = {};
+  rows.forEach(r => { if(r.exp === 1) ROOKIE_YEAR_BY_PID[r.player_id] = r.year; });
+  return CAREER_YEARLY;
+}
+
+function trendsByYearData(year) {
+  const byPos = {QB:[],RB:[],WR:[],TE:[]};
+  const pids = Object.keys(ROOKIE_YEAR_BY_PID).filter(pid => ROOKIE_YEAR_BY_PID[pid] === year);
+  const pidSet = new Set(pids);
+  const byPlayer = {};
+  CAREER_YEARLY.forEach(r => {
+    if(!pidSet.has(r.player_id) || !TRENDS_POS.includes(r.position)) return;
+    if(!byPlayer[r.player_id]) byPlayer[r.player_id] = {player: r.player, position: r.position, pts: []};
+    byPlayer[r.player_id].pts.push([r.exp, r.grade]);
+  });
+  Object.values(byPlayer).forEach(p => {
+    p.pts.sort((a,b) => a[0]-b[0]);
+    p.final = p.pts.length ? p.pts[p.pts.length-1][1] : null;
+    if(byPos[p.position]) { byPos[p.position].push(p); }
+  });
+  TRENDS_POS.forEach(pos => byPos[pos].sort((a,b) => (b.final||0)-(a.final||0)));
+  return byPos;
+}
+
+async function loadAndRenderTrends() {
+  buildTrendsYearBar();
+  const grid = document.getElementById('trendsGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Loading...</div>';
+  let byPos;
+  if(trendsView === 'week') {
+    byPos = await loadRookieTraces(trendsClass);
+  } else {
+    await loadCareerYearly();
+    byPos = trendsByYearData(trendsClass);
+  }
+  renderTrends(byPos);
+}
+
+function renderTrends(byPos) {
+  const grid = document.getElementById('trendsGrid');
+  const empty = document.getElementById('trendsEmptyState');
+  const sub = document.getElementById('trendsSubtitle');
+  trendsCharts.forEach(c => c.destroy());
+  trendsCharts = [];
+
+  const anyData = TRENDS_POS.some(pos => byPos[pos] && byPos[pos].length);
+  if(!anyData) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    sub.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  sub.textContent = trendsView === 'week'
+    ? trendsClass + ' Class · Weekly grade, rookie season (draft → week 18)'
+    : trendsClass + ' Class · Grade by season, full career so far';
+
+  grid.innerHTML = TRENDS_POS.map(pos =>
+    `<div class="trends-panel"><div class="trends-panel-title"><span style="color:${posColor(pos)}">${pos==='QB'?'Quarterbacks':pos==='RB'?'Running Backs':pos==='WR'?'Wide Receivers':'Tight Ends'}</span><span class="trends-panel-sub">${trendsClass} Class</span></div>
+      <div class="trends-canvas-wrap"><canvas id="trendsCanvas-${pos}"></canvas></div></div>`
+  ).join('');
+
+  TRENDS_POS.forEach(pos => {
+    const players = (byPos[pos] || []).slice(0, TRENDS_TOP_N);
+    const canvas = document.getElementById('trendsCanvas-' + pos);
+    if(!players.length) {
+      canvas.closest('.trends-canvas-wrap').innerHTML = '<div class="trends-empty-panel">No graded rookies at this position.</div>';
+      return;
+    }
+    const xMax = trendsView === 'week' ? 18 : Math.max(2, ...players.map(p => p.pts.length ? p.pts[p.pts.length-1][0] : 1));
+    const chart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        datasets: players.map((p,i) => ({
+          label: p.player,
+          data: p.pts.map(([x,y]) => ({x,y})),
+          borderColor: TRENDS_LINE_COLORS[i % TRENDS_LINE_COLORS.length],
+          backgroundColor: TRENDS_LINE_COLORS[i % TRENDS_LINE_COLORS.length],
+          borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, tension: .15, spanGaps: true,
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: {mode: 'nearest', intersect: false},
+        plugins: {
+          legend: {position:'bottom', labels:{color:'var(--muted)', font:{family:'DM Mono',size:9}, boxWidth:10, padding:8}},
+          tooltip: {callbacks:{
+            title: ctx => trendsView==='week' ? (ctx[0].parsed.x===0?'Draft':'Week '+ctx[0].parsed.x) : 'Year '+ctx[0].parsed.x,
+            label: ctx => ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)
+          }}
+        },
+        scales: {
+          x: {type:'linear', min:0, max:xMax,
+            ticks:{color:'#8c8070', font:{family:'DM Mono',size:9}, stepSize: trendsView==='week'?3:1,
+              callback: v => trendsView==='week' ? (v===0?'draft':'wk'+v) : 'Y'+v},
+            grid:{color:'rgba(224,216,204,.6)'}},
+          y: {min:0, max:100, ticks:{color:'#8c8070', font:{family:'DM Mono',size:9}, stepSize:25}, grid:{color:'rgba(224,216,204,.6)'}}
+        }
+      }
+    });
+    trendsCharts.push(chart);
+  });
+}
+
+document.getElementById('trendsWeekBtn').addEventListener('click', () => {
+  trendsView = 'week';
+  document.getElementById('trendsWeekBtn').classList.add('active');
+  document.getElementById('trendsYearBtn').classList.remove('active');
+  loadAndRenderTrends();
+});
+document.getElementById('trendsYearBtn').addEventListener('click', () => {
+  trendsView = 'year';
+  document.getElementById('trendsYearBtn').classList.add('active');
+  document.getElementById('trendsWeekBtn').classList.remove('active');
+  loadAndRenderTrends();
+});
 
 // ============================================================
 // NFL OUTCOMES ENRICHMENT
