@@ -1053,12 +1053,6 @@ td{padding:10px 14px;white-space:nowrap;}
       <button class="filter-btn" data-boardpos="WR" style="color:var(--pos-wr)">WR</button>
       <button class="filter-btn" data-boardpos="TE" style="color:var(--pos-te)">TE</button>
     </div>
-    <div class="filter-group" style="margin-left:8px">
-      <button class="filter-btn active" data-boardtier="ALL">All Tiers</button>
-      <button class="filter-btn" data-boardtier="elite">Elite</button>
-      <button class="filter-btn" data-boardtier="startable">Startable</button>
-      <button class="filter-btn" data-boardtier="replacement">Replacement</button>
-    </div>
     <input type="text" class="search-box" id="boardSearch" placeholder="Search player..." style="max-width:220px;margin-left:auto">
   </div>
   <div class="outcomes-table-wrap">
@@ -4658,7 +4652,6 @@ const MARKER_SYSTEM_BASE = 'https://pub-de07866230e4413793fbe856464ca3a7.r2.dev/
 const BOARD_NUM_FIELDS = ['week','age','v1','grade','dynasty','exp_elite5','ktc_val','blended','model_rank','ktc_rank','final_rank','w_model','horizon','games'];
 let DYNASTY_BOARD = null;
 let boardPos = 'ALL';
-let boardTier = 'ALL';
 let boardSearchTerm = '';
 let boardSort = 'blended';
 let boardSortDir = 'desc';
@@ -4696,12 +4689,6 @@ async function loadAndRenderBoard() {
   renderBoard();
 }
 
-function boardTierBadge(tier) {
-  const map = { elite:{l:'Elite',c:'var(--green)'}, startable:{l:'Startable',c:'var(--accent2)'}, replacement:{l:'Replacement',c:'var(--muted)'} };
-  const t = map[tier] || {l:tier||'—',c:'var(--muted)'};
-  return `<span style="display:inline-flex;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:.5px;color:${t.c};background:${t.c}18;border:1px solid ${t.c}44">${t.l}</span>`;
-}
-
 function setBoardSort(key) {
   if(boardSort === key) { boardSortDir = boardSortDir === 'desc' ? 'asc' : 'desc'; }
   else { boardSort = key; boardSortDir = 'desc'; }
@@ -4712,7 +4699,6 @@ function renderBoard() {
   if(!DYNASTY_BOARD) return;
   let data = DYNASTY_BOARD.filter(p => {
     if(boardPos !== 'ALL' && p.position !== boardPos) return false;
-    if(boardTier !== 'ALL' && p.tier !== boardTier) return false;
     if(boardSearchTerm && !(p.player||'').toLowerCase().includes(boardSearchTerm)) return false;
     return true;
   });
@@ -4724,7 +4710,7 @@ function renderBoard() {
     `<th class="${boardSort===k?'sorted':''}" style="cursor:pointer;${col?'color:'+col:''}" onclick="setBoardSort('${k}')">${label}${arr(k)}</th>`;
 
   document.getElementById('boardHead').innerHTML = '<tr><th>#</th><th>Player</th><th>Pos</th>' +
-    th('age','Age') + '<th>Tier</th>' + th('v1','Rookie Grade') + th('blended','Dynasty Grade') + '</tr>';
+    th('age','Age') + th('v1','Rookie Grade') + th('blended','Dynasty Grade') + '</tr>';
 
   if(!data.length) {
     document.getElementById('boardBody').innerHTML = '';
@@ -4742,7 +4728,6 @@ function renderBoard() {
     html += `<td style="font-weight:600">${safeStr(p.player)}</td>`;
     html += `<td style="color:${col};font-weight:700;font-size:13px">${p.position}</td>`;
     html += `<td>${p.age!=null?fmtAge(p.age):'—'}</td>`;
-    html += `<td>${boardTierBadge(p.tier)}</td>`;
     html += `<td style="color:${gradeColor(p.v1)}">${p.v1!=null?fmt(p.v1,1):'—'}</td>`;
     html += `<td style="font-weight:700;color:var(--accent)">${p.blended!=null?fmt(p.blended,1):'—'}</td>`;
     html += '</tr>';
@@ -4794,14 +4779,6 @@ document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
     document.querySelectorAll('.filter-btn[data-boardpos]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     boardPos = btn.dataset.boardpos;
-    renderBoard();
-  });
-});
-document.querySelectorAll('.filter-btn[data-boardtier]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn[data-boardtier]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    boardTier = btn.dataset.boardtier;
     renderBoard();
   });
 });
