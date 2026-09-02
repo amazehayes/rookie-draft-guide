@@ -4724,8 +4724,7 @@ function renderBoard() {
     `<th class="${boardSort===k?'sorted':''}" style="cursor:pointer;${col?'color:'+col:''}" onclick="setBoardSort('${k}')">${label}${arr(k)}</th>`;
 
   document.getElementById('boardHead').innerHTML = '<tr><th>#</th><th>Player</th><th>Pos</th>' +
-    th('age','Age') + '<th>Tier</th>' + th('v1','Final Grade') + th('grade','Current Grade') +
-    th('dynasty','Dynasty') + th('blended','Blended') + th('model_rank','Model Rk') + th('ktc_rank','KTC Rk') + '</tr>';
+    th('age','Age') + '<th>Tier</th>' + th('v1','Rookie Grade') + th('blended','Dynasty Grade') + '</tr>';
 
   if(!data.length) {
     document.getElementById('boardBody').innerHTML = '';
@@ -4745,11 +4744,7 @@ function renderBoard() {
     html += `<td>${p.age!=null?fmtAge(p.age):'—'}</td>`;
     html += `<td>${boardTierBadge(p.tier)}</td>`;
     html += `<td style="color:${gradeColor(p.v1)}">${p.v1!=null?fmt(p.v1,1):'—'}</td>`;
-    html += `<td style="color:${gradeColor(p.grade)}">${p.grade!=null?fmt(p.grade,1):'—'}</td>`;
-    html += `<td style="color:${gradeColor(p.dynasty)}">${p.dynasty!=null?fmt(p.dynasty,1):'—'}</td>`;
     html += `<td style="font-weight:700;color:var(--accent)">${p.blended!=null?fmt(p.blended,1):'—'}</td>`;
-    html += `<td style="color:var(--muted)">${p.model_rank!=null?p.position+Math.round(p.model_rank):'—'}</td>`;
-    html += `<td style="color:var(--muted)">${p.ktc_rank!=null?(p.ktc_slug?`<a href="https://keeptradecut.com/dynasty-rankings/players/${p.ktc_slug}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)" onclick="event.stopPropagation()">${p.position+Math.round(p.ktc_rank)}</a>`:p.position+Math.round(p.ktc_rank)):'—'}</td>`;
     html += '</tr>';
   });
   document.getElementById('boardBody').innerHTML = html;
