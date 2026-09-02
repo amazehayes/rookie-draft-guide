@@ -244,7 +244,7 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 
 /* ---- GLOBAL SEARCH ---- */
 .global-search-wrap{position:relative;flex-shrink:0;}
-.global-search-input{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-family:'Sora',sans-serif;font-size:12px;padding:6px 10px 6px 28px;width:180px;outline:none;transition:all .15s;}
+.global-search-input{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-family:'Sora',sans-serif;font-size:12px;padding:6px 10px 6px 28px;width:140px;outline:none;transition:all .15s;}
 .global-search-input:focus{border-color:var(--accent);width:240px;}
 .global-search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;}
 .global-search-results{position:absolute;top:calc(100% + 6px);left:0;width:320px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;box-shadow:0 8px 32px rgba(26,23,20,0.15);z-index:500;max-height:360px;overflow-y:auto;}
@@ -407,11 +407,11 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 }
 
 /* ---- SITE NAV ---- */
-.site-nav{position:sticky;top:0;z-index:100;background:#1a1714;border-bottom:3px solid var(--accent);padding:0 24px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
+.site-nav{position:sticky;top:0;z-index:100;background:#1a1714;border-bottom:3px solid var(--accent);padding:0 24px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));display:flex;align-items:center;gap:12px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
 .nav-links{display:flex;gap:2px;flex-shrink:0;visibility:hidden;}
 .nav-ready .nav-links{visibility:visible;}
-.nav-btn{background:none;border:none;color:rgba(255,255,255,0.55);font-family:'Sora',sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:6px 7px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,0.55);font-family:'Sora',sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:6px 5px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .nav-btn:hover{color:rgba(255,255,255,0.9);}
 .nav-btn.active{background:var(--accent);color:#fff;}
 /* year bar lives inside pages now */
@@ -911,15 +911,15 @@ td{padding:10px 14px;white-space:nowrap;}
     <div class="global-search-results" id="globalSearchResults" style="display:none"></div>
   </div>
   <div class="nav-links">
-    <button class="nav-btn active" data-page="grades">Player Grades</button>
-    <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
-    <button class="nav-btn" data-page="board">Dynasty Board</button>
-    <button class="nav-btn" data-page="comparison">Player Comparison</button>
-    <button class="nav-btn" data-page="explorer">Stat Explorer</button>
-    <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
-    <button class="nav-btn" data-page="trends">Rookie Trends</button>
-    <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
-    <button class="nav-btn" data-page="backtest">Track Record</button>
+    <button class="nav-btn active" data-page="grades">Grades</button>
+    <button class="nav-btn" data-page="rankings">Rankings</button>
+    <button class="nav-btn" data-page="board">Board</button>
+    <button class="nav-btn" data-page="comparison">Compare</button>
+    <button class="nav-btn" data-page="explorer">Explorer</button>
+    <button class="nav-btn" data-page="breakdown">Breakdown</button>
+    <button class="nav-btn" data-page="trends">Trends</button>
+    <button class="nav-btn" data-page="outcomes">Outcomes</button>
+    <button class="nav-btn" data-page="backtest">Backtest</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;">
