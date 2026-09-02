@@ -6123,14 +6123,27 @@ document.head.appendChild(navOverflowStyle);
 // browser has done its first layout/paint pass -- scrollWidth/clientWidth reads at that
 // point aren't trustworthy, so it can wrongly conclude the full link row fits (or doesn't).
 // .nav-links starts visibility:hidden (see CSS) specifically so an early wrong reading is
-// never actually painted -- it only stays reserved, invisible layout space. `load` fires
-// after a real render has happened, so THAT check is trustworthy; only then do we add
-// .nav-ready and let the (by-then-correct) .nav-overflow state decide what's visible, in
-// one step, with nothing wrong ever flashing on screen first.
-window.addEventListener('load', () => {
+// never actually painted -- it only stays reserved, invisible layout space.
+//
+// The real render pass we need has happened by DOMContentLoaded (DOM parsed + laid out).
+// Do NOT wait for window 'load' instead -- that also waits for every image on the page
+// (dozens of headshots/logos) to finish downloading, which over a real connection can take
+// several seconds, during which .nav-ready is never added and the WHOLE nav sits invisible.
+// Image load status has no bearing on nav-button text widths, so there's nothing to gain
+// from waiting on it and a real cost (a blank header) to doing so.
+function markNavReady() {
   checkNavOverflow();
   document.getElementById('siteNav').classList.add('nav-ready');
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', markNavReady);
+} else {
+  markNavReady(); // DOMContentLoaded already fired before this script (near end of body) ran
+}
+// Belt-and-suspenders: if DOMContentLoaded somehow never fires (or already fired before
+// this listener attached, in some browser we haven't hit), the nav must not stay invisible
+// forever. classList.add() on an already-present class is a harmless no-op.
+setTimeout(() => { if(document.getElementById('siteNav')) markNavReady(); }, 2000);
 let _navOverflowResizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_navOverflowResizeTimer);
