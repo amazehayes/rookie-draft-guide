@@ -393,6 +393,12 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .trends-panel-sub{color:var(--muted);font-weight:500;letter-spacing:.5px;}
 .trends-canvas-wrap{position:relative;height:260px;}
 .trends-empty-panel{color:var(--muted);font-size:12px;font-style:italic;padding:30px 0;text-align:center;}
+.hub-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto;}
+.hub-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:14px 22px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;}
+.hub-tab:hover{color:var(--text);}
+.hub-tab.active{color:var(--text);border-bottom-color:var(--accent);}
+.spark-svg{display:block;overflow:visible;}
+.global-search-item:hover{background:var(--surface);}
 .nfl-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;border-radius:4px;font-size:13px;font-weight:700;padding:0 5px;}
 .nfl-badge.gold{background:rgba(245,200,66,.2);color:var(--accent2);border:1px solid rgba(245,200,66,.3);}
 .nfl-badge.silver{background:rgba(90,100,120,.2);color:var(--muted);border:1px solid rgba(90,100,120,.2);}
@@ -912,13 +918,11 @@ td{padding:10px 14px;white-space:nowrap;}
   </div>
   <div class="nav-links">
     <button class="nav-btn active" data-page="grades">Grades</button>
-    <button class="nav-btn" data-page="rankings">Rankings</button>
-    <button class="nav-btn" data-page="board">Board</button>
+    <button class="nav-btn" data-page="rankings">Rookie Ranks</button>
+    <button class="nav-btn" data-page="board">Board &amp; Trends</button>
     <button class="nav-btn" data-page="comparison">Compare</button>
     <button class="nav-btn" data-page="explorer">Explorer</button>
     <button class="nav-btn" data-page="breakdown">Breakdown</button>
-    <button class="nav-btn" data-page="trends">Trends</button>
-    <button class="nav-btn" data-page="outcomes">Outcomes</button>
     <button class="nav-btn" data-page="backtest">Backtest</button>
     <button class="nav-btn" data-page="glossary">Glossary</button>
   </div>
@@ -933,13 +937,11 @@ td{padding:10px 14px;white-space:nowrap;}
 <div class="nav-drawer-overlay" id="drawerOverlay"></div>
 <div class="nav-drawer" id="navDrawer">
   <button class="nav-btn active" data-page="grades">Player Grades</button>
-  <button class="nav-btn" data-page="rankings">Dynasty Rankings</button>
-  <button class="nav-btn" data-page="board">Dynasty Board</button>
+  <button class="nav-btn" data-page="rankings">Dynasty Rookie Rankings</button>
+  <button class="nav-btn" data-page="board">Dynasty Board &amp; Trends</button>
   <button class="nav-btn" data-page="comparison">Player Comparison</button>
   <button class="nav-btn" data-page="explorer">Stat Explorer</button>
   <button class="nav-btn" data-page="breakdown">Class Breakdown</button>
-    <button class="nav-btn" data-page="trends">Rookie Trends</button>
-  <button class="nav-btn" data-page="outcomes">NFL Outcomes</button>
   <button class="nav-btn" data-page="backtest">Track Record</button>
   <button class="nav-btn" data-page="glossary">Glossary</button>
 </div>
@@ -1052,6 +1054,11 @@ td{padding:10px 14px;white-space:nowrap;}
     <div class="hero-bg-text">BOARD</div>
     <h1>Dynasty <span>Board</span></h1>
   </div>
+  <div class="hub-tabs">
+    <button class="hub-tab active" onclick="switchHubTab('board')">Dynasty Board</button>
+    <button class="hub-tab" onclick="switchHubTab('trends')">Rookie Trends</button>
+    <button class="hub-tab" onclick="switchHubTab('outcomes')">NFL Outcomes</button>
+  </div>
   <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);font-size:12px;line-height:1.6;color:var(--muted)">
     Every active NFL player's <strong style="color:var(--text)">Marker System Final Grade</strong>, carried forward and adjusted week to week by real career production, then blended with KeepTradeCut consensus. <span style="color:var(--text)">QB and RB lean 75% on the market</span> — the model can't see trades, depth-chart moves, or coaching changes. <span style="color:var(--text)">WR and TE stay closer to the model's own read</span>, and TE is the one position where it beats the market outright. Nobody — including the market — can order the top WRs cleanly; treat any WR1&ndash;12 sequence as rough. <span id="boardUpdated"></span>
   </div>
@@ -1131,17 +1138,37 @@ td{padding:10px 14px;white-space:nowrap;}
     <div class="hero-bg-text" id="trendsHeroBgText">2025</div>
     <h1 id="trendsHeroTitle">2025 <span>ROOKIE TRENDS</span></h1>
   </div>
-  <div class="year-bar" id="trendsYearBar"><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
-  <div style="padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-    <div class="view-toggle">
-      <button class="view-btn active" id="trendsWeekBtn">By Week</button>
-      <button class="view-btn" id="trendsYearBtn">By Year</button>
-    </div>
-    <span id="trendsSubtitle" style="color:var(--muted);font-size:12px"></span>
+  <div class="hub-tabs">
+    <button class="hub-tab" onclick="switchHubTab('board')">Dynasty Board</button>
+    <button class="hub-tab active" onclick="switchHubTab('trends')">Rookie Trends</button>
+    <button class="hub-tab" onclick="switchHubTab('outcomes')">NFL Outcomes</button>
   </div>
+  <div style="padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div class="view-toggle">
+      <button class="view-btn active" id="trendsWeekBtn">Weekly Trend</button>
+      <button class="view-btn" id="trendsYearBtn">Seasonal Trend</button>
+    </div>
+    <div style="position:relative">
+      <input type="text" class="search-box" id="trendsPlayerSearch" placeholder="Add a player..." autocomplete="off" style="width:200px">
+      <div id="trendsPlayerSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:6px;z-index:100;max-height:260px;overflow-y:auto;margin-top:4px"></div>
+    </div>
+    <div style="width:1px;height:24px;background:var(--border)"></div>
+    <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)">Quick-add:</span>
+    <select class="sort-select" id="trendsQuickYear" style="padding:5px 8px"></select>
+    <div class="filter-group" id="trendsQuickPos">
+      <button class="filter-btn active" data-qpos="QB" style="color:var(--pos-qb)">QB</button>
+      <button class="filter-btn" data-qpos="RB" style="color:var(--pos-rb)">RB</button>
+      <button class="filter-btn" data-qpos="WR" style="color:var(--pos-wr)">WR</button>
+      <button class="filter-btn" data-qpos="TE" style="color:var(--pos-te)">TE</button>
+    </div>
+    <button class="watchlist-toggle-btn" id="trendsQuickLoadBtn">Load Top 10</button>
+    <button class="watchlist-toggle-btn" id="trendsClearBtn" style="margin-left:auto">Clear All</button>
+  </div>
+  <div id="trendsChipRow" style="padding:10px 20px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface);min-height:20px"></div>
   <div class="main">
-    <div class="trends-grid" id="trendsGrid"></div>
-    <div class="empty-state" id="trendsEmptyState" style="display:none">No weekly trace data for this class yet.</div>
+    <div style="padding:0 4px 4px;color:var(--muted);font-size:12px" id="trendsSubtitle"></div>
+    <div class="trends-canvas-wrap" style="height:480px;padding:12px"><canvas id="trendsChart"></canvas></div>
+    <div class="empty-state" id="trendsEmptyState" style="display:none">Add players above, or quick-add a class + position, to see their grade trend.</div>
   </div>
 </div>
 
@@ -1230,6 +1257,11 @@ td{padding:10px 14px;white-space:nowrap;}
 
 <!-- PAGE: NFL OUTCOMES -->
 <div class="page-section" id="page-outcomes">
+  <div class="hub-tabs">
+    <button class="hub-tab" onclick="switchHubTab('board')">Dynasty Board</button>
+    <button class="hub-tab" onclick="switchHubTab('trends')">Rookie Trends</button>
+    <button class="hub-tab active" onclick="switchHubTab('outcomes')">NFL Outcomes</button>
+  </div>
   <!-- Tab switcher -->
   <div style="display:flex;border-bottom:1px solid var(--border);background:var(--surface)">
     <button class="outcomes-tab active" data-tab="table" onclick="switchOutcomesTab('table')" style="background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:14px 24px;cursor:pointer;">Draft Class Outcomes</button>
@@ -2330,12 +2362,16 @@ function openModal(p){
       '<div class="modal-comps-title">Historical Comps</div>'+
       '<div class="modal-comp-band" id="modalCompBand"></div>'+
       '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>'+
+    '</div>'+
+    '<div class="modal-comps-section" id="modalCareerTrendSection" style="border-top:1px solid var(--border);display:none">'+
+      '<div class="modal-comps-title">Career Grade Trend</div>'+
+      '<div id="modalCareerTrendBody"></div>'+
     '</div>';
 
   document.getElementById('modalOverlay').classList.add('open');
   setPlayerHash(p);
   // Render comps after modal opens
-  setTimeout(() => { renderModalProjection(p); renderModalComps(p); }, 50);
+  setTimeout(() => { renderModalProjection(p); renderModalComps(p); renderModalCareerTrend(p); }, 50);
 }
 
 // closeModal defined above with arrow cleanup
@@ -2730,8 +2766,11 @@ navDrawer.querySelectorAll('.nav-btn').forEach(b => {
 function switchPage(page, push) {
   activePage = page;
   try { localStorage.setItem('tms_active_page', page); } catch(e) {}
+  // Trends and Outcomes live under the same top-nav entry as Board (see switchHubTab) --
+  // treat all three as "Board & Trends" for the purposes of which nav button lights up.
+  const navPage = (page === 'trends' || page === 'outcomes') ? 'board' : page;
   document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === navPage));
   document.getElementById('page-' + page).classList.add('active');
 
   if(page === 'rankings') renderRankings();
@@ -2747,10 +2786,20 @@ function switchPage(page, push) {
 
   // Sync drawer nav
   navDrawer.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.page === page);
+    b.classList.toggle('active', b.dataset.page === navPage);
   });
 
   if(push) syncURL('push');
+}
+
+// Dynasty Board / Rookie Trends / NFL Outcomes share one top-nav entry with a tab bar
+// (.hub-tabs, repeated at the top of each of the three page-sections) that switches
+// between them without leaving what looks like one page.
+function switchHubTab(tab) {
+  switchPage(tab, true);
+  document.querySelectorAll('.hub-tab').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === "switchHubTab('" + tab + "')");
+  });
 }
 
 document.querySelectorAll('.nav-btn').forEach(b => {
@@ -4698,11 +4747,53 @@ function parseMarkerCSV(text) {
   });
 }
 
+// Tiny inline-SVG sparkline. `points` is a flat array of values (0-100 grade scale by
+// default) -- shape only, no axes/labels. Used in table cells where a full Chart.js
+// instance per row would be far too heavy (Dynasty Board alone is 363 rows).
+function sparklineSVG(points, opts) {
+  opts = opts || {};
+  const w = opts.w || 72, h = opts.h || 24, color = opts.color || 'var(--accent)';
+  const minY = opts.minY != null ? opts.minY : 0, maxY = opts.maxY != null ? opts.maxY : 100;
+  const clean = (points || []).filter(v => v != null && !isNaN(v));
+  if(clean.length < 2) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  const n = clean.length, pad = 2;
+  const xAt = i => pad + (i/(n-1)) * (w - pad*2);
+  const yAt = v => h - pad - ((Math.max(minY,Math.min(maxY,v)) - minY) / (maxY - minY)) * (h - pad*2);
+  const pts = clean.map((v,i) => xAt(i).toFixed(1) + ',' + yAt(v).toFixed(1)).join(' ');
+  const lastX = xAt(n-1), lastY = yAt(clean[n-1]);
+  return `<svg class="spark-svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+    `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>` +
+    `<circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2" fill="${color}"/></svg>`;
+}
+
+// Current-season weekly blended grade per board player, for the Board's Weekly Trend
+// sparkline. Loaded once, 363 players x up to 18 weeks.
+let BOARD_WEEKLY_BY_PID = null;
+async function loadBoardWeekly() {
+  if(BOARD_WEEKLY_BY_PID) return BOARD_WEEKLY_BY_PID;
+  BOARD_WEEKLY_BY_PID = {};
+  try {
+    const res = await fetch(MARKER_SYSTEM_BASE + 'dynasty_blended_weekly.csv');
+    const rows = parseMarkerCSV(await res.text());
+    rows.forEach(r => {
+      const week = parseFloat(r.week), val = parseFloat(r.blended);
+      if(isNaN(week) || isNaN(val)) return;
+      (BOARD_WEEKLY_BY_PID[r.player_id] = BOARD_WEEKLY_BY_PID[r.player_id] || []).push([week, val]);
+    });
+    Object.values(BOARD_WEEKLY_BY_PID).forEach(list => list.sort((a,b) => a[0]-b[0]));
+  } catch(e) { /* leave empty, sparklines just show em-dash */ }
+  return BOARD_WEEKLY_BY_PID;
+}
+
 async function loadAndRenderBoard() {
   if(!DYNASTY_BOARD) {
-    document.getElementById('boardBody').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Loading dynasty board...</td></tr>';
+    document.getElementById('boardBody').innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--muted)">Loading dynasty board...</td></tr>';
     try {
-      const csvRes = await fetch(MARKER_SYSTEM_BASE + 'dynasty_blended.csv');
+      const [csvRes] = await Promise.all([
+        fetch(MARKER_SYSTEM_BASE + 'dynasty_blended.csv'),
+        loadBoardWeekly(),
+        loadCareerYearly(),
+      ]);
       const text = await csvRes.text();
       const rows = parseMarkerCSV(text);
       rows.forEach(r => { BOARD_NUM_FIELDS.forEach(f => { r[f] = r[f] === '' ? null : parseFloat(r[f]); }); });
@@ -4713,7 +4804,7 @@ async function loadAndRenderBoard() {
       }).catch(() => {});
     } catch(e) {
       DYNASTY_BOARD = [];
-      document.getElementById('boardBody').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Could not load dynasty board data.</td></tr>';
+      document.getElementById('boardBody').innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--muted)">Could not load dynasty board data.</td></tr>';
       return;
     }
   }
@@ -4741,7 +4832,8 @@ function renderBoard() {
     `<th class="${boardSort===k?'sorted':''}" style="cursor:pointer;${col?'color:'+col:''}" onclick="setBoardSort('${k}')">${label}${arr(k)}</th>`;
 
   document.getElementById('boardHead').innerHTML = '<tr><th>#</th><th>Player</th><th>Pos</th>' +
-    th('age','Age') + th('v1','Rookie Grade') + th('blended','Dynasty Grade') + '</tr>';
+    th('age','Age') + th('v1','Rookie Grade') + th('blended','Dynasty Grade') +
+    '<th>This Season</th><th>Career</th></tr>';
 
   if(!data.length) {
     document.getElementById('boardBody').innerHTML = '';
@@ -4761,6 +4853,10 @@ function renderBoard() {
     html += `<td>${p.age!=null?fmtAge(p.age):'—'}</td>`;
     html += `<td style="color:${gradeColor(p.v1)}">${p.v1!=null?fmt(p.v1,1):'—'}</td>`;
     html += `<td style="font-weight:700;color:var(--accent)">${p.blended!=null?fmt(p.blended,1):'—'}</td>`;
+    const weekly = (BOARD_WEEKLY_BY_PID && BOARD_WEEKLY_BY_PID[p.player_id]) || [];
+    html += `<td>${sparklineSVG(weekly.map(x=>x[1]), {color: col})}</td>`;
+    const seasonal = (CAREER_BY_PID && CAREER_BY_PID[p.player_id]) || [];
+    html += `<td>${sparklineSVG(seasonal.map(r=>r.grade), {color: col})}</td>`;
     html += '</tr>';
   });
   document.getElementById('boardBody').innerHTML = html;
@@ -4819,38 +4915,19 @@ document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
 })();
 
 // ============================================================
-// ROOKIE TRENDS (weekly in-season trace, by-week or by-year view)
+// ROOKIE TRENDS (single chart, manually-managed player set, weekly or seasonal view)
 // ============================================================
 const TRENDS_YEARS = Array.from({length:16}, (_,i) => 2010+i); // 2010-2025 (2026 season hasn't happened yet)
-const TRENDS_LINE_COLORS = ['#c0392b','#2980b9','#2a9d8f','#8e44ad','#d68910','#16a085','#e63946','#3a86ff','#fb8500','#6a3ba0'];
+const TRENDS_LINE_COLORS = ['#c0392b','#2980b9','#2a9d8f','#8e44ad','#d68910','#16a085','#e63946','#3a86ff','#fb8500','#6a3ba0','#5c7a29','#b5384f','#0f8b8d','#a15c07','#4a4e9e'];
 const TRENDS_POS = ['QB','RB','WR','TE'];
-const TRENDS_TOP_N = 10;
-let trendsClass = 2025;
 let trendsView = 'week'; // 'week' | 'year'
-const trendsWeekCache = {};   // year -> {QB:[{player,pick,final,games,pts:[[wk,score],...]}], RB:[...], ...}
+const trendsWeekCache = {};   // classYear -> {QB:[{player,player_id,pick,final,pts:[[wk,score],...]}], RB:[...], ...}
 let CAREER_YEARLY = null;     // full career_grade_yearly.csv, loaded once
 let ROOKIE_YEAR_BY_PID = null;
-let trendsCharts = [];
-
-function buildTrendsYearBar() {
-  const bar = document.getElementById('trendsYearBar');
-  if(!bar || bar.dataset.built) return;
-  TRENDS_YEARS.slice().reverse().forEach(yr => {
-    const btn = document.createElement('button');
-    btn.className = 'year-tab' + (yr === trendsClass ? ' active' : '');
-    btn.textContent = yr;
-    btn.dataset.yr = yr;
-    btn.addEventListener('click', () => {
-      trendsClass = yr;
-      bar.querySelectorAll('.year-tab').forEach(b => b.classList.toggle('active', Number(b.dataset.yr) === yr));
-      document.getElementById('trendsHeroBgText').textContent = yr;
-      document.getElementById('trendsHeroTitle').innerHTML = yr + ' <span>ROOKIE TRENDS</span>';
-      loadAndRenderTrends();
-    });
-    bar.appendChild(btn);
-  });
-  bar.dataset.built = '1';
-}
+let CAREER_BY_PID = null;     // player_id -> [{player,position,exp,grade},...] sorted by exp
+let trendsChart = null;
+// The manually-managed player set. Each entry: {player_id, player, position, classYear}.
+let selectedTrendPlayers = [];
 
 async function loadRookieTraces(year) {
   if(trendsWeekCache[year]) return trendsWeekCache[year];
@@ -4862,10 +4939,9 @@ async function loadRookieTraces(year) {
     const byPlayer = {};
     rows.forEach(r => {
       const week = parseFloat(r.week), score = r.score === '' ? null : parseFloat(r.score);
-      if(!TRENDS_POS.includes(r.position) || score == null) return;
-      const key = r.position + '|' + r.player;
-      if(!byPlayer[key]) byPlayer[key] = {player: r.player, position: r.position, pick: parseFloat(r.pick), pts: []};
-      byPlayer[key].pts.push([week, score]);
+      if(!TRENDS_POS.includes(r.position) || score == null || !r.player_id) return;
+      if(!byPlayer[r.player_id]) byPlayer[r.player_id] = {player: r.player, player_id: r.player_id, position: r.position, pick: parseFloat(r.pick), pts: []};
+      byPlayer[r.player_id].pts.push([week, score]);
     });
     Object.values(byPlayer).forEach(p => {
       p.pts.sort((a,b) => a[0]-b[0]);
@@ -4885,121 +4961,203 @@ async function loadCareerYearly() {
   rows.forEach(r => { r.year=parseFloat(r.year); r.exp=parseFloat(r.exp); r.v1=parseFloat(r.v1); r.grade=parseFloat(r.grade); r.games=parseFloat(r.games); });
   CAREER_YEARLY = rows;
   ROOKIE_YEAR_BY_PID = {};
-  rows.forEach(r => { if(r.exp === 1) ROOKIE_YEAR_BY_PID[r.player_id] = r.year; });
+  CAREER_BY_PID = {};
+  rows.forEach(r => {
+    if(r.exp === 1) ROOKIE_YEAR_BY_PID[r.player_id] = r.year;
+    (CAREER_BY_PID[r.player_id] = CAREER_BY_PID[r.player_id] || []).push(r);
+  });
+  Object.values(CAREER_BY_PID).forEach(list => list.sort((a,b) => a.exp - b.exp));
   return CAREER_YEARLY;
 }
 
-function trendsByYearData(year) {
-  const byPos = {QB:[],RB:[],WR:[],TE:[]};
-  const pids = Object.keys(ROOKIE_YEAR_BY_PID).filter(pid => ROOKIE_YEAR_BY_PID[pid] === year);
-  const pidSet = new Set(pids);
-  const byPlayer = {};
-  CAREER_YEARLY.forEach(r => {
-    if(!pidSet.has(r.player_id) || !TRENDS_POS.includes(r.position)) return;
-    if(!byPlayer[r.player_id]) byPlayer[r.player_id] = {player: r.player, position: r.position, pts: []};
-    byPlayer[r.player_id].pts.push([r.exp, r.grade]);
-  });
-  Object.values(byPlayer).forEach(p => {
-    p.pts.sort((a,b) => a[0]-b[0]);
-    p.final = p.pts.length ? p.pts[p.pts.length-1][1] : null;
-    if(byPos[p.position]) { byPos[p.position].push(p); }
-  });
-  TRENDS_POS.forEach(pos => byPos[pos].sort((a,b) => (b.final||0)-(a.final||0)));
-  return byPos;
-}
-
-async function loadAndRenderTrends() {
-  buildTrendsYearBar();
-  const grid = document.getElementById('trendsGrid');
-  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Loading...</div>';
-  let byPos;
-  if(trendsView === 'week') {
-    byPos = await loadRookieTraces(trendsClass);
-  } else {
+// ---- search-to-add ----
+let _trendsSearchTimer;
+document.getElementById('trendsPlayerSearch').addEventListener('input', () => {
+  clearTimeout(_trendsSearchTimer);
+  const q = document.getElementById('trendsPlayerSearch').value.trim();
+  const box = document.getElementById('trendsPlayerSearchResults');
+  if(q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  _trendsSearchTimer = setTimeout(async () => {
     await loadCareerYearly();
-    byPos = trendsByYearData(trendsClass);
-  }
-  renderTrends(byPos);
-}
-
-function renderTrends(byPos) {
-  const grid = document.getElementById('trendsGrid');
-  const empty = document.getElementById('trendsEmptyState');
-  const sub = document.getElementById('trendsSubtitle');
-  trendsCharts.forEach(c => c.destroy());
-  trendsCharts = [];
-
-  const anyData = TRENDS_POS.some(pos => byPos[pos] && byPos[pos].length);
-  if(!anyData) {
-    grid.innerHTML = '';
-    empty.style.display = 'block';
-    sub.textContent = '';
-    return;
-  }
-  empty.style.display = 'none';
-  sub.textContent = trendsView === 'week'
-    ? trendsClass + ' Class · Weekly grade, rookie season (draft → week 18)'
-    : trendsClass + ' Class · Grade by season, full career so far';
-
-  grid.innerHTML = TRENDS_POS.map(pos =>
-    `<div class="trends-panel"><div class="trends-panel-title"><span style="color:${posColor(pos)}">${pos==='QB'?'Quarterbacks':pos==='RB'?'Running Backs':pos==='WR'?'Wide Receivers':'Tight Ends'}</span><span class="trends-panel-sub">${trendsClass} Class</span></div>
-      <div class="trends-canvas-wrap"><canvas id="trendsCanvas-${pos}"></canvas></div></div>`
-  ).join('');
-
-  TRENDS_POS.forEach(pos => {
-    const players = (byPos[pos] || []).slice(0, TRENDS_TOP_N);
-    const canvas = document.getElementById('trendsCanvas-' + pos);
-    if(!players.length) {
-      canvas.closest('.trends-canvas-wrap').innerHTML = '<div class="trends-empty-panel">No graded rookies at this position.</div>';
-      return;
+    const ql = q.toLowerCase();
+    const seen = new Set();
+    const matches = [];
+    for(const r of CAREER_YEARLY) {
+      if(seen.has(r.player_id) || !TRENDS_POS.includes(r.position)) continue;
+      if(!r.player.toLowerCase().includes(ql)) continue;
+      seen.add(r.player_id);
+      matches.push({player_id: r.player_id, player: r.player, position: r.position, classYear: ROOKIE_YEAR_BY_PID[r.player_id]});
+      if(matches.length >= 8) break;
     }
-    const xMax = trendsView === 'week' ? 18 : Math.max(2, ...players.map(p => p.pts.length ? p.pts[p.pts.length-1][0] : 1));
-    const chart = new Chart(canvas.getContext('2d'), {
-      type: 'line',
-      data: {
-        datasets: players.map((p,i) => ({
-          label: p.player,
-          data: p.pts.map(([x,y]) => ({x,y})),
-          borderColor: TRENDS_LINE_COLORS[i % TRENDS_LINE_COLORS.length],
-          backgroundColor: TRENDS_LINE_COLORS[i % TRENDS_LINE_COLORS.length],
-          borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, tension: .15, spanGaps: true,
-        }))
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: {mode: 'nearest', intersect: false},
-        plugins: {
-          legend: {position:'bottom', labels:{color:'var(--muted)', font:{family:'DM Mono',size:9}, boxWidth:10, padding:8}},
-          tooltip: {callbacks:{
-            title: ctx => trendsView==='week' ? (ctx[0].parsed.x===0?'Draft':'Week '+ctx[0].parsed.x) : 'Year '+ctx[0].parsed.x,
-            label: ctx => ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)
-          }}
-        },
-        scales: {
-          x: {type:'linear', min:0, max:xMax,
-            ticks:{color:'#8c8070', font:{family:'DM Mono',size:9}, stepSize: trendsView==='week'?3:1,
-              callback: v => trendsView==='week' ? (v===0?'draft':'wk'+v) : 'Y'+v},
-            grid:{color:'rgba(224,216,204,.6)'}},
-          y: {min:0, max:100, ticks:{color:'#8c8070', font:{family:'DM Mono',size:9}, stepSize:25}, grid:{color:'rgba(224,216,204,.6)'}}
-        }
-      }
+    if(!matches.length) { box.innerHTML = '<div style="padding:10px 12px;color:var(--muted);font-size:13px">No matches.</div>'; box.style.display = 'block'; return; }
+    box.innerHTML = matches.map(m =>
+      `<div class="global-search-item" style="padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px" data-pid="${m.player_id}">
+        <span>${safeStr(m.player)}</span><span style="color:var(--muted)">${m.position}${m.classYear?' · '+m.classYear:''}</span>
+      </div>`
+    ).join('');
+    box.style.display = 'block';
+    box.querySelectorAll('[data-pid]').forEach((el, i) => {
+      el.addEventListener('click', () => {
+        addTrendPlayer(matches[i]);
+        box.style.display = 'none';
+        document.getElementById('trendsPlayerSearch').value = '';
+      });
     });
-    trendsCharts.push(chart);
-  });
+  }, 200);
+});
+document.addEventListener('click', e => {
+  const box = document.getElementById('trendsPlayerSearchResults');
+  if(box && !e.target.closest('#trendsPlayerSearch') && !e.target.closest('#trendsPlayerSearchResults')) box.style.display = 'none';
+});
+
+function addTrendPlayer(entry) {
+  if(selectedTrendPlayers.some(p => p.player_id === entry.player_id)) return;
+  selectedTrendPlayers.push(entry);
+  renderTrendsChart();
+}
+function removeTrendPlayer(player_id) {
+  selectedTrendPlayers = selectedTrendPlayers.filter(p => p.player_id !== player_id);
+  renderTrendsChart();
 }
 
+// ---- quick-add: top 10 of a class + position ----
+function trendsQuickYearOptions() {
+  const sel = document.getElementById('trendsQuickYear');
+  if(sel.dataset.built) return;
+  TRENDS_YEARS.slice().reverse().forEach(yr => {
+    sel.innerHTML += `<option value="${yr}" ${yr===2025?'selected':''}>${yr} Class</option>`;
+  });
+  sel.dataset.built = '1';
+}
+document.querySelectorAll('#trendsQuickPos .filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#trendsQuickPos .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+document.getElementById('trendsQuickLoadBtn').addEventListener('click', async () => {
+  const yr = Number(document.getElementById('trendsQuickYear').value);
+  const pos = document.querySelector('#trendsQuickPos .filter-btn.active').dataset.qpos;
+  const btn = document.getElementById('trendsQuickLoadBtn');
+  btn.textContent = 'Loading...'; btn.disabled = true;
+  const byPos = await loadRookieTraces(yr);
+  selectedTrendPlayers = (byPos[pos] || []).slice(0, 10).map(p => ({player_id: p.player_id, player: p.player, position: pos, classYear: yr}));
+  btn.textContent = 'Load Top 10'; btn.disabled = false;
+  renderTrendsChart();
+});
+document.getElementById('trendsClearBtn').addEventListener('click', () => {
+  selectedTrendPlayers = [];
+  renderTrendsChart();
+});
 document.getElementById('trendsWeekBtn').addEventListener('click', () => {
   trendsView = 'week';
   document.getElementById('trendsWeekBtn').classList.add('active');
   document.getElementById('trendsYearBtn').classList.remove('active');
-  loadAndRenderTrends();
+  renderTrendsChart();
 });
 document.getElementById('trendsYearBtn').addEventListener('click', () => {
   trendsView = 'year';
   document.getElementById('trendsYearBtn').classList.add('active');
   document.getElementById('trendsWeekBtn').classList.remove('active');
-  loadAndRenderTrends();
+  renderTrendsChart();
 });
+
+async function loadAndRenderTrends() {
+  trendsQuickYearOptions();
+  await loadCareerYearly();
+  if(!selectedTrendPlayers.length) {
+    // First visit: seed something interesting rather than a blank chart.
+    const byPos = await loadRookieTraces(2025);
+    selectedTrendPlayers = (byPos.QB || []).slice(0, 10).map(p => ({player_id: p.player_id, player: p.player, position: 'QB', classYear: 2025}));
+  }
+  renderTrendsChart();
+}
+
+function renderTrendsChips() {
+  const row = document.getElementById('trendsChipRow');
+  row.innerHTML = selectedTrendPlayers.map(p =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:12px;font-size:12px;background:var(--surface2);border:1px solid var(--border)">
+      <span style="color:${posColor(p.position)};font-weight:700">${p.position}</span> ${safeStr(p.player)}
+      <button onclick="removeTrendPlayer('${p.player_id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0" title="Remove">×</button>
+    </span>`
+  ).join('');
+}
+
+async function renderTrendsChart() {
+  renderTrendsChips();
+  const empty = document.getElementById('trendsEmptyState');
+  const sub = document.getElementById('trendsSubtitle');
+  const wrap = document.querySelector('#page-trends .trends-canvas-wrap');
+  if(trendsChart) { trendsChart.destroy(); trendsChart = null; }
+
+  if(!selectedTrendPlayers.length) {
+    empty.style.display = 'block';
+    wrap.style.display = 'none';
+    sub.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  wrap.style.display = 'block';
+  sub.textContent = trendsView === 'week'
+    ? 'Weekly grade, rookie season (draft → week 18) — each player plotted from their own draft class'
+    : 'Grade by season (Y1 = rookie year), full career so far';
+
+  // Resolve each selected player's point series for the current view, fetching whatever's
+  // not already cached (per-class weekly traces, or the once-loaded career-yearly table).
+  const neededClasses = [...new Set(selectedTrendPlayers.map(p => p.classYear).filter(Boolean))];
+  if(trendsView === 'week') await Promise.all(neededClasses.map(loadRookieTraces));
+
+  const series = selectedTrendPlayers.map(p => {
+    if(trendsView === 'week') {
+      const byPos = trendsWeekCache[p.classYear];
+      const hit = byPos && byPos[p.position] && byPos[p.position].find(x => x.player_id === p.player_id);
+      return {...p, pts: hit ? hit.pts : []};
+    } else {
+      const rows = (CAREER_BY_PID && CAREER_BY_PID[p.player_id]) || [];
+      return {...p, pts: rows.map(r => [r.exp, r.grade])};
+    }
+  }).filter(s => s.pts.length);
+
+  if(!series.length) {
+    empty.style.display = 'block';
+    empty.textContent = 'No ' + (trendsView==='week'?'weekly rookie-season':'career') + ' data for the selected players.';
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const xMax = trendsView === 'week' ? 18 : Math.max(2, ...series.map(s => s.pts[s.pts.length-1][0]));
+  const canvas = document.getElementById('trendsChart');
+  trendsChart = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      datasets: series.map((p,i) => ({
+        label: p.player + ' (' + p.position + (p.classYear?" '"+String(p.classYear).slice(2):'') + ')',
+        data: p.pts.map(([x,y]) => ({x,y})),
+        borderColor: TRENDS_LINE_COLORS[i % TRENDS_LINE_COLORS.length],
+        backgroundColor: TRENDS_LINE_COLORS[i % TRENDS_LINE_COLORS.length],
+        borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, tension: .15, spanGaps: true,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: {mode: 'nearest', intersect: false},
+      plugins: {
+        legend: {position:'bottom', labels:{color:'var(--muted)', font:{family:'DM Mono',size:9}, boxWidth:10, padding:8}},
+        tooltip: {callbacks:{
+          title: ctx => trendsView==='week' ? (ctx[0].parsed.x===0?'Draft':'Week '+ctx[0].parsed.x) : 'Year '+ctx[0].parsed.x,
+          label: ctx => ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)
+        }}
+      },
+      scales: {
+        x: {type:'linear', min:0, max:xMax,
+          ticks:{color:'#8c8070', font:{family:'DM Mono',size:9}, stepSize: trendsView==='week'?3:1,
+            callback: v => trendsView==='week' ? (v===0?'draft':'wk'+v) : 'Y'+v},
+          grid:{color:'rgba(224,216,204,.6)'}},
+        y: {min:0, max:100, ticks:{color:'#8c8070', font:{family:'DM Mono',size:9}, stepSize:25}, grid:{color:'rgba(224,216,204,.6)'}}
+      }
+    }
+  });
+}
 
 // ============================================================
 // NFL OUTCOMES ENRICHMENT
@@ -5368,6 +5526,46 @@ async function renderModalComps(player) {
   }).join('');
 }
 
+// ---- Career grade trend sparkline (under Historical Comps) ----
+// Resolves the modal's player (site pfr_id) to the marker-system's GSIS player_id via
+// player_crosswalk.csv, then plots their season-by-season grade from career_grade_yearly.csv
+// (the same source Rookie Trends' Seasonal view uses). Only shows for players who've
+// actually played -- most of the site's draft classes go back to 2010, well before this
+// pipeline existed, so plenty of prospects simply have no NFL grade history yet.
+let PFR_TO_GSIS = null;
+async function loadPlayerCrosswalk() {
+  if(PFR_TO_GSIS) return PFR_TO_GSIS;
+  PFR_TO_GSIS = {};
+  try {
+    const res = await fetch(MARKER_SYSTEM_BASE + 'player_crosswalk.csv');
+    const rows = parseMarkerCSV(await res.text());
+    rows.forEach(r => { if(r.pfr_id && r.gsis_id) PFR_TO_GSIS[r.pfr_id] = r.gsis_id; });
+  } catch(e) { /* leave empty */ }
+  return PFR_TO_GSIS;
+}
+
+async function renderModalCareerTrend(player) {
+  const section = document.getElementById('modalCareerTrendSection');
+  const body = document.getElementById('modalCareerTrendBody');
+  if(!section || !body) return;
+  section.style.display = 'none';
+  if(!player.pfr_id) return;
+  const [xwalk] = await Promise.all([loadPlayerCrosswalk(), loadCareerYearly()]);
+  const pid = xwalk[player.pfr_id];
+  const rows = pid && CAREER_BY_PID ? CAREER_BY_PID[pid] : null;
+  if(!rows || rows.length < 2) return;
+  const col = posColor(player.pos);
+  const last = rows[rows.length-1];
+  body.innerHTML =
+    '<div style="display:flex;align-items:center;gap:16px">' +
+      sparklineSVG(rows.map(r=>r.grade), {w:220,h:44,color:col}) +
+      '<div style="font-size:12px;color:var(--muted);line-height:1.6">' +
+        rows.map((r,i) => 'Y'+r.exp+': <b style="color:'+gradeColor(r.grade)+'">'+fmt(r.grade,1)+'</b>').join(' &nbsp;→&nbsp; ') +
+      '</div>' +
+    '</div>';
+  section.style.display = 'block';
+}
+
 // ============================================================
 // SHARE PLAYER CARD
 // ============================================================
@@ -5661,7 +5859,7 @@ async function exportRankingsPDF() {
     doc.text('THE MARKER SYSTEM', 14, 16);
     doc.setTextColor(245, 200, 66);
     doc.setFontSize(11);
-    doc.text('Dynasty Rankings \u00b7 ' + activeYear + ' Draft Class \u00b7 ' + currentFormat, 14, 23);
+    doc.text('Dynasty Rookie Rankings \u00b7 ' + activeYear + ' Draft Class \u00b7 ' + currentFormat, 14, 23);
     doc.setTextColor(90, 100, 120);
     doc.setFontSize(8);
     doc.text('themarkersystem.com \u00b7 Generated ' + new Date().toLocaleDateString(), 14, 29);
