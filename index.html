@@ -4737,7 +4737,8 @@ function renderBoard() {
   let html = '';
   data.forEach((p,i) => {
     const col = posColor(p.position);
-    html += '<tr>';
+    const pfrAttr = (p.pfr_id||'').replace(/'/g,"\\'");
+    html += `<tr onclick="openBoardPlayer('${pfrAttr}')" style="${p.pfr_id?'':'cursor:default'}">`;
     html += `<td style="color:var(--muted);font-size:13px;font-weight:700">${i+1}</td>`;
     html += `<td style="font-weight:600">${safeStr(p.player)}</td>`;
     html += `<td style="color:${col};font-weight:700;font-size:13px">${p.position}</td>`;
@@ -4752,6 +4753,45 @@ function renderBoard() {
     html += '</tr>';
   });
   document.getElementById('boardBody').innerHTML = html;
+}
+
+// Resolve a marker-system pfr_id to the site's own player record + draft year,
+// fetching any not-yet-cached draft-class JSON files as needed (one-time).
+async function findPlayerByPfrId(pfrId) {
+  if(!pfrId) return null;
+  let hit = PLAYERS.find(p => p.pfr_id === pfrId);
+  if(hit) return {player: hit, year: 2026};
+  for(const yr of Object.keys(yearCache)) {
+    hit = (yearCache[yr]||[]).find(p => p.pfr_id === pfrId);
+    if(hit) return {player: hit, year: Number(yr)};
+  }
+  const uncached = YEARS.filter(yr => yr !== 2026 && !yearCache[yr]);
+  await Promise.all(uncached.map(async yr => {
+    if(yearCache[yr]) return;
+    try {
+      const res = await fetch('data/'+yr+'.json?v=4');
+      const d = await res.json();
+      d.forEach(p => { if(!p.year) p.year = yr; });
+      yearCache[yr] = d;
+    } catch(e) { yearCache[yr] = []; }
+  }));
+  for(const yr of YEARS) {
+    if(yr === 2026) continue;
+    hit = (yearCache[yr]||[]).find(p => p.pfr_id === pfrId);
+    if(hit) return {player: hit, year: yr};
+  }
+  return null;
+}
+
+async function openBoardPlayer(pfrId) {
+  if(!pfrId) return;
+  const found = await findPlayerByPfrId(pfrId);
+  if(!found) return; // not in this site's draft-class data (e.g. drafted before 2010)
+  const player = {...found.player, year: found.year};
+  _lastRenderedList = [player];
+  _currentModalIdx = 0;
+  openModal(player);
+  updateModalNavArrows();
 }
 
 document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
