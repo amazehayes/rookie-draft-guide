@@ -410,7 +410,7 @@ body.dark-mode .bg-te{background:color-mix(in srgb,var(--pos-te) 20%,transparent
 .site-nav{position:sticky;top:0;z-index:100;background:#1a1714;border-bottom:3px solid var(--accent);padding:0 24px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));display:flex;align-items:center;gap:24px;height:60px;min-height:60px;}
 .nav-brand{flex-shrink:0;}
 .nav-links{display:flex;gap:2px;flex-shrink:0;}
-.nav-btn{background:none;border:none;color:rgba(255,255,255,0.55);font-family:'Sora',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:6px 10px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,0.55);font-family:'Sora',sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:6px 7px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .nav-btn:hover{color:rgba(255,255,255,0.9);}
 .nav-btn.active{background:var(--accent);color:#fff;}
 /* year bar lives inside pages now */
@@ -6100,24 +6100,14 @@ function checkNavOverflow() {
   const hamburger = document.getElementById('hamburger');
   if (!nav || !links || !hamburger) return;
 
-  // Temporarily show links to measure
-  const wasForcedHidden = nav.classList.contains('nav-overflow');
-  links.style.display = 'flex';
-  hamburger.style.display = 'none';
-
-  // Check if links overflow the nav
-  const overflows = links.scrollWidth > links.clientWidth || 
-                    nav.scrollWidth > nav.clientWidth;
-
-  if (overflows) {
-    links.style.display = '';
-    hamburger.style.display = '';
-    nav.classList.add('nav-overflow');
-  } else {
-    links.style.display = '';
-    hamburger.style.display = '';
-    nav.classList.remove('nav-overflow');
-  }
+  // Measure with the overflow class OFF. Once .nav-overflow is applied, the injected
+  // `!important` rule below keeps .nav-links at display:none no matter what inline style
+  // is set here (a plain inline style can't beat an !important stylesheet rule) -- so any
+  // re-check after the first always measured 0x0 and wrongly cleared the class. This only
+  // ever surfaced now that the function is called more than once (see below).
+  nav.classList.remove('nav-overflow');
+  const overflows = links.scrollWidth > links.clientWidth || nav.scrollWidth > nav.clientWidth;
+  nav.classList.toggle('nav-overflow', overflows);
 }
 
 // CSS class to hide/show based on overflow
@@ -6127,6 +6117,17 @@ navOverflowStyle.textContent = `
   .nav-overflow .hamburger { display: flex !important; }
 `;
 document.head.appendChild(navOverflowStyle);
+
+// The very first checkNavOverflow() call above runs synchronously mid-script, before the
+// browser has done its first layout/paint pass -- scrollWidth/clientWidth reads at that
+// point aren't trustworthy, so it can wrongly conclude the full link row fits (or doesn't).
+// `load` fires only after a real render has happened; re-check there, and again on resize.
+window.addEventListener('load', checkNavOverflow);
+let _navOverflowResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_navOverflowResizeTimer);
+  _navOverflowResizeTimer = setTimeout(checkNavOverflow, 150);
+});
 
 checkNavOverflow();
 let _resizeTimer;
