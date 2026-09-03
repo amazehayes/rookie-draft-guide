@@ -946,10 +946,6 @@ td{padding:10px 14px;white-space:nowrap;}
   <button class="nav-btn" data-page="glossary">Glossary</button>
 </div>
 <div class="page-section active" id="page-grades">
-<div class="hero">
-  <div class="hero-bg-text" id="heroBgText">2026</div>
-  <h1 id="heroTitle">2026 <span>ROOKIE DRAFT CLASS</span></h1>
-</div>
 <div class="year-bar" id="gradesYearBar"><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;padding:0 8px 0 4px;align-self:center">Draft Class:</span></div>
 <div class="controls">
   <div class="filter-group" id="posFilters">
@@ -1050,10 +1046,6 @@ td{padding:10px 14px;white-space:nowrap;}
 
 <!-- PAGE: DYNASTY BOARD -->
 <div class="page-section" id="page-board">
-  <div class="hero">
-    <div class="hero-bg-text">BOARD</div>
-    <h1>Dynasty <span>Board</span></h1>
-  </div>
   <div class="hub-tabs">
     <button class="hub-tab active" onclick="switchHubTab('board')">Dynasty Board</button>
     <button class="hub-tab" onclick="switchHubTab('trends')">Rookie Trends</button>
@@ -1134,10 +1126,6 @@ td{padding:10px 14px;white-space:nowrap;}
 
 <!-- PAGE: ROOKIE TRENDS -->
 <div class="page-section" id="page-trends">
-  <div class="hero">
-    <div class="hero-bg-text" id="trendsHeroBgText">2025</div>
-    <h1 id="trendsHeroTitle">2025 <span>ROOKIE TRENDS</span></h1>
-  </div>
   <div class="hub-tabs">
     <button class="hub-tab" onclick="switchHubTab('board')">Dynasty Board</button>
     <button class="hub-tab active" onclick="switchHubTab('trends')">Rookie Trends</button>
@@ -2439,9 +2427,6 @@ async function switchYear(yr) {
   document.querySelectorAll('.year-tab').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.yr) === yr);
   });
-
-  // Update hero title
-  document.getElementById('heroTitle').innerHTML = yr + ' <span>ROOKIE DRAFT CLASS</span>';
 
   // Reset filters
   currentPos = 'ALL'; currentSort = 'rank'; searchQuery = ''; currentLabel = 'ALL'; currentSchool = 'ALL';
