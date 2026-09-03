@@ -4738,9 +4738,19 @@ function parseMarkerCSV(text) {
 function sparklineSVG(points, opts) {
   opts = opts || {};
   const w = opts.w || 72, h = opts.h || 24, color = opts.color || 'var(--accent)';
-  const minY = opts.minY != null ? opts.minY : 0, maxY = opts.maxY != null ? opts.maxY : 100;
   const clean = (points || []).filter(v => v != null && !isNaN(v));
   if(clean.length < 2) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  // Auto-fit to this series' own range rather than the full 0-100 grade scale -- a
+  // sparkline's whole job is showing the shape of movement, and most players only move
+  // within a narrow band, so a fixed 0-100 domain flattens nearly every line to noise.
+  // Pass explicit minY/maxY to opt back into a shared/comparable scale instead.
+  let minY = opts.minY, maxY = opts.maxY;
+  if(minY == null || maxY == null) {
+    const dataMin = Math.min(...clean), dataMax = Math.max(...clean);
+    const pad = Math.max((dataMax - dataMin) * 0.15, 2);
+    minY = Math.max(0, dataMin - pad);
+    maxY = Math.min(100, dataMax + pad);
+  }
   const n = clean.length, pad = 2;
   const xAt = i => pad + (i/(n-1)) * (w - pad*2);
   const yAt = v => h - pad - ((Math.max(minY,Math.min(maxY,v)) - minY) / (maxY - minY)) * (h - pad*2);
@@ -5546,11 +5556,13 @@ async function loadPlayerCrosswalk() {
   return PFR_TO_GSIS;
 }
 
+let modalCareerChart = null;
 async function renderModalCareerTrend(player) {
   const section = document.getElementById('modalCareerTrendSection');
   const body = document.getElementById('modalCareerTrendBody');
   if(!section || !body) return;
   section.style.display = 'none';
+  if(modalCareerChart) { modalCareerChart.destroy(); modalCareerChart = null; }
   if(!player.pfr_id) return;
   const [xwalk] = await Promise.all([loadPlayerCrosswalk(), loadCareerYearly(), loadPlayerSlices()]);
   const pid = xwalk[player.pfr_id];
@@ -5565,14 +5577,29 @@ async function renderModalCareerTrend(player) {
   if(points.length < 2) return;
 
   const col = posColor(player.pos);
-  body.innerHTML =
-    '<div style="display:flex;align-items:center;gap:16px">' +
-      sparklineSVG(points, {w:220,h:44,color:col}) +
-      '<div style="font-size:12px;color:var(--muted);line-height:1.6">' +
-        points.map((v,i) => 'Y'+(i+1)+': <b style="color:'+gradeColor(v)+'">'+fmt(v,1)+'</b>').join(' &nbsp;→&nbsp; ') +
-      '</div>' +
-    '</div>';
+  body.innerHTML = '<div style="position:relative;height:170px"><canvas id="modalCareerTrendCanvas"></canvas></div>';
   section.style.display = 'block';
+  modalCareerChart = new Chart(document.getElementById('modalCareerTrendCanvas').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: points.map((_,i) => 'Y'+(i+1)),
+      datasets: [{
+        data: points, borderColor: col, backgroundColor: col,
+        borderWidth: 2, pointRadius: 3, pointHoverRadius: 5, tension: .2,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {display:false},
+        tooltip: {callbacks: {label: ctx => 'Grade: '+ctx.parsed.y.toFixed(1)}}
+      },
+      scales: {
+        x: {ticks:{color:'#8c8070', font:{family:'DM Mono',size:10}}, grid:{color:'rgba(224,216,204,.4)'}},
+        y: {min:0, max:100, ticks:{color:'#8c8070', font:{family:'DM Mono',size:10}, stepSize:25}, grid:{color:'rgba(224,216,204,.4)'}}
+      }
+    }
+  });
 }
 
 // ============================================================
