@@ -2352,7 +2352,7 @@ function openModal(p){
       '<div class="modal-comps-grid" id="modalCompsGrid"><div style="color:var(--muted);font-size:13px">Loading comps...</div></div>'+
     '</div>'+
     '<div class="modal-comps-section" id="modalCareerTrendSection" style="border-top:1px solid var(--border);display:none">'+
-      '<div class="modal-comps-title">Career Grade Trend</div>'+
+      '<div class="modal-comps-title">Career Trend</div>'+
       '<div id="modalCareerTrendBody"></div>'+
     '</div>';
 
@@ -4770,6 +4770,21 @@ async function loadBoardWeekly() {
   return BOARD_WEEKLY_BY_PID;
 }
 
+// Compact per-player career trace (weekly grade by year + season-end dynasty value),
+// purpose-built for exactly this kind of sparkline -- far smaller and richer than
+// stitching career_grade_yearly.csv together (real weekly detail per season, not just
+// one point). Narrower player coverage than career_grade_yearly though (recently-relevant
+// players only), so callers should fall back to CAREER_BY_PID when a player's missing.
+let PLAYER_SLICES = null;
+async function loadPlayerSlices() {
+  if(PLAYER_SLICES) return PLAYER_SLICES;
+  try {
+    const res = await fetch(MARKER_SYSTEM_BASE + 'player_slices.json');
+    PLAYER_SLICES = await res.json();
+  } catch(e) { PLAYER_SLICES = {}; }
+  return PLAYER_SLICES;
+}
+
 async function loadAndRenderBoard() {
   if(!DYNASTY_BOARD) {
     document.getElementById('boardBody').innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--muted)">Loading dynasty board...</td></tr>';
@@ -4778,6 +4793,7 @@ async function loadAndRenderBoard() {
         fetch(MARKER_SYSTEM_BASE + 'dynasty_blended.csv'),
         loadBoardWeekly(),
         loadCareerYearly(),
+        loadPlayerSlices(),
       ]);
       const text = await csvRes.text();
       const rows = parseMarkerCSV(text);
@@ -4840,8 +4856,9 @@ function renderBoard() {
     html += `<td style="font-weight:700;color:var(--accent)">${p.blended!=null?fmt(p.blended,1):'—'}</td>`;
     const weekly = (BOARD_WEEKLY_BY_PID && BOARD_WEEKLY_BY_PID[p.player_id]) || [];
     html += `<td>${sparklineSVG(weekly.map(x=>x[1]), {color: col})}</td>`;
-    const seasonal = (CAREER_BY_PID && CAREER_BY_PID[p.player_id]) || [];
-    html += `<td>${sparklineSVG(seasonal.map(r=>r.grade), {color: col})}</td>`;
+    const slice = PLAYER_SLICES && PLAYER_SLICES[p.player_id];
+    const seasonal = slice ? slice.d.map(x=>x[1]) : ((CAREER_BY_PID && CAREER_BY_PID[p.player_id]) || []).map(r=>r.grade);
+    html += `<td>${sparklineSVG(seasonal, {color: col})}</td>`;
     html += '</tr>';
   });
   document.getElementById('boardBody').innerHTML = html;
@@ -5535,17 +5552,24 @@ async function renderModalCareerTrend(player) {
   if(!section || !body) return;
   section.style.display = 'none';
   if(!player.pfr_id) return;
-  const [xwalk] = await Promise.all([loadPlayerCrosswalk(), loadCareerYearly()]);
+  const [xwalk] = await Promise.all([loadPlayerCrosswalk(), loadCareerYearly(), loadPlayerSlices()]);
   const pid = xwalk[player.pfr_id];
-  const rows = pid && CAREER_BY_PID ? CAREER_BY_PID[pid] : null;
-  if(!rows || rows.length < 2) return;
+  if(!pid) return;
+
+  // Prefer player_slices.json (season-end dynasty value -- consistent with the Dynasty
+  // Board's own headline number); fall back to career_grade_yearly.csv's raw grade for
+  // players outside that file's narrower (recently-relevant) coverage.
+  const slice = PLAYER_SLICES && PLAYER_SLICES[pid];
+  const points = slice ? slice.d.map(x => x[1])
+    : ((CAREER_BY_PID && CAREER_BY_PID[pid]) || []).map(r => r.grade);
+  if(points.length < 2) return;
+
   const col = posColor(player.pos);
-  const last = rows[rows.length-1];
   body.innerHTML =
     '<div style="display:flex;align-items:center;gap:16px">' +
-      sparklineSVG(rows.map(r=>r.grade), {w:220,h:44,color:col}) +
+      sparklineSVG(points, {w:220,h:44,color:col}) +
       '<div style="font-size:12px;color:var(--muted);line-height:1.6">' +
-        rows.map((r,i) => 'Y'+r.exp+': <b style="color:'+gradeColor(r.grade)+'">'+fmt(r.grade,1)+'</b>').join(' &nbsp;→&nbsp; ') +
+        points.map((v,i) => 'Y'+(i+1)+': <b style="color:'+gradeColor(v)+'">'+fmt(v,1)+'</b>').join(' &nbsp;→&nbsp; ') +
       '</div>' +
     '</div>';
   section.style.display = 'block';
