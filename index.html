@@ -5053,9 +5053,11 @@ document.getElementById('trendsQuickLoadBtn').addEventListener('click', async ()
   const btn = document.getElementById('trendsQuickLoadBtn');
   btn.textContent = 'Loading...'; btn.disabled = true;
   const byPos = await loadRookieTraces(yr);
-  selectedTrendPlayers = (byPos[pos] || []).slice(0, 10).map(p => ({player_id: p.player_id, player: p.player, position: pos, classYear: yr}));
+  const found = byPos[pos] || [];
+  selectedTrendPlayers = found.slice(0, 10).map(p => ({player_id: p.player_id, player: p.player, position: pos, classYear: yr}));
   btn.textContent = 'Load Top 10'; btn.disabled = false;
-  renderTrendsChart();
+  renderTrendsChart(found.length ? null :
+    `No graded ${yr} ${pos}s yet` + (yr === 2026 ? ' — check back as the season plays out.' : '.'));
 });
 document.getElementById('trendsClearBtn').addEventListener('click', () => {
   selectedTrendPlayers = [];
@@ -5095,7 +5097,7 @@ function renderTrendsChips() {
   ).join('');
 }
 
-async function renderTrendsChart() {
+async function renderTrendsChart(emptyMsg) {
   renderTrendsChips();
   const empty = document.getElementById('trendsEmptyState');
   const sub = document.getElementById('trendsSubtitle');
@@ -5103,6 +5105,7 @@ async function renderTrendsChart() {
   if(trendsChart) { trendsChart.destroy(); trendsChart = null; }
 
   if(!selectedTrendPlayers.length) {
+    empty.textContent = emptyMsg || 'Add players above, or quick-add a class + position, to see their grade trend.';
     empty.style.display = 'block';
     wrap.style.display = 'none';
     sub.textContent = '';
