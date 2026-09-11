@@ -4929,7 +4929,7 @@ document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
 // ============================================================
 // ROOKIE TRENDS (single chart, manually-managed player set, weekly or seasonal view)
 // ============================================================
-const TRENDS_YEARS = Array.from({length:16}, (_,i) => 2010+i); // 2010-2025 (2026 season hasn't happened yet)
+const TRENDS_YEARS = Array.from({length:17}, (_,i) => 2010+i); // 2010-2026 (2026 in-season, sparse until more weeks play out)
 const TRENDS_LINE_COLORS = ['#c0392b','#2980b9','#2a9d8f','#8e44ad','#d68910','#16a085','#e63946','#3a86ff','#fb8500','#6a3ba0','#5c7a29','#b5384f','#0f8b8d','#a15c07','#4a4e9e'];
 const TRENDS_POS = ['QB','RB','WR','TE'];
 let trendsView = 'week'; // 'week' | 'year'
