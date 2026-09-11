@@ -1156,6 +1156,7 @@ td{padding:10px 14px;white-space:nowrap;}
   <div class="main">
     <div style="padding:0 4px 4px;color:var(--muted);font-size:12px" id="trendsSubtitle"></div>
     <div class="trends-canvas-wrap" style="height:480px;padding:12px"><canvas id="trendsChart"></canvas></div>
+    <div id="trendsTableWrap" class="table-wrap" style="padding:0 12px 16px"></div>
     <div class="empty-state" id="trendsEmptyState" style="display:none">Add players above, or quick-add a class + position, to see their grade trend.</div>
   </div>
 </div>
@@ -5109,6 +5110,7 @@ async function renderTrendsChart(emptyMsg) {
     empty.style.display = 'block';
     wrap.style.display = 'none';
     sub.textContent = '';
+    document.getElementById('trendsTableWrap').innerHTML = '';
     return;
   }
   empty.style.display = 'none';
@@ -5137,6 +5139,7 @@ async function renderTrendsChart(emptyMsg) {
     empty.style.display = 'block';
     empty.textContent = 'No ' + (trendsView==='week'?'weekly rookie-season':'career') + ' data for the selected players.';
     wrap.style.display = 'none';
+    document.getElementById('trendsTableWrap').innerHTML = '';
     return;
   }
 
@@ -5172,6 +5175,36 @@ async function renderTrendsChart(emptyMsg) {
       }
     }
   });
+
+  renderTrendsTable(series);
+}
+
+// Raw numbers to go with the chart -- one row per player, one column per week/year
+// actually present in the selected set (only real columns, same honesty rule as the
+// chart: a player's row just ends where their real data ends, no padding to the max).
+function renderTrendsTable(series) {
+  const wrap = document.getElementById('trendsTableWrap');
+  if(!wrap) return;
+  if(trendsView !== 'week') { wrap.innerHTML = ''; return; }
+
+  const xVals = [...new Set(series.flatMap(s => s.pts.map(p => p[0])))].sort((a,b) => a-b);
+  const colLabel = x => x === 0 ? 'Draft' : 'Wk ' + x;
+
+  let html = '<table><thead><tr><th>Player</th><th>Pos</th><th>Class</th>' +
+    xVals.map(x => '<th>' + colLabel(x) + '</th>').join('') + '</tr></thead><tbody>';
+  series.forEach(s => {
+    const byX = new Map(s.pts);
+    html += `<tr><td style="font-weight:600">${safeStr(s.player)}</td>` +
+      `<td style="color:${posColor(s.position)};font-weight:700;font-size:13px">${s.position}</td>` +
+      `<td style="color:var(--muted)">${s.classYear||'—'}</td>` +
+      xVals.map(x => {
+        const v = byX.get(x);
+        return `<td style="${v!=null?'color:'+gradeColor(v):'color:var(--muted)'}">${v!=null?fmt(v,1):'—'}</td>`;
+      }).join('') +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
 }
 
 // ============================================================
@@ -6547,7 +6580,7 @@ function syncURL(mode) {
   else history.replaceState(null, '', newURL);
 }
 
-const URL_VALID_PAGES = ['grades','rankings','comparison','explorer','breakdown','outcomes','backtest','glossary'];
+const URL_VALID_PAGES = ['grades','rankings','board','trends','comparison','explorer','breakdown','outcomes','backtest','glossary'];
 
 // Reads ?page=... (falling back to the last-viewed page on first load only)
 // and restores every relevant filter into state + UI before switching pages.
@@ -6652,6 +6685,14 @@ async function applyURLState(isInitial) {
   }
 
   switchPage(page);
+
+  // Board/Trends/Outcomes share one nav entry with a .hub-tabs bar (see switchHubTab) --
+  // switchPage() alone doesn't know about that bar, so sync it here too on restore.
+  if(page === 'board' || page === 'trends' || page === 'outcomes') {
+    document.querySelectorAll('.hub-tab').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('onclick') === "switchHubTab('" + page + "')");
+    });
+  }
 
   if(page === 'outcomes' && activeOutcomesTab === 'comps') {
     switchOutcomesTab('comps');
