@@ -1619,6 +1619,12 @@ let currentPos='ALL',currentSort='rank',sortDir='desc',searchQuery='',viewMode='
 // reads it; every other page-state var (currentFormat, bkPosFilter, outcomesYearFrom, etc.)
 // stays declared where it's used since only their own page's render/restore code touches them.
 let activePage = 'grades';
+// syncURL() is a no-op until this flips true (see below, right after applyURLState()).
+// render() below calls syncURL() unconditionally as part of general startup, before the
+// script has even read the real URL -- if that were allowed through, it would stamp the
+// still-default activePage ('grades') onto the address bar via replaceState and silently
+// erase a real ?page=X before applyURLState() ever gets a chance to see it.
+let _urlSyncReady = false;
 
 // Watchlist (starred players), persisted across sessions. Keyed by playerSlug (name+year).
 // Declared early alongside activePage for the same reason — render() runs at top level
@@ -6572,6 +6578,7 @@ function buildStateSearch() {
 }
 
 function syncURL(mode) {
+  if(!_urlSyncReady) return;
   const qs = buildStateSearch().toString();
   const newSearch = qs ? ('?' + qs) : '';
   if(newSearch === location.search) return;
@@ -6703,8 +6710,9 @@ async function applyURLState(isInitial) {
 }
 
 // Initial restore: URL wins if it has ?page=..., else fall back to the
-// last-viewed page from localStorage, else grades (the default).
-applyURLState(true);
+// last-viewed page from localStorage, else grades (the default). Only once this finishes
+// do we let syncURL() start writing to the address bar -- see _urlSyncReady above.
+applyURLState(true).then(() => { _urlSyncReady = true; });
 
 // Browser back/forward: re-apply whatever page/filters that history entry encodes.
 window.addEventListener('popstate', () => {
