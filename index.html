@@ -1144,8 +1144,8 @@ td{padding:10px 14px;white-space:nowrap;}
     <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)">Quick-add:</span>
     <select class="sort-select" id="trendsQuickYear" style="padding:5px 8px"></select>
     <div class="filter-group" id="trendsQuickPos">
-      <button class="filter-btn active" data-qpos="QB" style="color:var(--pos-qb)">QB</button>
-      <button class="filter-btn" data-qpos="RB" style="color:var(--pos-rb)">RB</button>
+      <button class="filter-btn" data-qpos="QB" style="color:var(--pos-qb)">QB</button>
+      <button class="filter-btn active" data-qpos="RB" style="color:var(--pos-rb)">RB</button>
       <button class="filter-btn" data-qpos="WR" style="color:var(--pos-wr)">WR</button>
       <button class="filter-btn" data-qpos="TE" style="color:var(--pos-te)">TE</button>
     </div>
@@ -4939,6 +4939,10 @@ document.querySelectorAll('.filter-btn[data-boardpos]').forEach(btn => {
 const TRENDS_YEARS = Array.from({length:17}, (_,i) => 2010+i); // 2010-2026 (2026 in-season, sparse until more weeks play out)
 const TRENDS_LINE_COLORS = ['#c0392b','#2980b9','#2a9d8f','#8e44ad','#d68910','#16a085','#e63946','#3a86ff','#fb8500','#6a3ba0','#5c7a29','#b5384f','#0f8b8d','#a15c07','#4a4e9e'];
 const TRENDS_POS = ['QB','RB','WR','TE'];
+// What the page opens on. Year tracks the newest class in TRENDS_YEARS, so extending that
+// array to 2027 moves the default forward on its own.
+const TRENDS_DEFAULT_YEAR = TRENDS_YEARS[TRENDS_YEARS.length-1];
+const TRENDS_DEFAULT_POS = 'RB';
 let trendsView = 'week'; // 'week' | 'year'
 const trendsWeekCache = {};   // classYear -> {QB:[{player,player_id,pick,final,pts:[[wk,score],...]}], RB:[...], ...}
 let CAREER_YEARLY = null;     // full career_grade_yearly.csv, loaded once
@@ -5044,7 +5048,7 @@ function trendsQuickYearOptions() {
   const sel = document.getElementById('trendsQuickYear');
   if(sel.dataset.built) return;
   TRENDS_YEARS.slice().reverse().forEach(yr => {
-    sel.innerHTML += `<option value="${yr}" ${yr===2025?'selected':''}>${yr} Class</option>`;
+    sel.innerHTML += `<option value="${yr}" ${yr===TRENDS_DEFAULT_YEAR?'selected':''}>${yr} Class</option>`;
   });
   sel.dataset.built = '1';
 }
@@ -5087,9 +5091,17 @@ async function loadAndRenderTrends() {
   trendsQuickYearOptions();
   await loadCareerYearly();
   if(!selectedTrendPlayers.length) {
-    // First visit: seed something interesting rather than a blank chart.
-    const byPos = await loadRookieTraces(2025);
-    selectedTrendPlayers = (byPos.QB || []).slice(0, 10).map(p => ({player_id: p.player_id, player: p.player, position: 'QB', classYear: 2025}));
+    // First visit: seed the current rookie class rather than a blank chart. Falls back a year
+    // at a time so the page is never empty in the window between the draft and week 1, when
+    // the newest class has no graded weeks yet.
+    for(const yr of [TRENDS_DEFAULT_YEAR, TRENDS_DEFAULT_YEAR - 1]) {
+      const byPos = await loadRookieTraces(yr);
+      const found = byPos[TRENDS_DEFAULT_POS] || [];
+      if(!found.length) continue;
+      selectedTrendPlayers = found.slice(0, 10).map(p => ({player_id: p.player_id, player: p.player, position: TRENDS_DEFAULT_POS, classYear: yr}));
+      document.getElementById('trendsQuickYear').value = String(yr);
+      break;
+    }
   }
   renderTrendsChart();
 }
@@ -5197,12 +5209,21 @@ function renderTrendsTable(series) {
   const colLabel = x => x === 0 ? 'Draft' : 'Wk ' + x;
 
   let html = '<table><thead><tr><th>Player</th><th>Pos</th><th>Class</th>' +
+    '<th title="Latest weekly grade minus the draft-day grade">Δ</th>' +
     xVals.map(x => '<th>' + colLabel(x) + '</th>').join('') + '</tr></thead><tbody>';
   series.forEach(s => {
     const byX = new Map(s.pts);
+    // Each player's OWN last point, not the table's last column: a player whose trace stops
+    // early (injury, or an in-progress season he's missed weeks of) should be measured to the
+    // last week he actually has data for, not compared against a blank cell.
+    const draft = byX.get(0);
+    const lastPt = s.pts.filter(p => p[0] > 0 && p[1] != null).slice(-1)[0];
+    const delta = (draft != null && lastPt) ? lastPt[1] - draft : null;
+    const dCol = delta == null ? 'var(--muted)' : (delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'var(--muted)');
     html += `<tr><td style="font-weight:600">${safeStr(s.player)}</td>` +
       `<td style="color:${posColor(s.position)};font-weight:700;font-size:13px">${s.position}</td>` +
       `<td style="color:var(--muted)">${s.classYear||'—'}</td>` +
+      `<td style="color:${dCol};font-weight:700">${delta==null?'—':(delta>0?'+':'')+fmt(delta,1)}</td>` +
       xVals.map(x => {
         const v = byX.get(x);
         return `<td style="${v!=null?'color:'+gradeColor(v):'color:var(--muted)'}">${v!=null?fmt(v,1):'—'}</td>`;
