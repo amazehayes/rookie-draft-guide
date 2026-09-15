@@ -2,8 +2,8 @@
 Regenerates data/<year>.json for rookie-draft-guide from the master Excel workbook
 (Final_Rookie_Markers.xlsx). Excel formulas already compute Missing/Markers/Final.Grade/etc;
 this script only transcribes those computed values into the site's JSON schema — it does not
-reimplement any grading logic. Covers drafted classes only (QB/RB/WR/TE sheets), not the
-pre-draft IMPORT staging sheets.
+reimplement any grading logic. It reads the QB/RB/WR/TE sheets and nothing else: not the
+pre-draft IMPORT staging sheets, not COLLEGE IDS, and not Final Rankings (see SOURCE_SHEETS).
 
 Usage:
     python export_from_workbook.py [--year 2025] [--out-dir data] [--check]
@@ -90,6 +90,20 @@ POSITION_MAP = {
 
 GRADE_ONE_DECIMAL = {"grade", "finalGrade"}
 
+# The workbook renamed this column Advanced.Markers -> Adv.Markers on 2026-09-14. Accept
+# either spelling, resolved once per sheet against the header row, and raise if neither is
+# present: the old code read it with raw.get(), so a rename silently dropped "pff" from every
+# record and the site published blank Advanced Markers with nothing anywhere saying why.
+ADV_MARKER_COLS = ("Adv.Markers", "Advanced.Markers")
+
+# The ONLY sheets this script may read. The workbook also has a "Final Rankings" tab carrying
+# an Adj.Markers column, and this script used to source adjMarkers from it -- but that tab is a
+# stale snapshot: its Final.Grade disagrees with the position sheets on 1,242 of 1,257 shared
+# rows (Ashton Jeanty 100.0 there vs 97.1 on the RB sheet), so nothing on it can be trusted.
+# adjMarkers has no home on the position sheets, so it is now carried forward from the
+# published JSON via PRESERVED_FIELDS and is no longer refreshed from the workbook at all.
+SOURCE_SHEETS = ("QB", "RB", "WR", "TE")
+
 
 def round_value(json_key, value):
     if value is None or value == "":
@@ -105,25 +119,15 @@ def round_value(json_key, value):
     return value
 
 
-def load_adj_markers(wb):
-    """Adj.Markers lives only on the Final Rankings sheet, keyed by (year, pos, cfr_id)."""
-    ws = wb["Final Rankings"]
-    headers = [c.value for c in ws[1]]
-    idx = {h: i for i, h in enumerate(headers) if h}
-    out = {}
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        year = row[idx["Year"]]
-        pos = row[idx["Position"]]
-        cfr = row[idx["CFR_ID"]]
-        adj = row[idx["Adj.Markers"]]
-        if year is not None and cfr:
-            out[(year, pos, cfr)] = adj
-    return out
-
-
-def export_position(wb, pos, adj_lookup):
+def export_position(wb, pos):
     ws = wb[pos]
     headers = [c.value for c in ws[2]]
+    adv_col = next((c for c in ADV_MARKER_COLS if c in headers), None)
+    if adv_col is None:
+        raise KeyError(
+            "%s sheet has none of %s -- Advanced Markers column renamed again?"
+            % (pos, ", ".join(ADV_MARKER_COLS))
+        )
     records_by_year = {}
     for row in ws.iter_rows(min_row=3, values_only=True):
         raw = {headers[i]: v for i, v in enumerate(row) if headers[i]}
@@ -139,9 +143,7 @@ def export_position(wb, pos, adj_lookup):
         p["finalGrade"] = p["grade"]
         p["ath"] = round_value("ath", raw.get("Athleticism%"))
         p["prod"] = round_value("prod", raw.get("Production%"))
-        p["pff"] = round_value("pff", raw.get("Advanced.Markers"))
-        adj = adj_lookup.get((raw["Year"], pos, raw.get("CFR_ID")))
-        p["adjMarkers"] = round_value("adjMarkers", adj)
+        p["pff"] = round_value("pff", raw.get(adv_col))
         for excel_col, json_key in POSITION_MAP[pos].items():
             val = round_value(json_key, raw.get(excel_col))
             if val is not None:
@@ -160,11 +162,10 @@ def main():
     args = ap.parse_args()
 
     wb = openpyxl.load_workbook(WORKBOOK_PATH, data_only=True)
-    adj_lookup = load_adj_markers(wb)
 
     all_years = {}
-    for pos in ("QB", "RB", "WR", "TE"):
-        for year, records in export_position(wb, pos, adj_lookup).items():
+    for pos in SOURCE_SHEETS:
+        for year, records in export_position(wb, pos).items():
             all_years.setdefault(year, []).extend(records)
 
     years = [args.year] if args.year else sorted(all_years)
@@ -175,29 +176,45 @@ def main():
         if not records:
             print(f"{year}: no rows found in workbook, skipping")
             continue
+        out_path = out_dir / f"{year}.json"
+        if not out_path.exists() and not args.year:
+            # The workbook gets next year's prospects long before they are a published class
+            # (an ungraded placeholder row is enough to create a year). Adding a class to the
+            # site is a deliberate act: pass --year to do it.
+            print(f"{year}: no existing {out_path.name}, skipping (pass --year {year} to create it)")
+            continue
         if args.check:
             check_against_existing(year, records, out_dir)
         else:
-            preserve_existing_adj_markers(records, out_dir / f"{year}.json")
-            out_path = out_dir / f"{year}.json"
+            preserve_unexported_fields(records, out_path)
             out_path.write_text(json.dumps(records, indent=2), encoding="utf-8")
             print(f"{year}: wrote {len(records)} records to {out_path}")
 
 
-def preserve_existing_adj_markers(records, existing_path):
-    """adjMarkers is hand-curated on the Final Rankings tab and only covers a
-    subset of prospects. Never overwrite an existing site value with nothing —
-    if the workbook lookup came up empty, keep whatever is already published."""
+# Fields the site carries that this exporter cannot produce from the workbook. Without this,
+# every regeneration silently deletes them:
+#   adjMarkers        hand-curated on the Final Rankings tab, covers only a subset of prospects
+#   projected_overall pre-draft projected draft slot, maintained outside the workbook entirely
+# Only these are carried forward -- a blanket carry-forward would also resurrect fields that
+# were removed on purpose.
+PRESERVED_FIELDS = ("adjMarkers", "projected_overall")
+
+
+def preserve_unexported_fields(records, existing_path):
+    """Never overwrite an existing site value with nothing. If the workbook has no value for
+    a PRESERVED_FIELDS key, keep whatever is already published for that player."""
     if not existing_path.exists():
         return
     existing = json.loads(existing_path.read_text(encoding="utf-8"))
     existing_by_key = {(p.get("cfr_id") or f"{p.get('pos')}:{p.get('name')}"): p for p in existing}
     for p in records:
-        if "adjMarkers" not in p:
-            key = p.get("cfr_id") or f"{p.get('pos')}:{p.get('name')}"
-            old = existing_by_key.get(key)
-            if old and "adjMarkers" in old:
-                p["adjMarkers"] = old["adjMarkers"]
+        key = p.get("cfr_id") or f"{p.get('pos')}:{p.get('name')}"
+        old = existing_by_key.get(key)
+        if not old:
+            continue
+        for field in PRESERVED_FIELDS:
+            if field not in p and field in old:
+                p[field] = old[field]
 
 
 def check_against_existing(year, records, out_dir):
