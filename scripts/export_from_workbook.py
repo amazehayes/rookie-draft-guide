@@ -187,7 +187,10 @@ def main():
             check_against_existing(year, records, out_dir)
         else:
             preserve_unexported_fields(records, out_path)
-            out_path.write_text(json.dumps(records, indent=2), encoding="utf-8")
+            # Minified, matching what is already published: these files are fetched by the
+            # browser (the grades page pulls ~18 of them), and indent=2 inflates the set
+            # from 1.63 MB to 2.40 MB for no reader benefit.
+            out_path.write_text(json.dumps(records, separators=(",", ":")), encoding="utf-8")
             print(f"{year}: wrote {len(records)} records to {out_path}")
 
 
