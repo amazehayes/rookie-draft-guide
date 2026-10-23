@@ -57,6 +57,7 @@ POSITION_MAP = {
         # Best Receptions in the Markers formula, but Best Receptions still feeds Production%
         # and is still displayed, so it stays exported.
         "Workhorse": "workhorse", "Career MS.Rec": "careerMSRec",
+        "Dominator": "dominator",   # marker added 2026-10-23: rush+rec yds / team rush+rec yds
         "YPC": "ypc", "YPTP": "yptp", "Best Receptions": "bestRec",
         "Best Total Yards Y1/Y2": "bestTotalYds", "First PPG": "firstPPG", "Last PPG": "lastPPG",
         "Best PPG": "bestPPG", "Career.BA/A": "careerBA", "Career.MTF/A": "careerMTF",
