@@ -14,6 +14,7 @@ tolerance, without writing anything.
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -21,6 +22,7 @@ import openpyxl
 
 WORKBOOK_PATH = Path(r"C:\Users\hayes\Documents\Fantasy Database\Final_Rookie_Markers.xlsx")
 REPO_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+REPO_INDEX_HTML = Path(__file__).resolve().parent.parent / "index.html"
 
 # Columns A-T are laid out identically across the QB/RB/WR/TE sheets.
 COMMON_MAP = {
@@ -51,6 +53,10 @@ POSITION_MAP = {
         "Best.Sack%": "bestSackPct", "40-Dash": "dash", "WaSS": "wass", "Burst Score": "burst",
     },
     "RB": {
+        # Workhorse and Career MS.Rec became markers on 2026-10-23; Career MS.Rec replaced
+        # Best Receptions in the Markers formula, but Best Receptions still feeds Production%
+        # and is still displayed, so it stays exported.
+        "Workhorse": "workhorse", "Career MS.Rec": "careerMSRec",
         "YPC": "ypc", "YPTP": "yptp", "Best Receptions": "bestRec",
         "Best Total Yards Y1/Y2": "bestTotalYds", "First PPG": "firstPPG", "Last PPG": "lastPPG",
         "Best PPG": "bestPPG", "Career.BA/A": "careerBA", "Career.MTF/A": "careerMTF",
@@ -170,6 +176,7 @@ def main():
 
     years = [args.year] if args.year else sorted(all_years)
     out_dir = Path(args.out_dir)
+    written = {}
 
     for year in years:
         records = all_years.get(year, [])
@@ -192,6 +199,10 @@ def main():
             # from 1.63 MB to 2.40 MB for no reader benefit.
             out_path.write_text(json.dumps(records, separators=(",", ":")), encoding="utf-8")
             print(f"{year}: wrote {len(records)} records to {out_path}")
+            written[year] = records
+
+    if not args.check and out_dir.resolve() == REPO_DATA_DIR.resolve():
+        sync_inline_players(written)
 
 
 # Fields the site carries that this exporter cannot produce from the workbook. Without this,
@@ -201,6 +212,35 @@ def main():
 # Only these are carried forward -- a blanket carry-forward would also resurrect fields that
 # were removed on purpose.
 PRESERVED_FIELDS = ("adjMarkers", "projected_overall")
+
+
+def sync_inline_players(records_by_year, index_html=REPO_INDEX_HTML):
+    """Rewrite the `const PLAYERS=[...]` seed inside index.html.
+
+    index.html pre-seeds `yearCache = {<year>: PLAYERS}` from an inline copy of the current
+    class, and every data/<year>.json fetch is guarded by `!yearCache[yr]` -- so for that one
+    year the JSON file is NEVER read and the inline array is what the site actually shows.
+    Writing data/<year>.json alone silently does nothing for the current class.
+
+    The year is read back out of index.html rather than hardcoded here, so the two cannot
+    drift apart.
+    """
+    html = index_html.read_text(encoding="utf-8")
+    ym = re.search(r"^let yearCache = \{(\d{4}): PLAYERS\};$", html, re.M)
+    if not ym:
+        raise RuntimeError("index.html: could not find `let yearCache = {<year>: PLAYERS};` "
+                           "-- the inline-seed pattern changed, re-check sync_inline_players()")
+    year = int(ym.group(1))
+    pm = re.search(r"^const PLAYERS=(\[.*\]);$", html, re.M)
+    if not pm:
+        raise RuntimeError("index.html: could not find the `const PLAYERS=[...]` seed line")
+    records = records_by_year.get(year)
+    if not records:
+        print("inline seed: no %d records in the workbook, leaving index.html alone" % year)
+        return
+    html = html[:pm.start(1)] + json.dumps(records, separators=(",", ":")) + html[pm.end(1):]
+    index_html.write_text(html, encoding="utf-8")
+    print("inline seed: wrote %d %d records into %s" % (len(records), year, index_html.name))
 
 
 def preserve_unexported_fields(records, existing_path):
