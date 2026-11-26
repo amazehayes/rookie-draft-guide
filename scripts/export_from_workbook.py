@@ -36,6 +36,7 @@ COMMON_MAP = {
     "Round": "round",
     "Overall": "overall",
     "Years": "years",
+    "Pre-Draft Grade": "preDraftGrade",   # added 2026-11-26, on all four sheets
 }
 
 POSITION_MAP = {
@@ -71,6 +72,9 @@ POSITION_MAP = {
         "BOY20": "boy20", "BOY30": "boy30", "BOA20": "boa20", "BOA30": "boa30",
         "First.YPTPA": "firstYPTPA", "Last.YPTPA": "lastYPTPA", "Best.YPTPA": "bestYPTPA",
         "First.MSYards": "firstMSYards", "Best.MSYards": "bestMSYards",
+        # Best within the first four college seasons. Since 2026-11-26 the WR Markers formula
+        # scores these, not the plain Best.* columns (they differ for ~80 mostly 5-6 year WRs).
+        "Best.YPTPA.F4": "bestYPTPAF4", "Best.MSYards.F4": "bestMSYardsF4", "Best.PPG.F4": "bestPPGF4",
         "Career.YPRR": "careerYPRR", "Career.YPRR.Zone": "careerYPRRzone",
         "Career.TPRR": "careerTPRR", "Career.1DRR": "career1DRR", "Career.YACR": "careerYACR",
         "Career.CTR": "careerCTR", "Career.CR": "careerCR", "Career.MTF": "careerMTF",
