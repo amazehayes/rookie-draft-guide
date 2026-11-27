@@ -55,8 +55,8 @@ POSITION_MAP = {
     },
     "RB": {
         # Workhorse and Career MS.Rec became markers on 2026-10-23; Career MS.Rec replaced
-        # Best Receptions in the Markers formula, but Best Receptions still feeds Production%
-        # and is still displayed, so it stays exported.
+        # Best Receptions in the Markers formula. Best Receptions is no longer a marker but is
+        # still offered in the explorer, so it stays exported.
         "Workhorse": "workhorse", "Career MS.Rec": "careerMSRec",
         "Dominator": "dominator",   # marker added 2026-10-23: rush+rec yds / team rush+rec yds
         "YPC": "ypc", "YPTP": "yptp", "Best Receptions": "bestRec",
@@ -152,8 +152,6 @@ def export_position(wb, pos):
         p["markers"] = round_value("markers", raw.get("Markers"))
         p["grade"] = round_value("grade", raw.get("Final.Grade"))
         p["finalGrade"] = p["grade"]
-        p["ath"] = round_value("ath", raw.get("Athleticism%"))
-        p["prod"] = round_value("prod", raw.get("Production%"))
         p["pff"] = round_value("pff", raw.get(adv_col))
         for excel_col, json_key in POSITION_MAP[pos].items():
             val = round_value(json_key, raw.get(excel_col))
